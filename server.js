@@ -49,6 +49,7 @@ const hashReady = bcrypt.hash(AUTH_PASS, 10).then(h => { passwordHash = h; });
 // ---------------------------------------------------------------------------
 const app = express();
 
+app.set('trust proxy', 1);
 app.use(express.json());
 
 app.use(
@@ -59,6 +60,7 @@ app.use(
     cookie: {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
       maxAge: 7 * 24 * 60 * 60 * 1000, // 1 week
     },
   })
