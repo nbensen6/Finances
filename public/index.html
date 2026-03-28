@@ -1,0 +1,1529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nick's Financial Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+:root {
+  --bg: #0f1117;
+  --surface: #1a1d27;
+  --surface2: #232733;
+  --border: #2e3345;
+  --text: #e4e6f0;
+  --text-dim: #8b8fa3;
+  --accent: #6c5ce7;
+  --accent2: #a29bfe;
+  --green: #00b894;
+  --red: #e17055;
+  --yellow: #fdcb6e;
+  --blue: #74b9ff;
+  --radius: 12px;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+/* NAV */
+nav { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 24px; display: flex; align-items: center; height: 60px; position: sticky; top: 0; z-index: 100; }
+nav .logo { font-size: 18px; font-weight: 700; color: var(--accent2); margin-right: 40px; }
+nav .nav-links { display: flex; gap: 4px; }
+nav .nav-links button { background: none; border: none; color: var(--text-dim); padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.2s; }
+nav .nav-links button:hover { color: var(--text); background: var(--surface2); }
+nav .nav-links button.active { color: var(--accent2); background: rgba(108,92,231,0.15); }
+
+/* LAYOUT */
+main { max-width: 1280px; margin: 0 auto; padding: 24px; }
+.page { display: none; }
+.page.active { display: block; }
+
+/* CARDS */
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; margin-bottom: 20px; }
+.card h2 { font-size: 16px; color: var(--text-dim); font-weight: 600; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.5px; }
+.card h3 { font-size: 14px; color: var(--text-dim); margin-bottom: 12px; }
+
+/* GRID */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+@media (max-width: 900px) { .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; } }
+
+/* STAT CARDS */
+.stat { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
+.stat .label { font-size: 12px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+.stat .value { font-size: 28px; font-weight: 700; }
+.stat .sub { font-size: 12px; color: var(--text-dim); margin-top: 4px; }
+.positive { color: var(--green); }
+.negative { color: var(--red); }
+.warning { color: var(--yellow); }
+
+/* TABLES */
+table { width: 100%; border-collapse: collapse; }
+th { text-align: left; font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; padding: 10px 12px; border-bottom: 1px solid var(--border); }
+td { padding: 10px 12px; border-bottom: 1px solid var(--border); font-size: 14px; }
+tr:hover { background: rgba(108,92,231,0.05); }
+
+/* PROGRESS BAR */
+.progress-wrap { background: var(--surface2); border-radius: 10px; height: 20px; overflow: hidden; margin: 8px 0; }
+.progress-bar { height: 100%; border-radius: 10px; transition: width 0.6s ease; }
+.progress-green { background: linear-gradient(90deg, #00b894, #55efc4); }
+.progress-accent { background: linear-gradient(90deg, #6c5ce7, #a29bfe); }
+.progress-red { background: linear-gradient(90deg, #e17055, #fab1a0); }
+
+/* BADGES */
+.badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+.badge-green { background: rgba(0,184,148,0.15); color: var(--green); }
+.badge-red { background: rgba(225,112,85,0.15); color: var(--red); }
+.badge-yellow { background: rgba(253,203,110,0.15); color: var(--yellow); }
+.badge-blue { background: rgba(116,185,255,0.15); color: var(--blue); }
+.badge-gray { background: rgba(139,143,163,0.15); color: var(--text-dim); }
+
+/* BUTTONS */
+.btn { padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.2s; }
+.btn-primary { background: var(--accent); color: white; }
+.btn-primary:hover { background: var(--accent2); }
+.btn-outline { background: none; border: 1px solid var(--border); color: var(--text); }
+.btn-outline:hover { border-color: var(--accent); color: var(--accent2); }
+
+/* FILE UPLOAD */
+.upload-zone { border: 2px dashed var(--border); border-radius: var(--radius); padding: 40px; text-align: center; cursor: pointer; transition: all 0.2s; }
+.upload-zone:hover { border-color: var(--accent); background: rgba(108,92,231,0.05); }
+.upload-zone p { color: var(--text-dim); margin-top: 8px; }
+.upload-zone input { display: none; }
+
+/* MONTH SELECTOR */
+.month-tabs { display: flex; gap: 4px; margin-bottom: 20px; flex-wrap: wrap; }
+.month-tabs button { background: var(--surface2); border: 1px solid var(--border); color: var(--text-dim); padding: 6px 14px; border-radius: 8px; cursor: pointer; font-size: 13px; transition: all 0.2s; }
+.month-tabs button.active { background: var(--accent); color: white; border-color: var(--accent); }
+
+/* BILLS PAGE */
+.bill-row { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid var(--border); transition: background 0.15s; }
+.bill-row:hover { background: var(--surface2); }
+.bill-row .bill-info { display: flex; align-items: center; gap: 14px; }
+.bill-row .bill-name { font-weight: 600; font-size: 15px; }
+.bill-row .bill-due { font-size: 12px; color: var(--text-dim); }
+.bill-row .bill-amount { font-size: 18px; font-weight: 700; }
+.bill-row a { text-decoration: none; }
+.pay-btn { background: var(--accent); color: white; border: none; padding: 6px 16px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+.pay-btn:hover { background: var(--accent2); }
+
+/* CLAUDE ANALYSIS */
+.analysis-box { background: var(--surface2); border-radius: var(--radius); padding: 20px; margin-top: 16px; white-space: pre-wrap; font-size: 14px; line-height: 1.6; max-height: 500px; overflow-y: auto; }
+.api-key-input { background: var(--surface2); border: 1px solid var(--border); color: var(--text); padding: 10px 14px; border-radius: 8px; width: 100%; font-size: 14px; margin-bottom: 12px; }
+.api-key-input:focus { outline: none; border-color: var(--accent); }
+
+/* UBER */
+.uber-stat { text-align: center; }
+.uber-stat .big { font-size: 36px; font-weight: 800; }
+.day-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-top: 12px; }
+.day-cell { background: var(--surface2); border-radius: 8px; padding: 8px; text-align: center; font-size: 12px; min-height: 60px; }
+.day-cell .day-date { color: var(--text-dim); font-size: 11px; }
+.day-cell .day-amount { font-weight: 700; margin-top: 4px; font-size: 14px; }
+.day-cell.met-goal { border: 1px solid var(--green); background: rgba(0,184,148,0.08); }
+.day-cell.missed-goal { border: 1px solid var(--red); background: rgba(225,112,85,0.05); }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+.hidden { display: none !important; }
+.mt-12 { margin-top: 12px; }
+.mt-20 { margin-top: 20px; }
+.mb-12 { margin-bottom: 12px; }
+.flex-between { display: flex; justify-content: space-between; align-items: center; }
+.text-right { text-align: right; }
+canvas { max-height: 300px; }
+
+.category-bar-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+.category-bar-row .cat-label { width: 120px; font-size: 13px; text-align: right; color: var(--text-dim); flex-shrink: 0; }
+.category-bar-row .cat-bar-wrap { flex: 1; height: 24px; background: var(--surface2); border-radius: 6px; position: relative; overflow: hidden; }
+.category-bar-row .cat-bar { height: 100%; border-radius: 6px; transition: width 0.4s; }
+.category-bar-row .cat-bar-budget { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--yellow); z-index: 2; }
+.category-bar-row .cat-vals { width: 160px; font-size: 12px; color: var(--text-dim); flex-shrink: 0; }
+.category-bar-row { cursor: pointer; border-radius: 6px; padding: 4px 0; transition: background 0.15s; }
+.category-bar-row:hover { background: var(--surface2); }
+
+/* MODAL */
+.modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 200; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+.modal { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; max-width: 750px; width: 95%; max-height: 80vh; overflow-y: auto; position: relative; }
+.modal h2 { font-size: 18px; color: var(--text); margin-bottom: 4px; }
+.modal .modal-sub { font-size: 13px; color: var(--text-dim); margin-bottom: 16px; }
+.modal-close { position: absolute; top: 16px; right: 16px; background: none; border: none; color: var(--text-dim); font-size: 22px; cursor: pointer; width: 32px; height: 32px; border-radius: 6px; display: flex; align-items: center; justify-content: center; }
+.modal-close:hover { background: var(--surface2); color: var(--text); }
+
+/* CATEGORY SELECT */
+.cat-select { background: var(--surface2); border: 1px solid var(--border); color: var(--text); padding: 4px 8px; border-radius: 6px; font-size: 12px; cursor: pointer; appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%238b8fa3' stroke-width='1.5'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 8px center; padding-right: 24px; }
+.cat-select:focus { outline: none; border-color: var(--accent); }
+.cat-select option { background: var(--surface); color: var(--text); }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">FinDash</div>
+  <div class="nav-links">
+    <button class="active" onclick="showPage('dashboard')">Dashboard</button>
+    <button onclick="showPage('bills')">Monthly Bills</button>
+    <button onclick="showPage('statements')">Bank Statements</button>
+    <button onclick="showPage('uber')">Uber Tracker</button>
+  </div>
+</nav>
+
+<main>
+<!-- ============ DASHBOARD PAGE ============ -->
+<div id="page-dashboard" class="page active">
+  <div class="flex-between mb-12">
+    <h1 style="font-size:24px;">Budget Overview</h1>
+    <div class="month-tabs" id="month-tabs"></div>
+  </div>
+
+  <div class="grid-4" id="stat-cards"></div>
+
+  <div class="card mt-20">
+    <h2>Credit Payoff Progress</h2>
+    <div class="flex-between">
+      <span>$3,000 goal by May 31, 2026</span>
+      <span id="credit-paid-label">$0 paid</span>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-bar progress-green" id="credit-progress" style="width:0%"></div>
+    </div>
+    <p style="font-size:13px;color:var(--text-dim);margin-top:6px;" id="credit-sub"></p>
+  </div>
+
+  <div class="grid-2 mt-20">
+    <div class="card">
+      <div class="flex-between" style="margin-bottom:12px;">
+        <h2 style="margin-bottom:0;">Spending by Category</h2>
+        <button class="btn btn-outline" style="padding:4px 12px;font-size:12px;" onclick="openNewCatModal()">+ New Category</button>
+      </div>
+      <div id="category-bars"></div>
+    </div>
+    <div class="card">
+      <h2>Category Breakdown</h2>
+      <canvas id="chart-pie"></canvas>
+    </div>
+  </div>
+
+  <div class="grid-2 mt-20">
+    <div class="card">
+      <h2>Monthly Trend</h2>
+      <canvas id="chart-trend"></canvas>
+    </div>
+    <div class="card">
+      <h2>Transactions</h2>
+      <div style="max-height:350px;overflow-y:auto;">
+        <table id="tx-table">
+          <thead><tr><th>Date</th><th>Description</th><th>Amount</th><th>Category</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="card mt-20">
+    <h2>Road to $15K Down Payment</h2>
+    <div class="grid-3">
+      <div class="stat">
+        <div class="label">Target</div>
+        <div class="value">$15,000</div>
+        <div class="sub">12 month timeline</div>
+      </div>
+      <div class="stat">
+        <div class="label">Monthly Savings Needed</div>
+        <div class="value">$1,250</div>
+        <div class="sub">$312.50/week</div>
+      </div>
+      <div class="stat">
+        <div class="label">Available After Budget</div>
+        <div class="value warning">$260</div>
+        <div class="sub">Gap: $990/mo - needs income growth</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ BILLS PAGE ============ -->
+<div id="page-bills" class="page">
+  <h1 style="font-size:24px;margin-bottom:20px;">Monthly Bills & Subscriptions</h1>
+
+  <div class="grid-3 mb-12" id="bills-stat-cards"></div>
+
+  <div class="card">
+    <h2>Bills & Payments</h2>
+    <div id="bills-list"></div>
+  </div>
+
+  <div class="card mt-20">
+    <h2>Subscriptions</h2>
+    <div id="subs-list"></div>
+  </div>
+
+  <div class="card mt-20">
+    <h2>Payment Calendar</h2>
+    <p style="color:var(--text-dim);font-size:13px;margin-bottom:12px;">Due dates at a glance for the current month</p>
+    <div id="bills-calendar"></div>
+  </div>
+</div>
+
+<!-- ============ BANK STATEMENTS PAGE ============ -->
+<div id="page-statements" class="page">
+  <h1 style="font-size:24px;margin-bottom:20px;">Bank Statement Analyzer</h1>
+
+  <div class="card">
+    <h2>Import Statement</h2>
+    <p style="color:var(--text-dim);font-size:13px;margin-bottom:16px;">Upload a CSV or Excel bank statement. Supported formats: most banks' CSV/XLSX exports with date, description, and amount columns.</p>
+    <div class="upload-zone" id="stmt-upload-zone" onclick="document.getElementById('stmt-file').click()">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--accent2)" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      <p>Drop CSV/XLSX file here or click to browse</p>
+      <input type="file" id="stmt-file" accept=".csv,.xlsx,.xls" onchange="handleStatementUpload(this.files[0])">
+    </div>
+  </div>
+
+  <div id="stmt-results" class="hidden">
+    <div class="grid-4 mt-20" id="stmt-stat-cards"></div>
+
+    <div class="grid-2 mt-20">
+      <div class="card">
+        <h2>Spending by Category</h2>
+        <canvas id="stmt-chart-pie"></canvas>
+      </div>
+      <div class="card">
+        <h2>Daily Spending</h2>
+        <canvas id="stmt-chart-daily"></canvas>
+      </div>
+    </div>
+
+    <div class="card mt-20">
+      <h2>AI Analysis</h2>
+      <p style="color:var(--text-dim);font-size:13px;margin-bottom:12px;">Use your Claude API key for spending insights. Key is stored on the server.</p>
+      <input type="password" class="api-key-input" id="claude-api-key" placeholder="Enter Claude API key (sk-ant-...)" />
+      <button class="btn btn-primary" onclick="runClaudeAnalysis()">Analyze with Claude</button>
+      <div id="claude-result" class="analysis-box hidden"></div>
+    </div>
+
+    <div class="card mt-20">
+      <h2>Transactions</h2>
+      <div style="display:flex;gap:8px;margin-bottom:12px;">
+        <select id="stmt-cat-filter" class="api-key-input" style="width:200px;" onchange="filterStmtTable()">
+          <option value="">All Categories</option>
+        </select>
+        <input type="text" id="stmt-search" class="api-key-input" style="flex:1;" placeholder="Search transactions..." oninput="filterStmtTable()">
+      </div>
+      <div style="max-height:500px;overflow-y:auto;">
+        <table id="stmt-table">
+          <thead><tr><th>Date</th><th>Description</th><th>Amount</th><th>Category</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ UBER PAGE ============ -->
+<div id="page-uber" class="page">
+  <h1 style="font-size:24px;margin-bottom:20px;">Uber Earnings Tracker</h1>
+
+  <div class="card">
+    <h2>Upload Uber Statement</h2>
+    <p style="color:var(--text-dim);font-size:13px;margin-bottom:16px;">Upload Uber Eats weekly statement CSV/image or paste earnings data. You can also manually add daily entries below.</p>
+    <div class="upload-zone" id="uber-upload-zone" onclick="document.getElementById('uber-file').click()">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--accent2)" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      <p>Drop Uber CSV/XLSX here or click to browse</p>
+      <input type="file" id="uber-file" accept=".csv,.xlsx,.xls" onchange="handleUberUpload(this.files[0])">
+    </div>
+  </div>
+
+  <div class="card mt-20">
+    <h2>Manual Entry</h2>
+    <div style="display:flex;gap:12px;align-items:end;flex-wrap:wrap;">
+      <div>
+        <label style="font-size:12px;color:var(--text-dim);">Date</label>
+        <input type="date" id="uber-date" class="api-key-input" style="width:180px;">
+      </div>
+      <div>
+        <label style="font-size:12px;color:var(--text-dim);">Earnings ($)</label>
+        <input type="number" id="uber-amount" class="api-key-input" style="width:140px;" step="0.01" placeholder="0.00">
+      </div>
+      <div>
+        <label style="font-size:12px;color:var(--text-dim);">Hours</label>
+        <input type="number" id="uber-hours" class="api-key-input" style="width:100px;" step="0.1" placeholder="0.0">
+      </div>
+      <div>
+        <label style="font-size:12px;color:var(--text-dim);">Notes</label>
+        <input type="text" id="uber-notes" class="api-key-input" style="width:200px;" placeholder="Quest bonus, etc.">
+      </div>
+      <button class="btn btn-primary" onclick="addUberEntry()">Add</button>
+    </div>
+  </div>
+
+  <div id="uber-results">
+    <div class="grid-4 mt-20" id="uber-stat-cards"></div>
+
+    <div class="grid-2 mt-20">
+      <div class="card">
+        <h2>Daily Earnings</h2>
+        <canvas id="uber-chart-daily"></canvas>
+      </div>
+      <div class="card">
+        <h2>Weekly Summary</h2>
+        <canvas id="uber-chart-weekly"></canvas>
+      </div>
+    </div>
+
+    <div class="card mt-20">
+      <h2>Earnings Calendar</h2>
+      <p style="font-size:13px;color:var(--text-dim);margin-bottom:8px;">Green = met $50 goal | Red = missed goal</p>
+      <div class="day-grid" id="uber-calendar"></div>
+    </div>
+
+    <div class="card mt-20">
+      <h2>Shift Log</h2>
+      <div style="max-height:400px;overflow-y:auto;">
+        <table id="uber-table">
+          <thead><tr><th>Date</th><th>Earnings</th><th>Hours</th><th>$/Hour</th><th>Goal Met</th><th>Notes</th><th></th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+</main>
+
+<!-- New Category Modal -->
+<div id="new-cat-modal" class="modal-overlay hidden" onclick="if(event.target===this)closeNewCatModal()">
+  <div class="modal" style="max-width:480px;">
+    <button class="modal-close" onclick="closeNewCatModal()">&times;</button>
+    <h2>Manage Categories</h2>
+    <div class="modal-sub">Create new categories or remove custom ones. Default categories cannot be deleted.</div>
+    <div style="display:flex;gap:8px;margin-bottom:20px;">
+      <input type="text" id="new-cat-input" class="api-key-input" style="flex:1;margin-bottom:0;" placeholder="New category name..." onkeydown="if(event.key==='Enter')createCategory()">
+      <button class="btn btn-primary" onclick="createCategory()">Add</button>
+    </div>
+    <div id="cat-manage-list"></div>
+  </div>
+</div>
+
+<!-- Category Drill-Down Modal -->
+<div id="cat-modal" class="modal-overlay hidden" onclick="if(event.target===this)closeCatModal()">
+  <div class="modal">
+    <button class="modal-close" onclick="closeCatModal()">&times;</button>
+    <h2 id="cat-modal-title">Category</h2>
+    <div class="modal-sub" id="cat-modal-sub"></div>
+    <table style="width:100%;">
+      <thead><tr><th>Date</th><th>Description</th><th>Amount</th><th>Category</th></tr></thead>
+      <tbody id="cat-modal-body"></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+// ==================== DATA LAYER (Server API) ====================
+const _cache = {};
+let _dataLoaded = false;
+
+function lsGet(key) {
+  return _cache[key] !== undefined ? _cache[key] : null;
+}
+
+function lsSet(key, value) {
+  _cache[key] = value;
+  fetch('/api/data/' + encodeURIComponent(key), {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ value: typeof value === 'string' ? JSON.parse(value) : value })
+  }).then(r => {
+    if (r.status === 401) window.location.href = '/login.html';
+  }).catch(err => console.error('Save failed:', err));
+}
+
+function lsRemove(key) {
+  delete _cache[key];
+  fetch('/api/data/' + encodeURIComponent(key), { method: 'DELETE' })
+    .then(r => { if (r.status === 401) window.location.href = '/login.html'; })
+    .catch(err => console.error('Delete failed:', err));
+}
+
+async function initDataLayer() {
+  try {
+    const resp = await fetch('/api/data');
+    if (resp.status === 401) { window.location.href = '/login.html'; return false; }
+    const allData = await resp.json();
+    for (const [key, value] of Object.entries(allData)) {
+      _cache[key] = typeof value === 'string' ? value : JSON.stringify(value);
+    }
+    _dataLoaded = true;
+    return true;
+  } catch (err) {
+    console.error('Failed to load data:', err);
+    return false;
+  }
+}
+
+// ===== DATA STORE =====
+const STORE_KEY = 'findash_data';
+const budgetData = {};
+let stmtTransactions = [];
+let uberEntries = [];
+
+// Pre-loaded data from Budget.xlsx
+const monthlyData = {
+  'October': {
+    income: 3507.92,
+    expenses: { Groceries:41.53, Amazon:143.18, 'Fast Food':19.27, Gas:34.98, Subscription:297.82, Entertainment:86.38, Utilities:100, Insurance:72.92, Shopping:345.47, Loan:1050, Restaurant:162.78, Credit:331, Other:331 },
+    budgets: { Groceries:50, Amazon:100, 'Fast Food':50, Gas:80, Subscription:200, Entertainment:75, Utilities:200, Insurance:75, Shopping:50, Loan:1050, Restaurant:60, Credit:350, Other:200 },
+    totalExpenses: 3016.33, net: 491.59
+  },
+  'November': {
+    income: 1697.46,
+    expenses: { Groceries:153.21, Amazon:202.01, 'Fast Food':62.93, Gas:41.53, Subscription:78.97, Entertainment:98.60, Utilities:858.16, Insurance:0, Shopping:0, Loan:505, Restaurant:88.50, Credit:311, Other:0 },
+    budgets: { Groceries:50, Amazon:100, 'Fast Food':50, Gas:80, Subscription:200, Entertainment:75, Utilities:200, Insurance:75, Shopping:50, Loan:1050, Restaurant:60, Credit:350, Other:200 },
+    totalExpenses: 2399.91, net: -702.45
+  },
+  'February': {
+    income: 3697.82,
+    expenses: { Groceries:87.20, Amazon:164.97, 'Fast Food':63.17, Gas:77.11, Subscription:426.31, Entertainment:171.83, Utilities:110, Insurance:74.84, Shopping:55.67, Loan:835, Restaurant:155.75, Credit:311, Travel:512.70, Other:1043.40 },
+    budgets: { Groceries:50, Amazon:100, 'Fast Food':50, Gas:80, Subscription:200, Entertainment:75, Utilities:200, Insurance:75, Shopping:50, Loan:1050, Restaurant:60, Credit:350, Travel:250, Other:200 },
+    totalExpenses: 4088.95, net: -391.13
+  },
+  'March': {
+    income: 2558.39,
+    expenses: { Groceries:95.65, Amazon:281.69, 'Fast Food':57.23, Gas:114.81, Subscription:317.64, Entertainment:37, Utilities:510, Insurance:74.84, Healthcare:477.50, Loan:1022.08, Restaurant:406.14, Credit:356, Other:55 },
+    budgets: { Groceries:50, Amazon:100, 'Fast Food':50, Gas:80, Subscription:200, Entertainment:75, Utilities:200, Insurance:75, Healthcare:100, Loan:1050, Restaurant:60, Credit:350, Other:200 },
+    totalExpenses: 3805.58, net: -1247.19
+  }
+};
+
+// All known categories for the dropdown — merged with any user-created ones
+const defaultCategories = ['Income','Groceries','Amazon','Fast Food','Gas','Subscription','Entertainment','Utilities','Insurance','Healthcare','Shopping','Loan','Restaurant','Credit','Travel','Other'];
+// These will be populated after initDataLayer() in the DOMContentLoaded handler
+let customCategories = [];
+let allCategories = [...defaultCategories];
+let catOverrides = {};
+
+function saveCustomCategories() { lsSet('findash_custom_cats', JSON.stringify(customCategories)); }
+
+function addCategory(name) {
+  name = name.trim();
+  if (!name) return false;
+  if (allCategories.some(c => c.toLowerCase() === name.toLowerCase())) return false;
+  customCategories.push(name);
+  allCategories = [...new Set([...defaultCategories, ...customCategories])];
+  saveCustomCategories();
+  return true;
+}
+
+function deleteCustomCategory(name) {
+  const idx = customCategories.indexOf(name);
+  if (idx < 0) return;
+  customCategories.splice(idx, 1);
+  allCategories = [...new Set([...defaultCategories, ...customCategories])];
+  saveCustomCategories();
+  // Reassign any overrides using this category back to auto-detect
+  for (const [key, cat] of Object.entries(catOverrides)) {
+    if (cat === name) delete catOverrides[key];
+  }
+  saveCatOverrides();
+  // Reassign any statement transactions using this category
+  stmtTransactions.forEach(tx => { if (tx.cat === name) tx.cat = categorize(tx.desc); });
+  saveData();
+}
+
+// Load saved category overrides (populated after initDataLayer)
+function saveCatOverrides() { lsSet('findash_cat_overrides', JSON.stringify(catOverrides)); }
+
+// Apply any saved overrides to a transaction (keyed by date+desc+amount)
+function txKey(tx) { return `${tx.date}|${tx.desc}|${tx.amount}`; }
+function getEffectiveCat(tx) { return catOverrides[txKey(tx)] || tx.cat; }
+
+// March transactions from Budget.xlsx
+let marchTransactions = [
+  {date:'2026-03-23',desc:'Wix Com Inc Payout',amount:19.12,cat:'Income'},
+  {date:'2026-03-23',desc:'Uber San Francisco CA',amount:71.89,cat:'Income'},
+  {date:'2026-03-17',desc:'Uber USA LLC Partner',amount:127.93,cat:'Income'},
+  {date:'2026-03-13',desc:'Trapeze Software Payroll',amount:1501.20,cat:'Income'},
+  {date:'2026-03-10',desc:'Uber USA LLC Partner',amount:76.75,cat:'Income'},
+  {date:'2026-03-04',desc:'Venmo Cashout',amount:505.00,cat:'Income'},
+  {date:'2026-03-03',desc:'Uber USA LLC Partner',amount:256.50,cat:'Income'},
+  {date:'2026-03-23',desc:'Amazon.com Amzn.com/bil WA',amount:-38.82,cat:'Amazon'},
+  {date:'2026-03-23',desc:'Spectrum Mobile',amount:-40.00,cat:'Utilities'},
+  {date:'2026-03-23',desc:'Discount Drug Mart',amount:-22.77,cat:'Groceries'},
+  {date:'2026-03-23',desc:'Marathon Bedford OH',amount:-3.49,cat:'Gas'},
+  {date:'2026-03-23',desc:'Tst*The Grille And T',amount:-8.00,cat:'Restaurant'},
+  {date:'2026-03-23',desc:'LS Big Met Golf Cours',amount:-37.00,cat:'Entertainment'},
+  {date:'2026-03-23',desc:'Tst*The Grille And T',amount:-3.00,cat:'Restaurant'},
+  {date:'2026-03-23',desc:'Shell Service Statio',amount:-48.08,cat:'Gas'},
+  {date:'2026-03-23',desc:'Discount Drug Mart',amount:-13.06,cat:'Groceries'},
+  {date:'2026-03-23',desc:'Pulp Juice And Smoothi',amount:-7.00,cat:'Restaurant'},
+  {date:'2026-03-23',desc:'McDonalds 33898',amount:-11.47,cat:'Fast Food'},
+  {date:'2026-03-23',desc:'Uppbeat IAT Paypal',amount:-6.99,cat:'Subscription'},
+  {date:'2026-03-23',desc:'Paypal Inst Xfer Hulu',amount:-8.64,cat:'Subscription'},
+  {date:'2026-03-23',desc:'Paypal Inst Xfer Canva',amount:-16.20,cat:'Subscription'},
+  {date:'2026-03-23',desc:'Dept Education Student Ln',amount:-187.08,cat:'Loan'},
+  {date:'2026-03-20',desc:'Peacock Premium',amount:-11.87,cat:'Subscription'},
+  {date:'2026-03-20',desc:'Amazon.com*BD7788SD1',amount:-156.59,cat:'Amazon'},
+  {date:'2026-03-20',desc:'WP*RankUpLoL',amount:-20.00,cat:'Subscription'},
+  {date:'2026-03-20',desc:'Amazon.com*BD3G27S31',amount:-27.50,cat:'Amazon'},
+  {date:'2026-03-20',desc:'Aldi Garfield',amount:-3.07,cat:'Groceries'},
+  {date:'2026-03-20',desc:'Tst*You And I Tea',amount:-7.63,cat:'Restaurant'},
+  {date:'2026-03-19',desc:'Taco Bell',amount:-11.28,cat:'Fast Food'},
+  {date:'2026-03-18',desc:'Paypal Inst Xfer Spotify',amount:-14.03,cat:'Subscription'},
+  {date:'2026-03-17',desc:'Concora Credit Payment',amount:-250.00,cat:'Credit'},
+  {date:'2026-03-17',desc:'Planet Fitness',amount:-27.05,cat:'Subscription'},
+  {date:'2026-03-17',desc:'FirstEnergy OPCO-ACH',amount:-400.00,cat:'Utilities'},
+  {date:'2026-03-17',desc:'WeTeachLeague',amount:-39.00,cat:'Subscription'},
+  {date:'2026-03-17',desc:'Microsoft*Xbox Game Pa',amount:-16.19,cat:'Subscription'},
+  {date:'2026-03-17',desc:'Amazon.com*B56FT80M2',amount:-8.37,cat:'Amazon'},
+  {date:'2026-03-17',desc:'McDonalds F33898',amount:-2.00,cat:'Fast Food'},
+  {date:'2026-03-16',desc:'Marathon Bedford',amount:-3.23,cat:'Gas'},
+  {date:'2026-03-16',desc:'Amazon Mktpl*B58G77N',amount:-9.39,cat:'Amazon'},
+  {date:'2026-03-16',desc:'Piada - 19',amount:-14.60,cat:'Restaurant'},
+  {date:'2026-03-16',desc:'Coffee Cup Family Resta',amount:-26.43,cat:'Restaurant'},
+  {date:'2026-03-16',desc:'Marathon Bedford',amount:-1.75,cat:'Gas'},
+  {date:'2026-03-16',desc:'HP *Instant Ink',amount:-5.93,cat:'Subscription'},
+  {date:'2026-03-16',desc:'Amazon Mktpl*BD8JK1C',amount:-26.99,cat:'Amazon'},
+  {date:'2026-03-16',desc:'Discount Drug Mart',amount:-33.07,cat:'Groceries'},
+  {date:'2026-03-16',desc:'Biggby Coffee',amount:-3.66,cat:'Restaurant'},
+  {date:'2026-03-16',desc:'Biggby Coffee',amount:-6.39,cat:'Restaurant'},
+  {date:'2026-03-16',desc:'Biggby Coffee',amount:-13.18,cat:'Restaurant'},
+  {date:'2026-03-16',desc:'Chick-Fil-A',amount:-13.59,cat:'Fast Food'},
+  {date:'2026-03-13',desc:'Aldi Garfield',amount:-4.99,cat:'Groceries'},
+  {date:'2026-03-13',desc:'McDonalds 33898',amount:-2.00,cat:'Fast Food'},
+  {date:'2026-03-12',desc:'Shell Oil Gates Mills',amount:-6.89,cat:'Gas'},
+  {date:'2026-03-12',desc:'Condado Tacos',amount:-53.95,cat:'Restaurant'},
+  {date:'2026-03-12',desc:'McDonalds F33898',amount:-2.00,cat:'Fast Food'},
+  {date:'2026-03-12',desc:'Amazon.com*BP7E49BK1',amount:-14.03,cat:'Amazon'},
+  {date:'2026-03-11',desc:'Discount Drug Mart',amount:-2.99,cat:'Groceries'},
+  {date:'2026-03-11',desc:'Discount Drug Mart',amount:-5.99,cat:'Groceries'},
+  {date:'2026-03-11',desc:'Discount Drug Mart',amount:-9.71,cat:'Groceries'},
+  {date:'2026-03-11',desc:'ABC*P PF Garfi',amount:-3.00,cat:'Subscription'},
+  {date:'2026-03-10',desc:'Sunoco Bedford',amount:-4.31,cat:'Gas'},
+  {date:'2026-03-09',desc:'Sunoco Bedford',amount:-2.25,cat:'Gas'},
+  {date:'2026-03-09',desc:'Romitos Pizza',amount:-20.00,cat:'Restaurant'},
+  {date:'2026-03-09',desc:'Tst*BrewDog Cleveland',amount:-99.16,cat:'Restaurant'},
+  {date:'2026-03-09',desc:'Tst*You And I Tea',amount:-6.25,cat:'Restaurant'},
+  {date:'2026-03-09',desc:'Berris Optical',amount:-273.00,cat:'Healthcare'},
+  {date:'2026-03-09',desc:'Joy A Stoler OD',amount:-80.00,cat:'Healthcare'},
+  {date:'2026-03-09',desc:'McDonalds 36400',amount:-5.10,cat:'Fast Food'},
+  {date:'2026-03-09',desc:'Paypal Inst Xfer SkyCastle',amount:-7.99,cat:'Subscription'},
+  {date:'2026-03-06',desc:'Pulp Juice And Smoothi',amount:-8.05,cat:'Restaurant'},
+  {date:'2026-03-06',desc:'Shell Oil Cleveland',amount:-38.33,cat:'Gas'},
+  {date:'2026-03-06',desc:'Chase Credit Crd Autopay',amount:-66.00,cat:'Credit'},
+  {date:'2026-03-05',desc:'Shell Oil Gates Mills',amount:-6.48,cat:'Gas'},
+  {date:'2026-03-05',desc:'McDonalds 28451',amount:-5.00,cat:'Fast Food'},
+  {date:'2026-03-05',desc:'Paypal Inst Xfer Steam',amount:-24.29,cat:'Subscription'},
+  {date:'2026-03-04',desc:'Panera Bread',amount:-6.58,cat:'Restaurant'},
+  {date:'2026-03-03',desc:'OhioPetVetSolon.com',amount:-124.50,cat:'Healthcare'},
+  {date:'2026-03-03',desc:'Coff.ee BuyMeACoffee',amount:-5.00,cat:'Other'},
+  {date:'2026-03-03',desc:'Check #102',amount:-50.00,cat:'Other'},
+  {date:'2026-03-03',desc:'Yrefy SLP5 Payment',amount:-835.00,cat:'Loan'},
+  {date:'2026-03-02',desc:'Spectrum Spectrum',amount:-70.00,cat:'Utilities'},
+  {date:'2026-03-02',desc:'American Express ACH',amount:-40.00,cat:'Credit'},
+  {date:'2026-03-02',desc:'Fly.io',amount:-20.66,cat:'Subscription'},
+  {date:'2026-03-02',desc:'Panera Bread',amount:-13.53,cat:'Restaurant'},
+  {date:'2026-03-02',desc:'Tst*Pins Mechanical',amount:-13.00,cat:'Restaurant'},
+  {date:'2026-03-02',desc:'McDonalds F33898',amount:-4.79,cat:'Fast Food'},
+  {date:'2026-03-02',desc:'Tst* Nano Brew',amount:-11.66,cat:'Restaurant'},
+  {date:'2026-03-02',desc:'Tst*Pins Mechanical',amount:-12.52,cat:'Restaurant'},
+  {date:'2026-03-02',desc:'PlanetScale Inc.',amount:-15.00,cat:'Subscription'},
+  {date:'2026-03-02',desc:'Tst* Avo Modern Mexican',amount:-71.55,cat:'Restaurant'},
+  {date:'2026-03-02',desc:'Geico *Auto',amount:-74.84,cat:'Insurance'},
+  {date:'2026-03-02',desc:'Roku for Disney',amount:-12.95,cat:'Subscription'},
+  {date:'2026-03-02',desc:'Midjourney Inc.',amount:-10.00,cat:'Subscription'},
+  {date:'2026-03-02',desc:'Apple.com/bill',amount:-25.87,cat:'Subscription'},
+  {date:'2026-03-02',desc:'Ideogram AI',amount:-20.00,cat:'Subscription'},
+  {date:'2026-03-16',desc:'Paypal Inst Xfer TwitchInter',amount:-5.99,cat:'Subscription'},
+  {date:'2026-03-16',desc:'Paypal Inst Xfer TwitchInter',amount:-5.99,cat:'Subscription'},
+];
+
+// Bills data from Monthlies.xlsx
+const billsData = [
+  {name:'Chase',amount:73,due:'5th',link:'https://secure08ea.chase.com/web/auth/dashboard',type:'bill',balance:929},
+  {name:'Merrick Bank',amount:54,due:'16th',link:'https://logon.merrickbank.com/Account/Overview',type:'bill'},
+  {name:'Concora Credit',amount:40,due:'22nd',link:'https://concoracredit.myfinanceservice.com/summary',type:'bill'},
+  {name:'Car Insurance (Geico)',amount:72.92,due:'30th',link:'https://portfolio.geico.com/dashboard?token=pFkHCsJSTGxx8UPoFeXHsEj9TKDaIPWGRJLgZnzi8p0%3D',type:'bill'},
+  {name:'American Express',amount:40,due:'1st',link:'https://global.americanexpress.com/dashboard?intlink=US-Axp-Shop-Consumer-VAC-CardMember',type:'bill'},
+  {name:'Gov Student Loan (MOHELA)',amount:94,due:'16th',link:'https://myaccount.mohela.studentaid.gov/AccountSummary?LandingFrom=CALM',type:'bill'},
+  {name:'Electric (FirstEnergy)',amount:136,due:'9th',link:'https://www.firstenergycorp.com/my_account.html',type:'bill',note:'Susan owes $375'},
+  {name:'Gas (Dominion)',amount:61.53,due:'20th',link:'https://gasapps.dominionenergy.com/GasMYAWeb/?refresh=true',type:'bill',balance:120},
+  {name:'Yrefy Student Loan',amount:835,due:'1st',link:'https://servicing.salliemae.com/s/dashboard',type:'bill'},
+  {name:'Spectrum Internet',amount:70,due:'3rd',link:'https://www.spectrum.net/account-summary',type:'bill'},
+  {name:'Spectrum Mobile',amount:30,due:'27th',link:'https://www.spectrum.net/account-summary',type:'bill'},
+];
+
+const subsData = [
+  {name:'Peacock',amount:8.63,link:'https://www.peacocktv.com/watch/profiles?return=%2Fwatch%2Fhome',active:true},
+  {name:'Disney+',amount:15.11,link:'https://www.disneyplus.com/home',active:true},
+  {name:'Spotify',amount:11.87,link:'https://open.spotify.com/',active:false},
+  {name:'Amazon Prime',amount:6.99,link:'https://www.amazon.com/ref=nav_logo',active:false},
+  {name:'Planet Fitness',amount:27.05,link:'https://www.planetfitness.com/',active:false},
+  {name:'Netflix',amount:8.63,link:null,active:false},
+  {name:'Hulu',amount:20.51,link:'https://www.hulu.com/hub/home',active:false},
+  {name:'MLA (MidLaneAcademy)',amount:30,link:'https://midlaneacademy.com/',active:false},
+];
+
+// Auto-categorization keywords
+const categoryKeywords = {
+  'Groceries': ['aldi','kroger','discount drug mart','grocery','publix','walmart groc'],
+  'Fast Food': ['mcdonald','wendy','burger','pizza','taco bell','chick-fil-a'],
+  'Gas': ['shell','bp','exxon','gas','fuel','marathon','sunoco','speedway'],
+  'Amazon': ['amazon','amzn'],
+  'Subscription': ['netflix','spotify','disney','claude','roku','subscription','hulu','peacock','twitch','planet fitness','midjourney','ideogram','canva','planetscale','fly.io','hp instant','uppbeat','apple.com/bill','xbox game','steam','rankuplol','skycastle','weteachleague'],
+  'Utilities': ['electric','water','duke','utility','firstenergy','spectrum','dominion'],
+  'Insurance': ['geico','state farm','insurance'],
+  'Restaurant': ['brewdog','nano brew','pins mechanical','condado','piada','panera','biggby','grille','pulp juice','romito','avo modern','coffee cup'],
+  'Entertainment': ['golf','bowling','movie','concert','big met'],
+  'Healthcare': ['optical','doctor','dentist','berris','stoler','ohiopetvet','vet'],
+  'Loan': ['yrefy','dept education','student loan','mohela','sallie mae'],
+  'Credit': ['concora','chase credit','american express','merrick'],
+  'Income': ['payroll','direct dep','uber','venmo','cashout','wix','partner'],
+};
+
+function categorize(desc) {
+  const d = desc.toLowerCase();
+  for (const [cat, keywords] of Object.entries(categoryKeywords)) {
+    for (const kw of keywords) {
+      if (d.includes(kw)) return cat;
+    }
+  }
+  return 'Other';
+}
+
+function fmt(n) {
+  return '$' + Math.abs(n).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+
+function fmtSign(n) {
+  const prefix = n >= 0 ? '+' : '-';
+  return prefix + '$' + Math.abs(n).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+
+// ===== NAVIGATION =====
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  document.querySelectorAll('.nav-links button').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+}
+
+// ===== DASHBOARD =====
+let currentMonth = 'March';
+
+function initDashboard() {
+  const tabs = document.getElementById('month-tabs');
+  tabs.innerHTML = '';
+  for (const m of Object.keys(monthlyData)) {
+    const btn = document.createElement('button');
+    btn.textContent = m;
+    btn.className = m === currentMonth ? 'active' : '';
+    btn.onclick = () => { currentMonth = m; document.querySelectorAll('#month-tabs button').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); renderDashboard(); };
+    tabs.appendChild(btn);
+  }
+  renderDashboard();
+}
+
+function renderDashboard() {
+  const data = monthlyData[currentMonth];
+  const cards = document.getElementById('stat-cards');
+  cards.innerHTML = `
+    <div class="stat"><div class="label">Income</div><div class="value positive">${fmt(data.income)}</div></div>
+    <div class="stat"><div class="label">Expenses</div><div class="value negative">${fmt(data.totalExpenses)}</div></div>
+    <div class="stat"><div class="label">Net</div><div class="value ${data.net >= 0 ? 'positive' : 'negative'}">${fmtSign(data.net)}</div></div>
+    <div class="stat"><div class="label">Budget Target</div><div class="value">${fmt(Object.values(data.budgets).reduce((a,b)=>a+b,0))}</div><div class="sub">Over by ${fmt(data.totalExpenses - Object.values(data.budgets).reduce((a,b)=>a+b,0))}</div></div>
+  `;
+
+  // Credit payoff
+  const totalCredit = 3000;
+  const creditPayments = (monthlyData['March']?.expenses?.Credit || 0) + (monthlyData['February']?.expenses?.Credit || 0);
+  const pct = Math.min(100, (creditPayments / totalCredit * 100));
+  document.getElementById('credit-progress').style.width = pct + '%';
+  document.getElementById('credit-paid-label').textContent = fmt(creditPayments) + ' paid';
+  document.getElementById('credit-sub').textContent = `${fmt(totalCredit - creditPayments)} remaining | ${Math.round(pct)}% complete | Target: May 31, 2026`;
+
+  // Category bars - recalculate from transactions if March (to reflect overrides)
+  let displayExpenses = data.expenses;
+  if (currentMonth === 'March') {
+    displayExpenses = {};
+    marchTransactions.forEach(tx => {
+      const c = getEffectiveCat(tx);
+      if (c === 'Income') return;
+      displayExpenses[c] = (displayExpenses[c] || 0) + Math.abs(tx.amount);
+    });
+  }
+
+  const barsDiv = document.getElementById('category-bars');
+  barsDiv.innerHTML = '';
+  const maxVal = Math.max(...Object.values(displayExpenses));
+  for (const [cat, amt] of Object.entries(displayExpenses).sort((a,b) => b[1]-a[1])) {
+    const budget = data.budgets[cat] || 0;
+    const over = amt > budget;
+    const pctBar = (amt / maxVal * 100);
+    const budgetPct = budget > 0 ? (budget / maxVal * 100) : 0;
+    const escapedCat = cat.replace(/'/g, "\\'");
+    barsDiv.innerHTML += `
+      <div class="category-bar-row" onclick="openCatModal('${escapedCat}')" title="Click to see ${cat} transactions">
+        <div class="cat-label">${cat}</div>
+        <div class="cat-bar-wrap">
+          <div class="cat-bar" style="width:${pctBar}%;background:${over ? 'var(--red)' : 'var(--green)'}"></div>
+          ${budget > 0 ? `<div class="cat-bar-budget" style="left:${budgetPct}%" title="Budget: ${fmt(budget)}"></div>` : ''}
+        </div>
+        <div class="cat-vals">${fmt(amt)} / ${budget > 0 ? fmt(budget) : '—'} <span style="color:${over?'var(--red)':'var(--green)'}">${budget > 0 ? fmtSign(budget - amt) : ''}</span></div>
+      </div>`;
+  }
+
+  // Pie chart
+  renderPieChart('chart-pie', displayExpenses);
+
+  // Trend chart
+  renderTrendChart();
+
+  // Transactions table with editable categories
+  if (currentMonth === 'March') {
+    const tbody = document.querySelector('#tx-table tbody');
+    tbody.innerHTML = '';
+    marchTransactions.forEach((tx, idx) => {
+      const cls = tx.amount >= 0 ? 'positive' : 'negative';
+      const effCat = getEffectiveCat(tx);
+      const options = allCategories.map(c => `<option value="${c}" ${c === effCat ? 'selected' : ''}>${c}</option>`).join('');
+      tbody.innerHTML += `<tr>
+        <td>${tx.date}</td>
+        <td>${tx.desc}</td>
+        <td class="${cls}">${tx.amount >= 0 ? '+' : ''}${fmt(Math.abs(tx.amount))}</td>
+        <td><select class="cat-select" onchange="changeTxCategory(${idx}, this.value)">${options}</select></td>
+      </tr>`;
+    });
+  } else {
+    document.querySelector('#tx-table tbody').innerHTML = '<tr><td colspan="4" style="color:var(--text-dim);text-align:center;padding:20px;">Transaction detail available for March only</td></tr>';
+  }
+}
+
+let pieChart, trendChart;
+function renderPieChart(canvasId, expenses) {
+  const ctx = document.getElementById(canvasId).getContext('2d');
+  if (pieChart) pieChart.destroy();
+  const colors = ['#6c5ce7','#00b894','#e17055','#fdcb6e','#74b9ff','#a29bfe','#55efc4','#fab1a0','#81ecec','#ff7675','#ffeaa7','#dfe6e9','#636e72','#b2bec3','#fd79a8'];
+  pieChart = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: Object.keys(expenses),
+      datasets: [{ data: Object.values(expenses), backgroundColor: colors, borderWidth: 0 }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { position: 'right', labels: { color: '#8b8fa3', font: { size: 11 }, padding: 8 } } }
+    }
+  });
+}
+
+let trendChartInstance;
+function renderTrendChart() {
+  const ctx = document.getElementById('chart-trend').getContext('2d');
+  if (trendChartInstance) trendChartInstance.destroy();
+  const months = Object.keys(monthlyData);
+  trendChartInstance = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: months,
+      datasets: [
+        { label: 'Income', data: months.map(m => monthlyData[m].income), backgroundColor: 'rgba(0,184,148,0.7)', borderRadius: 6 },
+        { label: 'Expenses', data: months.map(m => monthlyData[m].totalExpenses), backgroundColor: 'rgba(225,112,85,0.7)', borderRadius: 6 }
+      ]
+    },
+    options: {
+      responsive: true,
+      scales: { y: { ticks: { color:'#8b8fa3', callback: v => '$'+v }, grid: { color:'#2e3345' } }, x: { ticks: { color:'#8b8fa3' }, grid: { display:false } } },
+      plugins: { legend: { labels: { color:'#8b8fa3' } } }
+    }
+  });
+}
+
+// ===== CATEGORY DRILL-DOWN MODAL =====
+function openCatModal(cat) {
+  if (currentMonth !== 'March') return;
+  const txs = marchTransactions.filter(tx => getEffectiveCat(tx) === cat);
+  const total = txs.reduce((a,tx) => a + Math.abs(tx.amount), 0);
+  const budget = monthlyData['March'].budgets[cat] || 0;
+
+  document.getElementById('cat-modal-title').textContent = cat + ' Transactions';
+  document.getElementById('cat-modal-sub').innerHTML = `
+    ${txs.length} transaction${txs.length !== 1 ? 's' : ''} totaling <strong class="negative">${fmt(total)}</strong>
+    ${budget > 0 ? ` | Budget: <strong>${fmt(budget)}</strong> | <span class="${total > budget ? 'negative' : 'positive'}">${fmtSign(budget - total)}</span>` : ''}
+  `;
+
+  const tbody = document.getElementById('cat-modal-body');
+  tbody.innerHTML = '';
+  txs.sort((a,b) => b.date.localeCompare(a.date) || Math.abs(b.amount) - Math.abs(a.amount));
+  txs.forEach(tx => {
+    const idx = marchTransactions.indexOf(tx);
+    const options = allCategories.map(c => `<option value="${c}" ${c === getEffectiveCat(tx) ? 'selected' : ''}>${c}</option>`).join('');
+    tbody.innerHTML += `<tr>
+      <td>${tx.date}</td>
+      <td>${tx.desc}</td>
+      <td class="negative">${fmt(Math.abs(tx.amount))}</td>
+      <td><select class="cat-select" onchange="changeTxCategory(${idx}, this.value, true)">${options}</select></td>
+    </tr>`;
+  });
+
+  document.getElementById('cat-modal').classList.remove('hidden');
+}
+
+function closeCatModal() {
+  document.getElementById('cat-modal').classList.add('hidden');
+}
+
+function changeTxCategory(idx, newCat, fromModal) {
+  const tx = marchTransactions[idx];
+  const key = txKey(tx);
+  if (newCat === tx.cat) {
+    delete catOverrides[key]; // Reset to original
+  } else {
+    catOverrides[key] = newCat;
+  }
+  saveCatOverrides();
+  renderDashboard(); // Re-render bars, pie, and table
+  if (fromModal) {
+    // Re-open the modal for the new category to show updated list
+    // Use a small delay so the dashboard re-render completes
+    setTimeout(() => openCatModal(newCat), 50);
+  }
+}
+
+// Close modal on Escape key
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeCatModal(); closeNewCatModal(); } });
+
+// ===== NEW CATEGORY MODAL =====
+function openNewCatModal() {
+  document.getElementById('new-cat-modal').classList.remove('hidden');
+  document.getElementById('new-cat-input').value = '';
+  renderCatManageList();
+  setTimeout(() => document.getElementById('new-cat-input').focus(), 100);
+}
+
+function closeNewCatModal() {
+  document.getElementById('new-cat-modal').classList.add('hidden');
+}
+
+function createCategory() {
+  const input = document.getElementById('new-cat-input');
+  const name = input.value.trim();
+  if (!name) return;
+  if (!addCategory(name)) {
+    input.style.borderColor = 'var(--red)';
+    setTimeout(() => input.style.borderColor = 'var(--border)', 1000);
+    return;
+  }
+  input.value = '';
+  renderCatManageList();
+  renderDashboard();
+  if (stmtTransactions.length > 0) renderStatements();
+}
+
+function renderCatManageList() {
+  const list = document.getElementById('cat-manage-list');
+  list.innerHTML = '';
+  allCategories.forEach(cat => {
+    const isCustom = customCategories.includes(cat);
+    list.innerHTML += `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:1px solid var(--border);">
+      <div>
+        <span style="font-weight:600;">${cat}</span>
+        ${isCustom ? '<span class="badge badge-blue" style="margin-left:8px;">Custom</span>' : '<span class="badge badge-gray" style="margin-left:8px;">Default</span>'}
+      </div>
+      ${isCustom ? `<button onclick="confirmDeleteCat('${cat.replace(/'/g, "\\'")}')" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:13px;padding:4px 8px;">Delete</button>` : ''}
+    </div>`;
+  });
+}
+
+function confirmDeleteCat(name) {
+  if (!confirm('Delete category "' + name + '"? Transactions using it will be re-categorized automatically.')) return;
+  deleteCustomCategory(name);
+  renderCatManageList();
+  renderDashboard();
+  if (stmtTransactions.length > 0) renderStatements();
+}
+
+// ===== BILLS PAGE =====
+function initBills() {
+  const totalBills = billsData.reduce((a,b) => a + b.amount, 0);
+  const activeSubs = subsData.filter(s => s.active);
+  const totalSubs = activeSubs.reduce((a,b) => a + b.amount, 0);
+
+  document.getElementById('bills-stat-cards').innerHTML = `
+    <div class="stat"><div class="label">Monthly Bills</div><div class="value">${fmt(totalBills)}</div><div class="sub">${billsData.length} payments</div></div>
+    <div class="stat"><div class="label">Active Subscriptions</div><div class="value">${fmt(totalSubs)}</div><div class="sub">${activeSubs.length} active</div></div>
+    <div class="stat"><div class="label">Total Monthly</div><div class="value negative">${fmt(totalBills + totalSubs)}</div></div>
+  `;
+
+  // Bills list
+  const billsList = document.getElementById('bills-list');
+  billsList.innerHTML = '';
+  billsData.sort((a,b) => {
+    const order = ['1st','2nd','3rd','5th','9th','16th','20th','22nd','27th','30th'];
+    return order.indexOf(a.due) - order.indexOf(b.due);
+  }).forEach(b => {
+    billsList.innerHTML += `
+      <div class="bill-row">
+        <div class="bill-info">
+          <div>
+            <div class="bill-name">${b.name}</div>
+            <div class="bill-due">Due: ${b.due} of each month ${b.note ? ' | ' + b.note : ''}</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:16px;">
+          <div class="bill-amount">${fmt(b.amount)}</div>
+          ${b.link ? `<a href="${b.link}" target="_blank"><button class="pay-btn">Pay / View</button></a>` : ''}
+        </div>
+      </div>`;
+  });
+
+  // Subs list
+  const subsList = document.getElementById('subs-list');
+  subsList.innerHTML = '';
+  subsData.forEach(s => {
+    subsList.innerHTML += `
+      <div class="bill-row">
+        <div class="bill-info">
+          <div>
+            <div class="bill-name">${s.name}</div>
+            <span class="badge ${s.active ? 'badge-green' : 'badge-gray'}">${s.active ? 'Active' : 'Cancelled'}</span>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:16px;">
+          <div class="bill-amount" style="${s.active ? '' : 'text-decoration:line-through;opacity:0.4;'}">${fmt(s.amount)}</div>
+          ${s.link ? `<a href="${s.link}" target="_blank"><button class="pay-btn">${s.active ? 'Manage' : 'Reactivate'}</button></a>` : ''}
+        </div>
+      </div>`;
+  });
+
+  // Calendar
+  renderBillCalendar();
+}
+
+function renderBillCalendar() {
+  const cal = document.getElementById('bills-calendar');
+  const daysInMonth = 31;
+  let html = '<div class="day-grid" style="grid-template-columns:repeat(7,1fr);">';
+  const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  dayNames.forEach(d => { html += `<div style="text-align:center;font-size:11px;color:var(--text-dim);padding:4px;">${d}</div>`; });
+
+  // March 2026 starts on Sunday
+  const startDay = 0;
+  for (let i = 0; i < startDay; i++) html += '<div></div>';
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dayStr = d + (['st','nd','rd'][((d+90)%100-10)%10-1] || 'th');
+    const dueBills = billsData.filter(b => b.due === dayStr);
+    const hasBill = dueBills.length > 0;
+    html += `<div class="day-cell" style="${hasBill ? 'border:1px solid var(--accent);background:rgba(108,92,231,0.1);' : ''}">
+      <div class="day-date">${d}</div>
+      ${dueBills.map(b => `<div style="font-size:10px;color:var(--accent2);margin-top:2px;">${b.name}<br>${fmt(b.amount)}</div>`).join('')}
+    </div>`;
+  }
+  html += '</div>';
+  cal.innerHTML = html;
+}
+
+// ===== BANK STATEMENTS =====
+function handleStatementUpload(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  if (file.name.endsWith('.csv')) {
+    reader.onload = e => parseCSVStatement(e.target.result);
+    reader.readAsText(file);
+  } else {
+    reader.onload = e => {
+      const wb = XLSX.read(e.target.result, {type:'array'});
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const csv = XLSX.utils.sheet_to_csv(ws);
+      parseCSVStatement(csv);
+    };
+    reader.readAsArrayBuffer(file);
+  }
+}
+
+function parseCSVStatement(csv) {
+  const lines = csv.split('\n').map(l => l.trim()).filter(l => l);
+  if (lines.length < 2) return alert('File appears empty');
+
+  const header = lines[0].toLowerCase();
+  const rows = [];
+
+  // Try to detect columns
+  for (let i = 1; i < lines.length; i++) {
+    // Handle CSV with quoted fields
+    const parts = parseCSVLine(lines[i]);
+    if (parts.length < 2) continue;
+
+    let date = '', desc = '', amount = 0;
+
+    // Try common bank formats
+    if (parts.length >= 3) {
+      // Look for date-like field
+      for (let j = 0; j < Math.min(parts.length, 3); j++) {
+        if (/\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}/.test(parts[j]) || /\d{4}-\d{2}-\d{2}/.test(parts[j])) {
+          date = parts[j];
+          break;
+        }
+      }
+      if (!date) date = parts[0];
+
+      // Look for amount (number with optional negative/parens)
+      for (let j = parts.length - 1; j >= 1; j--) {
+        const cleaned = parts[j].replace(/[$,\s]/g, '').replace(/\((.+)\)/, '-$1');
+        if (!isNaN(parseFloat(cleaned)) && cleaned !== '') {
+          amount = parseFloat(cleaned);
+          desc = parts.slice(date === parts[0] ? 1 : 0, j).filter(p => p !== date).join(' ').trim();
+          if (!desc) desc = parts[1] || '';
+          break;
+        }
+      }
+    }
+
+    if (date && desc) {
+      const cat = categorize(desc);
+      rows.push({ date, desc, amount, cat });
+    }
+  }
+
+  stmtTransactions = rows;
+  saveData();
+  renderStatements();
+}
+
+function parseCSVLine(line) {
+  const result = [];
+  let current = '';
+  let inQuotes = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (ch === '"') { inQuotes = !inQuotes; }
+    else if (ch === ',' && !inQuotes) { result.push(current.trim()); current = ''; }
+    else { current += ch; }
+  }
+  result.push(current.trim());
+  return result;
+}
+
+function renderStatements() {
+  document.getElementById('stmt-results').classList.remove('hidden');
+
+  const deposits = stmtTransactions.filter(t => t.amount > 0);
+  const expenses = stmtTransactions.filter(t => t.amount < 0);
+  const totalIn = deposits.reduce((a,t) => a + t.amount, 0);
+  const totalOut = expenses.reduce((a,t) => a + Math.abs(t.amount), 0);
+
+  document.getElementById('stmt-stat-cards').innerHTML = `
+    <div class="stat"><div class="label">Transactions</div><div class="value">${stmtTransactions.length}</div></div>
+    <div class="stat"><div class="label">Income</div><div class="value positive">${fmt(totalIn)}</div></div>
+    <div class="stat"><div class="label">Expenses</div><div class="value negative">${fmt(totalOut)}</div></div>
+    <div class="stat"><div class="label">Net</div><div class="value ${totalIn-totalOut>=0?'positive':'negative'}">${fmtSign(totalIn-totalOut)}</div></div>
+  `;
+
+  // Category breakdown
+  const catTotals = {};
+  expenses.forEach(t => {
+    catTotals[t.cat] = (catTotals[t.cat] || 0) + Math.abs(t.amount);
+  });
+
+  const ctx = document.getElementById('stmt-chart-pie').getContext('2d');
+  const colors = ['#6c5ce7','#00b894','#e17055','#fdcb6e','#74b9ff','#a29bfe','#55efc4','#fab1a0','#81ecec','#ff7675','#ffeaa7','#dfe6e9','#636e72','#b2bec3','#fd79a8'];
+  new Chart(ctx, {
+    type: 'doughnut',
+    data: { labels: Object.keys(catTotals), datasets: [{ data: Object.values(catTotals), backgroundColor: colors, borderWidth:0 }] },
+    options: { responsive: true, plugins: { legend: { position:'right', labels: { color:'#8b8fa3', font:{size:11} } } } }
+  });
+
+  // Daily chart
+  const dailyTotals = {};
+  expenses.forEach(t => {
+    dailyTotals[t.date] = (dailyTotals[t.date] || 0) + Math.abs(t.amount);
+  });
+  const sortedDays = Object.keys(dailyTotals).sort();
+  const ctx2 = document.getElementById('stmt-chart-daily').getContext('2d');
+  new Chart(ctx2, {
+    type: 'bar',
+    data: { labels: sortedDays, datasets: [{ label:'Spending', data: sortedDays.map(d => dailyTotals[d]), backgroundColor:'rgba(225,112,85,0.7)', borderRadius:4 }] },
+    options: { responsive:true, scales:{ y:{ticks:{color:'#8b8fa3',callback:v=>'$'+v},grid:{color:'#2e3345'}}, x:{ticks:{color:'#8b8fa3',maxRotation:45},grid:{display:false}} }, plugins:{legend:{display:false}} }
+  });
+
+  // Filter dropdown
+  const filter = document.getElementById('stmt-cat-filter');
+  filter.innerHTML = '<option value="">All Categories</option>';
+  Object.keys(catTotals).sort().forEach(c => {
+    filter.innerHTML += `<option value="${c}">${c} (${fmt(catTotals[c])})</option>`;
+  });
+
+  renderStmtTable(stmtTransactions);
+
+  // Restore API key
+  const savedKey = lsGet('findash_claude_key');
+  if (savedKey) document.getElementById('claude-api-key').value = savedKey;
+}
+
+function renderStmtTable(txs) {
+  const tbody = document.querySelector('#stmt-table tbody');
+  tbody.innerHTML = '';
+  txs.forEach(tx => {
+    const cls = tx.amount >= 0 ? 'positive' : 'negative';
+    const globalIdx = stmtTransactions.indexOf(tx);
+    const options = allCategories.map(c => `<option value="${c}" ${c === tx.cat ? 'selected' : ''}>${c}</option>`).join('');
+    tbody.innerHTML += `<tr>
+      <td>${tx.date}</td>
+      <td>${tx.desc}</td>
+      <td class="${cls}">${tx.amount >= 0 ? '+' : '-'}${fmt(Math.abs(tx.amount))}</td>
+      <td><select class="cat-select" onchange="changeStmtCategory(${globalIdx}, this.value)">${options}</select></td>
+    </tr>`;
+  });
+}
+
+function changeStmtCategory(idx, newCat) {
+  stmtTransactions[idx].cat = newCat;
+  saveData();
+  renderStatements();
+}
+
+function filterStmtTable() {
+  const cat = document.getElementById('stmt-cat-filter').value;
+  const search = document.getElementById('stmt-search').value.toLowerCase();
+  let filtered = stmtTransactions;
+  if (cat) filtered = filtered.filter(t => t.cat === cat);
+  if (search) filtered = filtered.filter(t => t.desc.toLowerCase().includes(search));
+  renderStmtTable(filtered);
+}
+
+// ===== CLAUDE API ANALYSIS =====
+async function runClaudeAnalysis() {
+  const key = document.getElementById('claude-api-key').value.trim();
+  if (!key) return alert('Please enter your Claude API key');
+  lsSet('findash_claude_key', key);
+
+  const resultDiv = document.getElementById('claude-result');
+  resultDiv.classList.remove('hidden');
+  resultDiv.textContent = 'Analyzing your spending patterns...';
+
+  // Build summary for Claude
+  const catTotals = {};
+  const expenses = stmtTransactions.filter(t => t.amount < 0);
+  expenses.forEach(t => { catTotals[t.cat] = (catTotals[t.cat] || 0) + Math.abs(t.amount); });
+  const totalIn = stmtTransactions.filter(t => t.amount > 0).reduce((a,t) => a + t.amount, 0);
+  const totalOut = expenses.reduce((a,t) => a + Math.abs(t.amount), 0);
+
+  const topExpenses = expenses.sort((a,b) => Math.abs(b.amount) - Math.abs(a.amount)).slice(0, 15);
+
+  const prompt = `You are a personal financial advisor. Analyze this bank statement data and provide actionable advice.
+
+INCOME: ${fmt(totalIn)}
+EXPENSES: ${fmt(totalOut)}
+NET: ${fmtSign(totalIn - totalOut)}
+
+SPENDING BY CATEGORY:
+${Object.entries(catTotals).sort((a,b) => b[1]-a[1]).map(([c,a]) => `- ${c}: ${fmt(a)}`).join('\n')}
+
+TOP INDIVIDUAL EXPENSES:
+${topExpenses.map(t => `- ${t.date} | ${t.desc} | ${fmt(Math.abs(t.amount))} (${t.cat})`).join('\n')}
+
+CONTEXT: The user's budget targets are: Restaurants $60/mo, Amazon $100/mo, Subscriptions $200/mo, Fast Food $50/mo, Gas $80/mo, Groceries $50/mo. They want to pay off $3,000 in credit card debt by May 2026 and are doing Uber Eats delivery as side income with a $50/day goal.
+
+Please provide:
+1. Key observations about spending patterns
+2. Top 3 areas to cut spending with specific suggestions
+3. Are they on track for the $3K credit payoff by May?
+4. Specific actionable tips for the next month`;
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': key,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1500,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    if (!response.ok) {
+      const err = await response.json();
+      resultDiv.textContent = 'API Error: ' + (err.error?.message || response.statusText);
+      return;
+    }
+
+    const data = await response.json();
+    resultDiv.textContent = data.content[0].text;
+  } catch (e) {
+    resultDiv.textContent = 'Error: ' + e.message;
+  }
+}
+
+// ===== UBER TRACKER =====
+function loadUberData() {
+  const saved = lsGet('findash_uber');
+  if (saved) uberEntries = JSON.parse(saved);
+  // Pre-load known data
+  if (uberEntries.length === 0) {
+    uberEntries = [
+      {date:'2026-02-27',amount:49.49,hours:0,notes:''},
+      {date:'2026-03-01',amount:207.01,hours:0,notes:'Quest bonus $107.50'},
+      {date:'2026-03-03',amount:53.39,hours:0,notes:''},
+      {date:'2026-03-05',amount:23.36,hours:0,notes:''},
+      {date:'2026-03-09',amount:16.00,hours:0,notes:'Short shift'},
+      {date:'2026-03-10',amount:54.69,hours:0,notes:''},
+      {date:'2026-03-12',amount:12.03,hours:0,notes:'Short shift'},
+      {date:'2026-03-15',amount:45.21,hours:0,notes:''},
+      {date:'2026-03-19',amount:73.14,hours:0,notes:'$50 Shop promo'},
+      {date:'2026-03-23',amount:38.45,hours:0,notes:''},
+    ];
+    saveUberData();
+  }
+  renderUber();
+}
+
+function saveUberData() {
+  lsSet('findash_uber', JSON.stringify(uberEntries));
+}
+
+function addUberEntry() {
+  const date = document.getElementById('uber-date').value;
+  const amount = parseFloat(document.getElementById('uber-amount').value);
+  const hours = parseFloat(document.getElementById('uber-hours').value) || 0;
+  const notes = document.getElementById('uber-notes').value;
+  if (!date || isNaN(amount)) return alert('Please enter date and amount');
+
+  // Check if date exists, update if so
+  const existing = uberEntries.findIndex(e => e.date === date);
+  if (existing >= 0) {
+    uberEntries[existing] = { date, amount, hours, notes };
+  } else {
+    uberEntries.push({ date, amount, hours, notes });
+  }
+  uberEntries.sort((a,b) => a.date.localeCompare(b.date));
+  saveUberData();
+  renderUber();
+
+  // Clear inputs
+  document.getElementById('uber-amount').value = '';
+  document.getElementById('uber-hours').value = '';
+  document.getElementById('uber-notes').value = '';
+}
+
+function deleteUberEntry(idx) {
+  uberEntries.splice(idx, 1);
+  saveUberData();
+  renderUber();
+}
+
+function handleUberUpload(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  if (file.name.endsWith('.csv')) {
+    reader.onload = e => parseUberCSV(e.target.result);
+    reader.readAsText(file);
+  } else {
+    reader.onload = e => {
+      const wb = XLSX.read(e.target.result, {type:'array'});
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const csv = XLSX.utils.sheet_to_csv(ws);
+      parseUberCSV(csv);
+    };
+    reader.readAsArrayBuffer(file);
+  }
+}
+
+function parseUberCSV(csv) {
+  const lines = csv.split('\n').map(l => l.trim()).filter(l => l);
+  for (let i = 1; i < lines.length; i++) {
+    const parts = parseCSVLine(lines[i]);
+    if (parts.length < 2) continue;
+
+    let date = '', amount = 0;
+    for (const p of parts) {
+      if (/\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}/.test(p) || /\d{4}-\d{2}-\d{2}/.test(p)) date = p;
+      const n = parseFloat(p.replace(/[$,]/g, ''));
+      if (!isNaN(n) && n > 0 && n < 10000) amount = n;
+    }
+    if (date && amount > 0) {
+      // Normalize date
+      if (date.includes('/')) {
+        const [m, d, y] = date.split('/');
+        date = `${y.length === 2 ? '20'+y : y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`;
+      }
+      const existing = uberEntries.findIndex(e => e.date === date);
+      if (existing >= 0) {
+        uberEntries[existing].amount = amount;
+      } else {
+        uberEntries.push({ date, amount, hours: 0, notes: 'Imported' });
+      }
+    }
+  }
+  uberEntries.sort((a,b) => a.date.localeCompare(b.date));
+  saveUberData();
+  renderUber();
+}
+
+let uberDailyChart, uberWeeklyChart;
+function renderUber() {
+  const goal = 50;
+  const total = uberEntries.reduce((a,e) => a + e.amount, 0);
+  const daysWorked = uberEntries.length;
+  const metGoal = uberEntries.filter(e => e.amount >= goal).length;
+  const avg = daysWorked > 0 ? total / daysWorked : 0;
+  const weeklyAvg = daysWorked > 0 ? total / Math.max(1, Math.ceil(daysWorked / 5)) * 5 : 0;
+  const monthlyProjection = avg * 20; // 20 working days
+
+  document.getElementById('uber-stat-cards').innerHTML = `
+    <div class="stat uber-stat"><div class="label">Total Earned</div><div class="big positive">${fmt(total)}</div><div class="sub">${daysWorked} shifts</div></div>
+    <div class="stat uber-stat"><div class="label">Daily Average</div><div class="big ${avg >= goal ? 'positive' : 'warning'}">${fmt(avg)}</div><div class="sub">Goal: $${goal}/day</div></div>
+    <div class="stat uber-stat"><div class="label">Goal Hit Rate</div><div class="big ${metGoal/daysWorked >= 0.5 ? 'positive' : 'negative'}">${daysWorked > 0 ? Math.round(metGoal/daysWorked*100) : 0}%</div><div class="sub">${metGoal} of ${daysWorked} days</div></div>
+    <div class="stat uber-stat"><div class="label">Monthly Projection</div><div class="big">${fmt(monthlyProjection)}</div><div class="sub">Based on 20 days/mo</div></div>
+  `;
+
+  // Daily chart
+  const ctx1 = document.getElementById('uber-chart-daily').getContext('2d');
+  if (uberDailyChart) uberDailyChart.destroy();
+  uberDailyChart = new Chart(ctx1, {
+    type: 'bar',
+    data: {
+      labels: uberEntries.map(e => e.date.slice(5)),
+      datasets: [
+        { label:'Earnings', data: uberEntries.map(e => e.amount), backgroundColor: uberEntries.map(e => e.amount >= goal ? 'rgba(0,184,148,0.7)' : 'rgba(225,112,85,0.7)'), borderRadius: 4 }
+      ]
+    },
+    options: {
+      responsive: true,
+      scales: { y:{ ticks:{color:'#8b8fa3',callback:v=>'$'+v}, grid:{color:'#2e3345'} }, x:{ticks:{color:'#8b8fa3'}, grid:{display:false}} },
+      plugins: {
+        legend:{display:false},
+        annotation: { annotations: { goalLine: { type:'line', yMin:goal, yMax:goal, borderColor:'var(--yellow)', borderWidth:2, borderDash:[5,5] } } }
+      }
+    }
+  });
+
+  // Weekly summary
+  const weeks = {};
+  uberEntries.forEach(e => {
+    const d = new Date(e.date + 'T00:00:00');
+    const weekStart = new Date(d);
+    weekStart.setDate(d.getDate() - d.getDay());
+    const key = weekStart.toISOString().slice(0,10);
+    if (!weeks[key]) weeks[key] = { total: 0, days: 0 };
+    weeks[key].total += e.amount;
+    weeks[key].days++;
+  });
+
+  const ctx2 = document.getElementById('uber-chart-weekly').getContext('2d');
+  if (uberWeeklyChart) uberWeeklyChart.destroy();
+  const weekKeys = Object.keys(weeks).sort();
+  uberWeeklyChart = new Chart(ctx2, {
+    type: 'bar',
+    data: {
+      labels: weekKeys.map(w => 'Week ' + w.slice(5)),
+      datasets: [
+        { label:'Weekly Total', data: weekKeys.map(w => weeks[w].total), backgroundColor:'rgba(108,92,231,0.7)', borderRadius:6 }
+      ]
+    },
+    options: {
+      responsive: true,
+      scales: { y:{ticks:{color:'#8b8fa3',callback:v=>'$'+v},grid:{color:'#2e3345'}}, x:{ticks:{color:'#8b8fa3'},grid:{display:false}} },
+      plugins: { legend:{display:false} }
+    }
+  });
+
+  // Calendar
+  renderUberCalendar();
+
+  // Table
+  const tbody = document.querySelector('#uber-table tbody');
+  tbody.innerHTML = '';
+  uberEntries.forEach((e, i) => {
+    const met = e.amount >= goal;
+    const perHour = e.hours > 0 ? fmt(e.amount / e.hours) : '—';
+    tbody.innerHTML += `<tr>
+      <td>${e.date}</td>
+      <td class="${met ? 'positive' : 'negative'}">${fmt(e.amount)}</td>
+      <td>${e.hours || '—'}</td>
+      <td>${perHour}</td>
+      <td><span class="badge ${met ? 'badge-green' : 'badge-red'}">${met ? 'Yes' : 'No'}</span></td>
+      <td style="color:var(--text-dim)">${e.notes || ''}</td>
+      <td><button onclick="deleteUberEntry(${i})" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:16px;">x</button></td>
+    </tr>`;
+  });
+}
+
+function renderUberCalendar() {
+  const cal = document.getElementById('uber-calendar');
+  const goal = 50;
+  // Show current month
+  const now = new Date(2026, 2, 1); // March 2026
+  const daysInMonth = 31;
+  const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  let html = '';
+  dayNames.forEach(d => { html += `<div style="text-align:center;font-size:11px;color:var(--text-dim);padding:4px;">${d}</div>`; });
+
+  const startDay = now.getDay(); // Sunday = 0
+  for (let i = 0; i < startDay; i++) html += '<div></div>';
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = `2026-03-${String(d).padStart(2,'0')}`;
+    const entry = uberEntries.find(e => e.date === dateStr);
+    const cls = entry ? (entry.amount >= goal ? 'met-goal' : 'missed-goal') : '';
+    html += `<div class="day-cell ${cls}">
+      <div class="day-date">${d}</div>
+      ${entry ? `<div class="day-amount ${entry.amount >= goal ? 'positive' : 'negative'}">${fmt(entry.amount)}</div>` : ''}
+    </div>`;
+  }
+
+  cal.innerHTML = html;
+}
+
+// ===== PERSISTENCE =====
+function saveData() {
+  lsSet(STORE_KEY, JSON.stringify({ stmtTransactions }));
+}
+
+function loadData() {
+  const saved = lsGet(STORE_KEY);
+  if (saved) {
+    const d = JSON.parse(saved);
+    stmtTransactions = d.stmtTransactions || [];
+  }
+}
+
+// ===== DRAG & DROP =====
+function setupDragDrop(zoneId, handler) {
+  const zone = document.getElementById(zoneId);
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.style.borderColor = 'var(--accent)'; });
+  zone.addEventListener('dragleave', () => { zone.style.borderColor = 'var(--border)'; });
+  zone.addEventListener('drop', e => { e.preventDefault(); zone.style.borderColor = 'var(--border)'; if (e.dataTransfer.files.length) handler(e.dataTransfer.files[0]); });
+}
+
+// ===== INIT =====
+document.addEventListener('DOMContentLoaded', async () => {
+  // Load all data from server before initializing
+  const ok = await initDataLayer();
+  if (!ok) return; // Redirected to login or failed
+
+  // Now populate data that depends on server-stored values
+  customCategories = JSON.parse(lsGet('findash_custom_cats') || '[]');
+  allCategories = [...new Set([...defaultCategories, ...customCategories])];
+  catOverrides = JSON.parse(lsGet('findash_cat_overrides') || '{}');
+
+  loadData();
+  initDashboard();
+  initBills();
+  loadUberData();
+  setupDragDrop('stmt-upload-zone', handleStatementUpload);
+  setupDragDrop('uber-upload-zone', handleUberUpload);
+
+  if (stmtTransactions.length > 0) renderStatements();
+
+  // Set default uber date to today
+  document.getElementById('uber-date').value = '2026-03-24';
+});
+</script>
+</body>
+</html>
