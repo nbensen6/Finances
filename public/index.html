@@ -532,6 +532,10 @@ function lsGet(key) {
 }
 
 function lsSet(key, value) {
+  if (!_dataLoaded) {
+    alert('Still loading data — please wait a moment and try again.');
+    return;
+  }
   _cache[key] = value;
   fetch('/api/data/' + encodeURIComponent(key), {
     method: 'PUT',

@@ -39,6 +39,81 @@ const stmtUpsert = db.prepare(
 const stmtDelete = db.prepare('DELETE FROM kv_store WHERE key = ?');
 
 // ---------------------------------------------------------------------------
+// SQLite session store (survives machine restarts / Fly suspends)
+// ---------------------------------------------------------------------------
+db.exec(`
+  CREATE TABLE IF NOT EXISTS sessions (
+    sid     TEXT PRIMARY KEY,
+    data    TEXT NOT NULL,
+    expires INTEGER NOT NULL
+  )
+`);
+db.exec(`CREATE INDEX IF NOT EXISTS idx_sessions_expires ON sessions(expires)`);
+
+const sessGet = db.prepare('SELECT data, expires FROM sessions WHERE sid = ?');
+const sessSet = db.prepare(`
+  INSERT INTO sessions (sid, data, expires) VALUES (?, ?, ?)
+  ON CONFLICT(sid) DO UPDATE SET data = excluded.data, expires = excluded.expires
+`);
+const sessDel = db.prepare('DELETE FROM sessions WHERE sid = ?');
+const sessClean = db.prepare('DELETE FROM sessions WHERE expires < ?');
+
+class SQLiteStore extends session.Store {
+  get(sid, cb) {
+    try {
+      const row = sessGet.get(sid);
+      if (!row) return cb(null, null);
+      if (row.expires < Date.now()) { sessDel.run(sid); return cb(null, null); }
+      cb(null, JSON.parse(row.data));
+    } catch (e) { cb(e); }
+  }
+  set(sid, sess, cb) {
+    try {
+      const maxAge = (sess.cookie && sess.cookie.maxAge) || 7 * 24 * 60 * 60 * 1000;
+      const expires = Date.now() + maxAge;
+      sessSet.run(sid, JSON.stringify(sess), expires);
+      cb && cb(null);
+    } catch (e) { cb && cb(e); }
+  }
+  destroy(sid, cb) {
+    try { sessDel.run(sid); cb && cb(null); } catch (e) { cb && cb(e); }
+  }
+}
+
+// Clean expired sessions every hour
+setInterval(() => { try { sessClean.run(Date.now()); } catch (_) {} }, 60 * 60 * 1000);
+
+// ---------------------------------------------------------------------------
+// Automatic SQLite backups — keep last 7 daily copies
+// ---------------------------------------------------------------------------
+const BACKUP_DIR = path.join(dataDir, 'backups');
+if (!fs.existsSync(BACKUP_DIR)) fs.mkdirSync(BACKUP_DIR, { recursive: true });
+
+function createBackup() {
+  try {
+    const stamp = new Date().toISOString().slice(0, 10);
+    const dest = path.join(BACKUP_DIR, `findash-${stamp}.db`);
+    db.backup(dest).then(() => {
+      console.log('Backup created:', dest);
+      const files = fs.readdirSync(BACKUP_DIR)
+        .filter(f => f.startsWith('findash-') && f.endsWith('.db'))
+        .sort();
+      while (files.length > 7) {
+        const old = files.shift();
+        fs.unlinkSync(path.join(BACKUP_DIR, old));
+        console.log('Pruned old backup:', old);
+      }
+    }).catch(err => console.error('Backup failed:', err));
+  } catch (err) {
+    console.error('Backup error:', err);
+  }
+}
+
+// Backup on startup, then every 6 hours
+createBackup();
+setInterval(createBackup, 6 * 60 * 60 * 1000);
+
+// ---------------------------------------------------------------------------
 // Password hash (computed once at startup)
 // ---------------------------------------------------------------------------
 let passwordHash;
@@ -54,6 +129,7 @@ app.use(express.json());
 
 app.use(
   session({
+    store: new SQLiteStore(),
     secret: SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
@@ -61,7 +137,7 @@ app.use(
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 1 week
+      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
     },
   })
 );
@@ -161,6 +237,26 @@ app.delete('/api/data/:key', requireAuth, (req, res) => {
     return res.json({ ok: true });
   } catch (err) {
     console.error('DELETE /api/data/:key error:', err);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Backup download
+// ---------------------------------------------------------------------------
+app.get('/api/backup', requireAuth, (_req, res) => {
+  try {
+    const rows = stmtGetAll.all();
+    const result = {};
+    for (const row of rows) {
+      try { result[row.key] = JSON.parse(row.value); } catch { result[row.key] = row.value; }
+    }
+    const stamp = new Date().toISOString().slice(0, 19).replace(/[:.]/g, '-');
+    res.setHeader('Content-Disposition', `attachment; filename="findash-backup-${stamp}.json"`);
+    res.setHeader('Content-Type', 'application/json');
+    return res.json(result);
+  } catch (err) {
+    console.error('GET /api/backup error:', err);
     return res.status(500).json({ error: 'Internal server error' });
   }
 });
