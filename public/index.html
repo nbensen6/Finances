@@ -266,8 +266,28 @@ canvas { max-height: 300px; }
   </div>
 
   <div class="card mt-20">
-    <h2>Subscriptions</h2>
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <h2>Subscriptions</h2>
+      <button class="btn btn-primary" onclick="openSubModal()">+ Add Subscription</button>
+    </div>
     <div id="subs-list"></div>
+  </div>
+
+  <!-- Sub Modal -->
+  <div class="modal-overlay" id="sub-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;align-items:center;justify-content:center;">
+    <div class="card" style="width:420px;max-width:90vw;">
+      <h2 id="sub-modal-title">Add Subscription</h2>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-top:12px;">
+        <div><label style="font-size:12px;color:var(--text-dim);">Name</label><input type="text" id="sub-name" class="api-key-input" placeholder="e.g. Netflix"></div>
+        <div><label style="font-size:12px;color:var(--text-dim);">Amount ($/mo)</label><input type="number" id="sub-amount" class="api-key-input" step="0.01" placeholder="0.00"></div>
+        <div><label style="font-size:12px;color:var(--text-dim);">Link (optional)</label><input type="text" id="sub-link" class="api-key-input" placeholder="https://..."></div>
+        <div style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="sub-active" checked> <label for="sub-active" style="font-size:13px;">Active</label></div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:16px;">
+        <button class="btn btn-primary" onclick="saveSubFromModal()">Save</button>
+        <button class="btn" style="background:var(--surface2);" onclick="closeSubModal()">Cancel</button>
+      </div>
+    </div>
   </div>
 
   <div class="card mt-20">
@@ -647,8 +667,8 @@ let marchTransactions = [
   {date:'2026-03-16',desc:'Paypal Inst Xfer TwitchInter',amount:-5.99,cat:'Subscription'},
 ];
 
-// Bills data from Monthlies.xlsx
-const billsData = [
+// Bills & Subs — defaults (loaded from server if available)
+const defaultBillsData = [
   {name:'Chase',amount:73,due:'5th',link:'https://secure08ea.chase.com/web/auth/dashboard',type:'bill',balance:929},
   {name:'Merrick Bank',amount:54,due:'16th',link:'https://logon.merrickbank.com/Account/Overview',type:'bill'},
   {name:'Concora Credit',amount:40,due:'22nd',link:'https://concoracredit.myfinanceservice.com/summary',type:'bill'},
@@ -662,7 +682,7 @@ const billsData = [
   {name:'Spectrum Mobile',amount:30,due:'27th',link:'https://www.spectrum.net/account-summary',type:'bill'},
 ];
 
-const subsData = [
+const defaultSubsData = [
   {name:'Peacock',amount:8.63,link:'https://www.peacocktv.com/watch/profiles?return=%2Fwatch%2Fhome',active:true},
   {name:'Disney+',amount:15.11,link:'https://www.disneyplus.com/home',active:true},
   {name:'Spotify',amount:11.87,link:'https://open.spotify.com/',active:false},
@@ -672,6 +692,19 @@ const subsData = [
   {name:'Hulu',amount:20.51,link:'https://www.hulu.com/hub/home',active:false},
   {name:'MLA (MidLaneAcademy)',amount:30,link:'https://midlaneacademy.com/',active:false},
 ];
+
+let billsData = [];
+let subsData = [];
+
+function saveBillsData() { lsSet('findash_bills', JSON.stringify(billsData)); }
+function saveSubsData() { lsSet('findash_subs', JSON.stringify(subsData)); }
+
+function loadBillsAndSubs() {
+  const savedBills = lsGet('findash_bills');
+  billsData = savedBills ? JSON.parse(savedBills) : [...defaultBillsData];
+  const savedSubs = lsGet('findash_subs');
+  subsData = savedSubs ? JSON.parse(savedSubs) : [...defaultSubsData];
+}
 
 // Auto-categorization keywords
 const categoryKeywords = {
@@ -989,7 +1022,7 @@ function initBills() {
   // Subs list
   const subsList = document.getElementById('subs-list');
   subsList.innerHTML = '';
-  subsData.forEach(s => {
+  subsData.forEach((s, i) => {
     subsList.innerHTML += `
       <div class="bill-row">
         <div class="bill-info">
@@ -998,9 +1031,11 @@ function initBills() {
             <span class="badge ${s.active ? 'badge-green' : 'badge-gray'}">${s.active ? 'Active' : 'Cancelled'}</span>
           </div>
         </div>
-        <div style="display:flex;align-items:center;gap:16px;">
+        <div style="display:flex;align-items:center;gap:10px;">
           <div class="bill-amount" style="${s.active ? '' : 'text-decoration:line-through;opacity:0.4;'}">${fmt(s.amount)}</div>
           ${s.link ? `<a href="${s.link}" target="_blank"><button class="pay-btn">${s.active ? 'Manage' : 'Reactivate'}</button></a>` : ''}
+          <button class="pay-btn" onclick="editSub(${i})" title="Edit" style="padding:6px 10px;">&#9998;</button>
+          <button class="pay-btn" onclick="deleteSub(${i})" title="Delete" style="padding:6px 10px;color:var(--negative);">&#10005;</button>
         </div>
       </div>`;
   });
@@ -1032,6 +1067,62 @@ function renderBillCalendar() {
   html += '</div>';
   cal.innerHTML = html;
 }
+
+// ===== SUBSCRIPTION CRUD =====
+let _editingSubIndex = -1;
+
+function openSubModal(index) {
+  _editingSubIndex = index !== undefined ? index : -1;
+  const modal = document.getElementById('sub-modal');
+  modal.style.display = 'flex';
+  document.getElementById('sub-modal-title').textContent = _editingSubIndex >= 0 ? 'Edit Subscription' : 'Add Subscription';
+  if (_editingSubIndex >= 0) {
+    const s = subsData[_editingSubIndex];
+    document.getElementById('sub-name').value = s.name;
+    document.getElementById('sub-amount').value = s.amount;
+    document.getElementById('sub-link').value = s.link || '';
+    document.getElementById('sub-active').checked = s.active;
+  } else {
+    document.getElementById('sub-name').value = '';
+    document.getElementById('sub-amount').value = '';
+    document.getElementById('sub-link').value = '';
+    document.getElementById('sub-active').checked = true;
+  }
+}
+
+function closeSubModal() {
+  document.getElementById('sub-modal').style.display = 'none';
+}
+
+function editSub(index) { openSubModal(index); }
+
+function saveSubFromModal() {
+  const name = document.getElementById('sub-name').value.trim();
+  const amount = parseFloat(document.getElementById('sub-amount').value) || 0;
+  const link = document.getElementById('sub-link').value.trim() || null;
+  const active = document.getElementById('sub-active').checked;
+  if (!name) { alert('Please enter a name.'); return; }
+
+  if (_editingSubIndex >= 0) {
+    subsData[_editingSubIndex] = { name, amount, link, active };
+  } else {
+    subsData.push({ name, amount, link, active });
+  }
+  saveSubsData();
+  closeSubModal();
+  initBills();
+}
+
+function deleteSub(index) {
+  if (!confirm(`Delete "${subsData[index].name}"?`)) return;
+  subsData.splice(index, 1);
+  saveSubsData();
+  initBills();
+}
+
+document.getElementById('sub-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeSubModal();
+});
 
 // ===== PDF TEXT EXTRACTION =====
 async function extractPDFText(arrayBuffer) {
@@ -1641,6 +1732,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   catOverrides = JSON.parse(lsGet('findash_cat_overrides') || '{}');
 
   loadData();
+  loadBillsAndSubs();
   initDashboard();
   initBills();
   loadUberData();
