@@ -177,6 +177,7 @@ canvas { max-height: 300px; }
     <button onclick="showPage('bills')">Monthly Bills</button>
     <button onclick="showPage('statements')">Bank Statements</button>
     <button onclick="showPage('uber')">Uber Tracker</button>
+    <button onclick="showPage('debts')">Debts</button>
   </div>
 </nav>
 
@@ -294,6 +295,79 @@ canvas { max-height: 300px; }
     <h2>Payment Calendar</h2>
     <p style="color:var(--text-dim);font-size:13px;margin-bottom:12px;">Due dates at a glance for the current month</p>
     <div id="bills-calendar"></div>
+  </div>
+</div>
+
+<!-- ============ DEBTS PAGE ============ -->
+<div id="page-debts" class="page">
+  <h1 style="font-size:24px;margin-bottom:20px;">Debt Tracker</h1>
+
+  <div class="grid-4 mb-12" id="debt-stat-cards"></div>
+
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <h2 style="margin:0;">Active Debts</h2>
+      <button class="btn btn-primary" onclick="openDebtModal()">+ Add Debt</button>
+    </div>
+    <p style="color:var(--text-dim);font-size:12px;margin-bottom:12px;">These count toward your payoff goal.</p>
+    <div id="debts-active-list"></div>
+  </div>
+
+  <div class="card mt-20">
+    <h2>Student Loans (Deferred)</h2>
+    <p style="color:var(--text-dim);font-size:12px;margin-bottom:12px;">Tracked for visibility but excluded from payoff goal.</p>
+    <div id="debts-deferred-list"></div>
+  </div>
+
+  <div class="card mt-20">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <h2>Payoff Progress</h2>
+    </div>
+    <div style="margin-top:12px;">
+      <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;">
+        <span>Paid Off</span>
+        <span id="debt-progress-label">$0 / $0</span>
+      </div>
+      <div style="background:var(--surface2);border-radius:8px;height:20px;overflow:hidden;">
+        <div id="debt-progress-bar" style="height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:8px;transition:width .5s;width:0%"></div>
+      </div>
+    </div>
+    <div class="chart-wrap" style="margin-top:16px;"><canvas id="debt-breakdown-chart"></canvas></div>
+  </div>
+
+  <!-- Debt Modal -->
+  <div id="debt-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;align-items:center;justify-content:center;">
+    <div class="card" style="width:460px;max-width:90vw;">
+      <h2 id="debt-modal-title">Add Debt</h2>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-top:12px;">
+        <div><label style="font-size:12px;color:var(--text-dim);">Name</label><input type="text" id="debt-name" class="api-key-input" placeholder="e.g. Property Tax"></div>
+        <div style="display:flex;gap:10px;">
+          <div style="flex:1"><label style="font-size:12px;color:var(--text-dim);">Balance Owed</label><input type="number" id="debt-balance" class="api-key-input" step="0.01" placeholder="0.00"></div>
+          <div style="flex:1"><label style="font-size:12px;color:var(--text-dim);">Original Balance</label><input type="number" id="debt-original" class="api-key-input" step="0.01" placeholder="0.00"></div>
+        </div>
+        <div style="display:flex;gap:10px;">
+          <div style="flex:1"><label style="font-size:12px;color:var(--text-dim);">Min Payment ($/mo)</label><input type="number" id="debt-payment" class="api-key-input" step="0.01" placeholder="0.00"></div>
+          <div style="flex:1"><label style="font-size:12px;color:var(--text-dim);">Interest Rate (%)</label><input type="number" id="debt-rate" class="api-key-input" step="0.1" placeholder="0.0"></div>
+        </div>
+        <div><label style="font-size:12px;color:var(--text-dim);">Category</label>
+          <select id="debt-category" class="api-key-input">
+            <option value="property_tax">Property Tax</option>
+            <option value="sewer">Sewer/Water</option>
+            <option value="garbage">Garbage Collection</option>
+            <option value="credit_card">Credit Card</option>
+            <option value="student_loan">Student Loan (Deferred)</option>
+            <option value="personal_loan">Personal Loan</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div><label style="font-size:12px;color:var(--text-dim);">Link (optional)</label><input type="text" id="debt-link" class="api-key-input" placeholder="https://..."></div>
+        <div><label style="font-size:12px;color:var(--text-dim);">Notes</label><input type="text" id="debt-notes" class="api-key-input" placeholder="Optional notes"></div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:16px;">
+        <button class="btn btn-primary" onclick="saveDebtFromModal()">Save</button>
+        <button class="btn" style="background:var(--surface2);" onclick="closeDebtModal()">Cancel</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1068,6 +1142,186 @@ function renderBillCalendar() {
   cal.innerHTML = html;
 }
 
+// ===== DEBTS =====
+const defaultDebtsData = [
+  {name:'Property Tax (Maple Heights)',balance:8579.15,original:8579.15,payment:0,rate:0,category:'property_tax',link:null,notes:'Prior balance + 2025 1st/2nd half. Accruing penalties/interest since 2021.'},
+  {name:'NEORSD Wastewater',balance:2968.98,original:2968.98,payment:0,rate:0,category:'sewer',link:null,notes:'Cleveland wastewater — 2022 prior + 2023 prior + 2025 current'},
+  {name:'Sewer Maintenance',balance:1151.61,original:1151.61,payment:0,rate:0,category:'sewer',link:null,notes:'C100420 + C100420S + C100420W combined'},
+  {name:'Garbage Collection',balance:819.61,original:819.61,payment:0,rate:0,category:'garbage',link:null,notes:'Maple Heights garbage 2021-2024 + trash collection 2025'},
+  {name:'NEORSD Stormwater',balance:252.30,original:252.30,payment:0,rate:0,category:'sewer',link:null,notes:'Stormwater charges 2022-2025'},
+  {name:'Gov Student Loan (MOHELA)',balance:0,original:0,payment:94,rate:0,category:'student_loan',link:'https://myaccount.mohela.studentaid.gov/AccountSummary?LandingFrom=CALM',notes:'Federal student loan — $94/mo payment'},
+  {name:'Yrefy Student Loan',balance:0,original:0,payment:835,rate:0,category:'student_loan',link:'https://servicing.salliemae.com/s/dashboard',notes:'Private student loan — $835/mo payment'},
+];
+
+let debtsData = [];
+let debtBreakdownChart = null;
+
+function saveDebtsData() { lsSet('findash_debts', JSON.stringify(debtsData)); }
+
+function loadDebtsData() {
+  const saved = lsGet('findash_debts');
+  debtsData = saved ? JSON.parse(saved) : [...defaultDebtsData];
+}
+
+function renderDebts() {
+  const active = debtsData.filter(d => d.category !== 'student_loan');
+  const deferred = debtsData.filter(d => d.category === 'student_loan');
+  const totalActive = active.reduce((a, d) => a + d.balance, 0);
+  const totalOriginal = active.reduce((a, d) => a + d.original, 0);
+  const totalAll = totalActive + deferred.reduce((a, d) => a + d.balance, 0);
+  const totalPayments = debtsData.reduce((a, d) => a + d.payment, 0);
+  const paid = Math.max(0, totalOriginal - totalActive);
+  const paidPct = totalOriginal > 0 ? (paid / totalOriginal * 100) : 0;
+
+  // Stat cards
+  document.getElementById('debt-stat-cards').innerHTML = `
+    <div class="stat"><div class="label">Active Debt</div><div class="value negative">${fmt(totalActive)}</div><div class="sub">${active.length} items</div></div>
+    <div class="stat"><div class="label">Student Loans</div><div class="value" style="color:var(--text-dim)">${fmt(deferred.reduce((a,d) => a+d.balance, 0))}</div><div class="sub">${deferred.length} deferred</div></div>
+    <div class="stat"><div class="label">Total Monthly</div><div class="value">${fmt(totalPayments)}</div><div class="sub">min payments</div></div>
+    <div class="stat"><div class="label">Paid Off</div><div class="value positive">${paidPct.toFixed(1)}%</div><div class="sub">${fmt(paid)} of ${fmt(totalOriginal)}</div></div>
+  `;
+
+  // Progress bar
+  document.getElementById('debt-progress-label').textContent = `${fmt(paid)} / ${fmt(totalOriginal)}`;
+  document.getElementById('debt-progress-bar').style.width = paidPct + '%';
+
+  // Active list
+  const activeList = document.getElementById('debts-active-list');
+  activeList.innerHTML = active.length === 0 ? '<p style="color:var(--text-dim);text-align:center;padding:20px;">No active debts. Nice!</p>' : '';
+  active.forEach((d, _) => {
+    const idx = debtsData.indexOf(d);
+    const catLabels = {property_tax:'Property Tax',sewer:'Sewer/Water',garbage:'Garbage',credit_card:'Credit Card',personal_loan:'Personal Loan',other:'Other'};
+    activeList.innerHTML += `
+      <div class="bill-row">
+        <div class="bill-info">
+          <div>
+            <div class="bill-name">${d.name}</div>
+            <div style="font-size:11px;color:var(--text-dim);">${catLabels[d.category] || d.category}${d.notes ? ' — ' + d.notes : ''}</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div class="bill-amount" style="color:var(--negative);">${fmt(d.balance)}</div>
+          ${d.link ? `<a href="${d.link}" target="_blank"><button class="pay-btn">View</button></a>` : ''}
+          <button class="pay-btn" onclick="editDebt(${idx})" title="Edit">&#9998;</button>
+          <button class="pay-btn" onclick="deleteDebt(${idx})" title="Delete" style="color:var(--negative);">&#10005;</button>
+        </div>
+      </div>`;
+  });
+
+  // Deferred list
+  const deferredList = document.getElementById('debts-deferred-list');
+  deferredList.innerHTML = deferred.length === 0 ? '<p style="color:var(--text-dim);text-align:center;padding:20px;">No student loans tracked.</p>' : '';
+  deferred.forEach(d => {
+    const idx = debtsData.indexOf(d);
+    deferredList.innerHTML += `
+      <div class="bill-row">
+        <div class="bill-info">
+          <div>
+            <div class="bill-name">${d.name}</div>
+            <div style="font-size:11px;color:var(--text-dim);">Payment: ${fmt(d.payment)}/mo${d.notes ? ' — ' + d.notes : ''}</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div class="bill-amount" style="color:var(--text-dim);">${d.balance > 0 ? fmt(d.balance) : 'Bal. unknown'}</div>
+          ${d.link ? `<a href="${d.link}" target="_blank"><button class="pay-btn">View</button></a>` : ''}
+          <button class="pay-btn" onclick="editDebt(${idx})" title="Edit">&#9998;</button>
+          <button class="pay-btn" onclick="deleteDebt(${idx})" title="Delete" style="color:var(--negative);">&#10005;</button>
+        </div>
+      </div>`;
+  });
+
+  // Breakdown chart
+  renderDebtChart(active);
+}
+
+function renderDebtChart(active) {
+  const ctx = document.getElementById('debt-breakdown-chart');
+  if (debtBreakdownChart) debtBreakdownChart.destroy();
+  if (active.length === 0) return;
+
+  const colors = ['#6c5ce7','#e17055','#00b894','#fdcb6e','#0984e3','#d63031','#00cec9','#636e72'];
+  debtBreakdownChart = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: active.map(d => d.name),
+      datasets: [{
+        data: active.map(d => d.balance),
+        backgroundColor: active.map((_, i) => colors[i % colors.length]),
+        borderWidth: 2,
+        borderColor: 'var(--surface)'
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      cutout: '50%',
+      plugins: {
+        legend: { position: 'right', labels: { color: '#aaa', font: { family: 'Inter', size: 11 }, padding: 12 } }
+      }
+    }
+  });
+}
+
+// Debt modal CRUD
+let _editingDebtIndex = -1;
+
+function openDebtModal(index) {
+  _editingDebtIndex = index !== undefined ? index : -1;
+  const modal = document.getElementById('debt-modal');
+  modal.style.display = 'flex';
+  document.getElementById('debt-modal-title').textContent = _editingDebtIndex >= 0 ? 'Edit Debt' : 'Add Debt';
+  if (_editingDebtIndex >= 0) {
+    const d = debtsData[_editingDebtIndex];
+    document.getElementById('debt-name').value = d.name;
+    document.getElementById('debt-balance').value = d.balance;
+    document.getElementById('debt-original').value = d.original;
+    document.getElementById('debt-payment').value = d.payment;
+    document.getElementById('debt-rate').value = d.rate;
+    document.getElementById('debt-category').value = d.category;
+    document.getElementById('debt-link').value = d.link || '';
+    document.getElementById('debt-notes').value = d.notes || '';
+  } else {
+    ['debt-name','debt-balance','debt-original','debt-payment','debt-rate','debt-link','debt-notes'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('debt-category').value = 'other';
+  }
+}
+
+function closeDebtModal() { document.getElementById('debt-modal').style.display = 'none'; }
+function editDebt(index) { openDebtModal(index); }
+
+function saveDebtFromModal() {
+  const name = document.getElementById('debt-name').value.trim();
+  const balance = parseFloat(document.getElementById('debt-balance').value) || 0;
+  const original = parseFloat(document.getElementById('debt-original').value) || balance;
+  const payment = parseFloat(document.getElementById('debt-payment').value) || 0;
+  const rate = parseFloat(document.getElementById('debt-rate').value) || 0;
+  const category = document.getElementById('debt-category').value;
+  const link = document.getElementById('debt-link').value.trim() || null;
+  const notes = document.getElementById('debt-notes').value.trim() || '';
+  if (!name) { alert('Please enter a name.'); return; }
+
+  const entry = { name, balance, original, payment, rate, category, link, notes };
+  if (_editingDebtIndex >= 0) {
+    debtsData[_editingDebtIndex] = entry;
+  } else {
+    debtsData.push(entry);
+  }
+  saveDebtsData();
+  closeDebtModal();
+  renderDebts();
+}
+
+function deleteDebt(index) {
+  if (!confirm(`Delete "${debtsData[index].name}"?`)) return;
+  debtsData.splice(index, 1);
+  saveDebtsData();
+  renderDebts();
+}
+
+document.getElementById('debt-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeDebtModal();
+});
+
 // ===== SUBSCRIPTION CRUD =====
 let _editingSubIndex = -1;
 
@@ -1733,8 +1987,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   loadData();
   loadBillsAndSubs();
+  loadDebtsData();
   initDashboard();
   initBills();
+  renderDebts();
   loadUberData();
   setupDragDrop('stmt-upload-zone', handleStatementUpload);
   setupDragDrop('uber-upload-zone', handleUberUpload);
