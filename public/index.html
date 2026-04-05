@@ -1097,10 +1097,20 @@ function initBills() {
       </div>`;
   });
 
-  // Subs list
+  // Subs list — sorted: active first, then cancelled
   const subsList = document.getElementById('subs-list');
   subsList.innerHTML = '';
-  subsData.forEach((s, i) => {
+  const sortedSubs = subsData.map((s, i) => ({...s, _idx: i})).sort((a, b) => {
+    if (a.active !== b.active) return a.active ? -1 : 1;
+    return b.amount - a.amount;
+  });
+  let shownCancelledHeader = false;
+  sortedSubs.forEach(s => {
+    if (!s.active && !shownCancelledHeader) {
+      subsList.innerHTML += `<div style="padding:10px 16px;font-size:12px;font-weight:600;color:var(--text-dim);text-transform:uppercase;letter-spacing:.5px;border-top:2px solid var(--border);margin-top:8px;">Cancelled</div>`;
+      shownCancelledHeader = true;
+    }
+    const i = s._idx;
     subsList.innerHTML += `
       <div class="bill-row">
         <div class="bill-info">
