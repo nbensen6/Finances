@@ -1568,7 +1568,9 @@ function handleStatementUpload(file) {
     reader.onload = async e => {
       try {
         const buf = e.target.result;
-        const [text, rows] = await Promise.all([extractPDFText(buf), extractPDFRows(buf)]);
+        const buf2 = buf.slice(0);
+        const text = await extractPDFText(buf);
+        const rows = await extractPDFRows(buf2);
         const parsed = parsePDFStatementText(text, rows);
         if (parsed.length === 0) { alert('Could not parse any transactions from PDF. Try CSV format if available.'); return; }
         stmtTransactions = parsed;
