@@ -1417,34 +1417,115 @@ async function extractPDFText(arrayBuffer) {
   return fullText;
 }
 
-function parsePDFStatementText(text) {
-  const lines = text.split('\n').map(l => l.trim()).filter(l => l);
-  const rows = [];
-  const dateRe = /(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})/;
-  const amountRe = /[-]?\$?\d{1,3}(?:,\d{3})*\.\d{2}/g;
+// Position-aware PDF extraction for columnar bank statements (Chase, etc.)
+async function extractPDFRows(arrayBuffer) {
+  await window.pdfjsReady;
+  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+  const allRows = [];
 
-  for (const line of lines) {
-    const dateMatch = line.match(dateRe);
-    if (!dateMatch) continue;
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i);
+    const content = await page.getTextContent();
 
-    const amounts = line.match(amountRe);
-    if (!amounts || amounts.length === 0) continue;
+    // Group text items by Y position (same row)
+    const yGroups = {};
+    for (const item of content.items) {
+      const y = Math.round(item.transform[5]);
+      const x = Math.round(item.transform[4]);
+      if (!yGroups[y]) yGroups[y] = [];
+      yGroups[y].push({ x, text: item.str.trim() });
+    }
 
-    const date = dateMatch[1];
-    const amountStr = amounts[amounts.length - 1].replace(/[$,]/g, '');
-    const amount = parseFloat(amountStr);
-    if (isNaN(amount)) continue;
-
-    // Description is everything between date and last amount
-    let desc = line.substring(line.indexOf(dateMatch[0]) + dateMatch[0].length, line.lastIndexOf(amounts[amounts.length - 1])).trim();
-    // Clean up extra whitespace and numbers that are likely balance columns
-    desc = desc.replace(/\s{2,}/g, ' ').replace(/[-]?\$?\d{1,3}(?:,\d{3})*\.\d{2}/g, '').trim();
-    if (!desc) desc = 'Unknown transaction';
-
-    const cat = categorize(desc);
-    rows.push({ date, desc, amount, cat });
+    // Sort rows top to bottom, items left to right
+    const sortedYs = Object.keys(yGroups).map(Number).sort((a, b) => b - a);
+    for (const y of sortedYs) {
+      const items = yGroups[y].sort((a, b) => a.x - b.x);
+      const rowText = items.map(i => i.text).filter(t => t).join('  ');
+      if (rowText.trim()) allRows.push(rowText);
+    }
   }
-  return rows;
+  return allRows;
+}
+
+function parsePDFStatementText(text, rows) {
+  // Try position-aware rows first (better for Chase-style columnar PDFs)
+  const lines = rows && rows.length > 0 ? rows : text.split('\n').map(l => l.trim()).filter(l => l);
+  const results = [];
+  const dateRe = /\b(\d{2}\/\d{2})\b/;
+  const amountRe = /\$?([\d,]+\.\d{2})/g;
+  let lastDate = '';
+  let section = ''; // track deposits vs withdrawals
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const lower = line.toLowerCase();
+
+    // Detect section
+    if (lower.includes('deposits and additions')) { section = 'deposit'; continue; }
+    if (lower.includes('total deposits')) { section = ''; continue; }
+    if (lower.includes('atm') && lower.includes('debit') && lower.includes('withdrawal')) { section = 'withdraw'; continue; }
+    if (lower.includes('electronic withdrawal')) { section = 'withdraw'; continue; }
+    if (lower.includes('checks paid')) { section = 'withdraw'; continue; }
+    if (lower.includes('total atm') || lower.includes('total electronic') || lower.includes('total checks')) { section = ''; continue; }
+    if (lower.includes('overdraft') || lower.includes('in case of errors') || lower.includes('summary')) { section = ''; continue; }
+
+    if (!section) continue;
+
+    // Find date
+    const dateMatch = line.match(dateRe);
+    if (dateMatch) lastDate = dateMatch[1];
+
+    // Find amounts
+    const amounts = [];
+    let m;
+    while ((m = amountRe.exec(line)) !== null) {
+      amounts.push(parseFloat(m[1].replace(/,/g, '')));
+    }
+    amountRe.lastIndex = 0;
+
+    if (amounts.length === 0 || !lastDate) continue;
+    // Skip totals and summary lines
+    if (lower.includes('total') || lower.includes('beginning balance') || lower.includes('ending balance')) continue;
+
+    const amount = amounts[amounts.length - 1];
+    if (amount <= 0 || amount > 100000) continue;
+
+    // Extract description — remove date and amounts from line
+    let desc = line.replace(dateRe, '').trim();
+    desc = desc.replace(/\$?[\d,]+\.\d{2}/g, '').trim();
+    // Clean up Chase-specific noise
+    desc = desc.replace(/Card \d{4}/g, '').replace(/PPD ID:\s*\d+/g, '').replace(/Web ID:\s*\S+/g, '');
+    desc = desc.replace(/Tel ID:\s*\S+/g, '').replace(/CCD ID:\s*\S+/g, '');
+    desc = desc.replace(/Card Purchase\s*(With Pin\s*)?/i, '').replace(/Recurring Card Purchase\s*/i, '');
+    desc = desc.replace(/Payment Received\s*/i, '');
+    desc = desc.replace(/\d{2}\/\d{2}\s*/g, '').trim();
+    desc = desc.replace(/\s{2,}/g, ' ').trim();
+    if (!desc || desc.length < 2) {
+      // Look at nearby lines for description
+      for (let j = i - 1; j >= Math.max(0, i - 3); j--) {
+        const prev = lines[j].trim();
+        if (prev.length > 5 && !prev.match(/^\$?[\d,]+\.\d{2}$/) && !prev.match(/^\d{2}\/\d{2}$/)) {
+          desc = prev.replace(/Card Purchase\s*(With Pin\s*)?/i, '').replace(/Recurring Card Purchase\s*/i, '');
+          desc = desc.replace(/\d{2}\/\d{2}\s*/g, '').replace(/\s{2,}/g, ' ').trim();
+          if (desc.length > 2) break;
+        }
+      }
+    }
+    if (!desc || desc.length < 2) desc = 'Unknown transaction';
+
+    // Normalize date to YYYY-MM-DD
+    let date = lastDate;
+    const [mm, dd] = date.split('/');
+    const monthNum = parseInt(mm);
+    const year = monthNum >= 11 ? '2025' : '2026'; // Handle Nov/Dec from previous year
+    date = year + '-' + mm + '-' + dd;
+
+    const signedAmount = section === 'deposit' ? amount : -amount;
+    const cat = categorize(desc);
+    results.push({ date, desc, amount: signedAmount, cat });
+  }
+
+  return results;
 }
 
 function parsePDFUberText(text) {
@@ -1486,10 +1567,11 @@ function handleStatementUpload(file) {
   if (file.name.endsWith('.pdf')) {
     reader.onload = async e => {
       try {
-        const text = await extractPDFText(e.target.result);
-        const rows = parsePDFStatementText(text);
-        if (rows.length === 0) { alert('Could not parse any transactions from PDF. Try CSV format if available.'); return; }
-        stmtTransactions = rows;
+        const buf = e.target.result;
+        const [text, rows] = await Promise.all([extractPDFText(buf), extractPDFRows(buf)]);
+        const parsed = parsePDFStatementText(text, rows);
+        if (parsed.length === 0) { alert('Could not parse any transactions from PDF. Try CSV format if available.'); return; }
+        stmtTransactions = parsed;
         saveData();
         renderStatements();
       } catch (err) { console.error(err); alert('Error reading PDF: ' + err.message); }
