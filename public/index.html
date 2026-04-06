@@ -388,6 +388,22 @@ canvas { max-height: 300px; }
   <div id="stmt-results" class="hidden">
     <div class="grid-4 mt-20" id="stmt-stat-cards"></div>
 
+    <div class="card mt-20" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+      <div>
+        <h2 style="margin:0;">Add to Dashboard</h2>
+        <p style="color:var(--text-dim);font-size:12px;margin:4px 0 0;">Push this statement's data into the dashboard as a monthly summary.</p>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <select id="stmt-month-select" class="api-key-input" style="width:150px;">
+          <option value="January">January</option><option value="February">February</option><option value="March">March</option>
+          <option value="April">April</option><option value="May">May</option><option value="June">June</option>
+          <option value="July">July</option><option value="August">August</option><option value="September">September</option>
+          <option value="October">October</option><option value="November">November</option><option value="December">December</option>
+        </select>
+        <button class="btn btn-primary" onclick="sendStatementToDashboard()">Send to Dashboard</button>
+      </div>
+    </div>
+
     <div class="grid-2 mt-20">
       <div class="card">
         <h2>Spending by Category</h2>
@@ -862,11 +878,12 @@ function renderDashboard() {
   document.getElementById('credit-paid-label').textContent = fmt(creditPayments) + ' paid';
   document.getElementById('credit-sub').textContent = `${fmt(totalCredit - creditPayments)} remaining | ${Math.round(pct)}% complete | Target: May 31, 2026`;
 
-  // Category bars - recalculate from transactions if March (to reflect overrides)
+  // Category bars - recalculate from transactions if available (to reflect overrides)
   let displayExpenses = data.expenses;
-  if (currentMonth === 'March') {
+  const txSource = data.transactions || (currentMonth === 'March' ? marchTransactions : null);
+  if (txSource) {
     displayExpenses = {};
-    marchTransactions.forEach(tx => {
+    txSource.forEach(tx => {
       const c = getEffectiveCat(tx);
       if (c === 'Income') return;
       displayExpenses[c] = (displayExpenses[c] || 0) + Math.abs(tx.amount);
@@ -900,10 +917,11 @@ function renderDashboard() {
   renderTrendChart();
 
   // Transactions table with editable categories
-  if (currentMonth === 'March') {
+  const txData = data.transactions || (currentMonth === 'March' ? marchTransactions : null);
+  if (txData) {
     const tbody = document.querySelector('#tx-table tbody');
     tbody.innerHTML = '';
-    marchTransactions.forEach((tx, idx) => {
+    txData.forEach((tx, idx) => {
       const cls = tx.amount >= 0 ? 'positive' : 'negative';
       const effCat = getEffectiveCat(tx);
       const options = allCategories.map(c => `<option value="${c}" ${c === effCat ? 'selected' : ''}>${c}</option>`).join('');
@@ -915,7 +933,7 @@ function renderDashboard() {
       </tr>`;
     });
   } else {
-    document.querySelector('#tx-table tbody').innerHTML = '<tr><td colspan="4" style="color:var(--text-dim);text-align:center;padding:20px;">Transaction detail available for March only</td></tr>';
+    document.querySelector('#tx-table tbody').innerHTML = '<tr><td colspan="4" style="color:var(--text-dim);text-align:center;padding:20px;">Upload a bank statement and send it to this month to see transactions.</td></tr>';
   }
 }
 
@@ -1707,9 +1725,71 @@ function renderStatements() {
 
   renderStmtTable(stmtTransactions);
 
+  // Auto-detect month from transactions and pre-select
+  if (stmtTransactions.length > 0) {
+    const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    const dateCounts = {};
+    stmtTransactions.forEach(t => {
+      const m = parseInt(t.date.split('-')[1]) - 1;
+      dateCounts[m] = (dateCounts[m] || 0) + 1;
+    });
+    const mostCommonMonth = Object.entries(dateCounts).sort((a,b) => b[1] - a[1])[0];
+    if (mostCommonMonth) {
+      document.getElementById('stmt-month-select').value = months[parseInt(mostCommonMonth[0])];
+    }
+  }
+
   // Restore API key
   const savedKey = lsGet('findash_claude_key');
   if (savedKey) document.getElementById('claude-api-key').value = savedKey;
+}
+
+function sendStatementToDashboard() {
+  const month = document.getElementById('stmt-month-select').value;
+  if (!stmtTransactions.length) { alert('No statement data to send.'); return; }
+
+  const deposits = stmtTransactions.filter(t => t.amount > 0);
+  const expenses = stmtTransactions.filter(t => t.amount < 0);
+  const income = deposits.reduce((a, t) => a + t.amount, 0);
+
+  // Build expense totals by category
+  const expByCat = {};
+  expenses.forEach(t => {
+    const cat = t.cat || 'Other';
+    expByCat[cat] = (expByCat[cat] || 0) + Math.abs(t.amount);
+  });
+
+  // Round values
+  for (const k in expByCat) expByCat[k] = Math.round(expByCat[k] * 100) / 100;
+
+  const totalExpenses = Object.values(expByCat).reduce((a, b) => a + b, 0);
+  const net = Math.round((income - totalExpenses) * 100) / 100;
+
+  // Build budgets from existing data or defaults
+  const existingBudgets = monthlyData[month]?.budgets || {};
+  const budgets = {};
+  for (const cat of Object.keys(expByCat)) {
+    budgets[cat] = existingBudgets[cat] || 200;
+  }
+
+  // Create/update the month entry
+  monthlyData[month] = {
+    income: Math.round(income * 100) / 100,
+    expenses: expByCat,
+    budgets,
+    totalExpenses: Math.round(totalExpenses * 100) / 100,
+    net,
+    transactions: stmtTransactions
+  };
+
+  // Persist to server
+  lsSet('findash_monthly_data', JSON.stringify(monthlyData));
+
+  // Refresh dashboard
+  currentMonth = month;
+  initDashboard();
+
+  alert('Statement added to dashboard for ' + month + '!\nIncome: $' + income.toFixed(2) + '\nExpenses: $' + totalExpenses.toFixed(2) + '\nNet: $' + net.toFixed(2));
 }
 
 function renderStmtTable(txs) {
@@ -2086,6 +2166,16 @@ document.addEventListener('DOMContentLoaded', async () => {
   loadData();
   loadBillsAndSubs();
   loadDebtsData();
+
+  // Load any saved monthly data from server (merges with hardcoded defaults)
+  const savedMonthly = lsGet('findash_monthly_data');
+  if (savedMonthly) {
+    const parsed = JSON.parse(savedMonthly);
+    for (const [month, data] of Object.entries(parsed)) {
+      monthlyData[month] = data;
+    }
+  }
+
   initDashboard();
   initBills();
   renderDebts();
