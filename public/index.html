@@ -179,6 +179,7 @@ canvas { max-height: 300px; }
     <button onclick="showPage('statements')">Bank Statements</button>
     <button onclick="showPage('uber')">Uber Tracker</button>
     <button onclick="showPage('debts')">Debts</button>
+    <button onclick="showPage('jobs')">Job Hunt</button>
   </div>
 </nav>
 
@@ -503,6 +504,70 @@ canvas { max-height: 300px; }
           <thead><tr><th>Date</th><th>Earnings</th><th>Hours</th><th>$/Hour</th><th>Goal Met</th><th>Notes</th><th></th></tr></thead>
           <tbody></tbody>
         </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ JOB HUNT PAGE ============ -->
+<div id="page-jobs" class="page">
+  <h1 style="font-size:24px;margin-bottom:20px;">Job Hunt</h1>
+
+  <div class="grid-4 mb-12" id="jobs-stat-cards"></div>
+
+  <div class="card" id="jobs-followup-card">
+    <h2>Needs Attention</h2>
+    <div id="jobs-followup-list"></div>
+  </div>
+
+  <div class="card mt-20">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+      <h2 style="margin:0;">Applications</h2>
+      <button class="btn btn-primary" onclick="openJobModal()">+ Add Application</button>
+    </div>
+    <div style="display:flex;gap:8px;margin:12px 0;flex-wrap:wrap;">
+      <select id="jobs-status-filter" class="api-key-input" style="width:170px;" onchange="renderJobsTable()">
+        <option value="">All statuses</option>
+        <option value="__active__">Active only</option>
+      </select>
+      <input type="text" id="jobs-search" class="api-key-input" style="flex:1;min-width:150px;" placeholder="Search company or role..." oninput="renderJobsTable()">
+    </div>
+    <div style="max-height:520px;overflow-y:auto;overflow-x:auto;">
+      <table id="jobs-table">
+        <thead><tr><th>Applied</th><th>Company</th><th>Position</th><th>Status</th><th>Days</th><th></th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Job Modal -->
+  <div id="job-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;align-items:center;justify-content:center;overflow-y:auto;">
+    <div class="card" style="width:520px;max-width:92vw;margin:20px auto;">
+      <h2 id="job-modal-title">Add Application</h2>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-top:12px;">
+        <div style="display:flex;gap:10px;">
+          <div style="flex:1"><label style="font-size:12px;color:var(--text-dim);">Company</label><input type="text" id="job-company" class="api-key-input"></div>
+          <div style="flex:1"><label style="font-size:12px;color:var(--text-dim);">Position</label><input type="text" id="job-position" class="api-key-input"></div>
+        </div>
+        <div style="display:flex;gap:10px;">
+          <div style="flex:1"><label style="font-size:12px;color:var(--text-dim);">Date Applied</label><input type="date" id="job-date" class="api-key-input"></div>
+          <div style="flex:1"><label style="font-size:12px;color:var(--text-dim);">Status</label><select id="job-status" class="api-key-input"></select></div>
+        </div>
+        <div style="display:flex;gap:10px;">
+          <div style="flex:1"><label style="font-size:12px;color:var(--text-dim);">Source</label><select id="job-source" class="api-key-input"></select></div>
+          <div style="flex:1"><label style="font-size:12px;color:var(--text-dim);">Priority</label><select id="job-priority" class="api-key-input"><option>High</option><option>Medium</option><option>Low</option></select></div>
+        </div>
+        <div style="display:flex;gap:10px;">
+          <div style="flex:1"><label style="font-size:12px;color:var(--text-dim);">Salary Min</label><input type="number" id="job-salmin" class="api-key-input" placeholder="e.g. 70000"></div>
+          <div style="flex:1"><label style="font-size:12px;color:var(--text-dim);">Salary Max</label><input type="number" id="job-salmax" class="api-key-input" placeholder="e.g. 95000"></div>
+        </div>
+        <div><label style="font-size:12px;color:var(--text-dim);">Location / Work Type</label><input type="text" id="job-location" class="api-key-input" placeholder="Remote (US)"></div>
+        <div><label style="font-size:12px;color:var(--text-dim);">Job URL</label><input type="text" id="job-url" class="api-key-input" placeholder="https://..."></div>
+        <div><label style="font-size:12px;color:var(--text-dim);">Notes</label><textarea id="job-notes" class="api-key-input" rows="3" style="resize:vertical;"></textarea></div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:16px;">
+        <button class="btn btn-primary" onclick="saveJobFromModal()">Save</button>
+        <button class="btn" style="background:var(--surface2);" onclick="closeJobModal()">Cancel</button>
       </div>
     </div>
   </div>
@@ -884,6 +949,7 @@ function showPage(name) {
   document.querySelectorAll('.nav-links button').forEach(b => b.classList.remove('active'));
   event.target.classList.add('active');
   if (name === 'debts') renderDebts(); // refresh payment-based balances
+  if (name === 'jobs') renderJobs();
 }
 
 // ===== DASHBOARD =====
@@ -2448,6 +2514,176 @@ function loadData() {
   }
 }
 
+// ===== JOB HUNT =====
+const JOB_STATUSES = ['Applied','Phone Screen','Technical Interview','Onsite Interview','Final Round','Offer','Accepted','Rejected','Withdrawn','Ghosted','On Hold'];
+const JOB_SOURCES = ['LinkedIn','Indeed','Glassdoor','Company Website','Built In','Referral','Recruiter','AngelList/Wellfound','Handshake','ZipRecruiter','Monster','Dice','Other'];
+const JOB_INTERVIEW_STATUSES = ['Phone Screen','Technical Interview','Onsite Interview','Final Round','Offer','Accepted'];
+const jobIsActive = j => !['Rejected','Withdrawn','Ghosted','Accepted'].includes(j.status);
+let jobsData = [];
+let _editingJobId = null;
+
+function saveJobsData() { lsSet('findash_jobs', JSON.stringify(jobsData)); }
+function loadJobsData() {
+  try { jobsData = JSON.parse(lsGet('findash_jobs') || '[]') || []; } catch (_) { jobsData = []; }
+}
+
+function jobDays(j) {
+  if (!j.dateApplied) return null;
+  return Math.max(0, Math.floor((Date.now() - new Date(j.dateApplied + 'T12:00:00')) / 86400000));
+}
+
+function jobBadgeClass(status) {
+  if (status === 'Applied') return 'badge-blue';
+  if (JOB_INTERVIEW_STATUSES.includes(status)) return status === 'Offer' || status === 'Accepted' ? 'badge-green' : 'badge-yellow';
+  if (status === 'Rejected') return 'badge-red';
+  if (status === 'On Hold') return 'badge-yellow';
+  return 'badge-gray';
+}
+
+function renderJobs() {
+  const total = jobsData.length;
+  const active = jobsData.filter(jobIsActive);
+  const responded = jobsData.filter(j => j.status && j.status !== 'Applied' && j.status !== 'Ghosted');
+  const interviews = jobsData.filter(j => JOB_INTERVIEW_STATUSES.includes(j.status));
+  const respRate = total ? Math.round(responded.length / total * 100) : 0;
+  const weekAgo = Date.now() - 7 * 86400000;
+  const thisWeek = jobsData.filter(j => j.dateApplied && new Date(j.dateApplied + 'T12:00:00') >= weekAgo).length;
+
+  document.getElementById('jobs-stat-cards').innerHTML = `
+    <div class="stat"><div class="label">Applications</div><div class="value">${total}</div><div class="sub">${thisWeek} in the last 7 days</div></div>
+    <div class="stat"><div class="label">Active</div><div class="value ${active.length ? 'positive' : 'warning'}">${active.length}</div><div class="sub">not rejected/ghosted</div></div>
+    <div class="stat"><div class="label">Response Rate</div><div class="value">${respRate}%</div><div class="sub">${responded.length} responses</div></div>
+    <div class="stat"><div class="label">Interviews</div><div class="value">${interviews.length}</div><div class="sub">phone screen or later</div></div>
+  `;
+
+  // Needs attention: Applied 7+ days (follow up) or 21+ days (probably ghosted)
+  const followups = jobsData
+    .filter(j => j.status === 'Applied' && jobDays(j) >= 7)
+    .sort((a, b) => jobDays(b) - jobDays(a));
+  const fu = document.getElementById('jobs-followup-list');
+  if (!followups.length) {
+    fu.innerHTML = '<p style="color:var(--text-dim);font-size:13px;">Nothing waiting on you. ' + (active.length === 0 ? 'Pipeline is empty — time to send new applications.' : '') + '</p>';
+  } else {
+    fu.innerHTML = followups.map(j => {
+      const d = jobDays(j);
+      const ghosty = d >= 21;
+      return `<div class="bill-row">
+        <div class="bill-info"><div>
+          <div class="bill-name">${j.company} — ${j.position || ''}</div>
+          <div style="font-size:12px;color:${ghosty ? 'var(--red)' : 'var(--yellow)'};">${d} days, no response${ghosty ? ' — probably ghosted' : ' — send a follow-up note'}</div>
+        </div></div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          ${j.url ? `<a href="${j.url}" target="_blank"><button class="pay-btn">Listing</button></a>` : ''}
+          ${ghosty ? `<button class="pay-btn" onclick="setJobStatus(${j.id}, 'Ghosted')">Mark Ghosted</button>` : ''}
+          <button class="pay-btn" onclick="openJobModal(${j.id})">&#9998;</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // Filters (populate once)
+  const sf = document.getElementById('jobs-status-filter');
+  if (sf.options.length <= 2) {
+    JOB_STATUSES.forEach(s => { const o = document.createElement('option'); o.value = s; o.textContent = s; sf.appendChild(o); });
+  }
+  renderJobsTable();
+}
+
+function renderJobsTable() {
+  const statusFilter = document.getElementById('jobs-status-filter').value;
+  const q = (document.getElementById('jobs-search').value || '').toLowerCase();
+  let rows = [...jobsData];
+  if (statusFilter === '__active__') rows = rows.filter(jobIsActive);
+  else if (statusFilter) rows = rows.filter(j => j.status === statusFilter);
+  if (q) rows = rows.filter(j => (j.company + ' ' + (j.position || '')).toLowerCase().includes(q));
+  rows.sort((a, b) => String(b.dateApplied || '').localeCompare(String(a.dateApplied || '')));
+
+  const options = j => JOB_STATUSES.map(s => `<option ${s === j.status ? 'selected' : ''}>${s}</option>`).join('');
+  document.querySelector('#jobs-table tbody').innerHTML = rows.map(j => `
+    <tr>
+      <td style="white-space:nowrap;">${j.dateApplied || '—'}</td>
+      <td>${j.url ? `<a href="${j.url}" target="_blank" style="color:var(--accent2);">${j.company}</a>` : j.company}</td>
+      <td style="font-size:13px;">${j.position || ''}${j.notes ? `<div style="font-size:11px;color:var(--text-dim);">${String(j.notes).slice(0, 80)}</div>` : ''}</td>
+      <td><select class="cat-select" onchange="setJobStatus(${j.id}, this.value)">${options(j)}</select>
+          <span class="badge ${jobBadgeClass(j.status)}" style="margin-left:4px;">${j.status || '—'}</span></td>
+      <td>${jobDays(j) ?? '—'}</td>
+      <td style="white-space:nowrap;"><button class="pay-btn" onclick="openJobModal(${j.id})" style="padding:4px 8px;">&#9998;</button>
+          <button class="pay-btn" onclick="deleteJob(${j.id})" style="padding:4px 8px;color:var(--red);">&#10005;</button></td>
+    </tr>`).join('') || '<tr><td colspan="6" style="color:var(--text-dim);text-align:center;padding:20px;">No applications match.</td></tr>';
+}
+
+function setJobStatus(id, status) {
+  const j = jobsData.find(x => x.id === id);
+  if (!j) return;
+  j.status = status;
+  j.lastUpdate = new Date().toISOString().slice(0, 10);
+  saveJobsData();
+  renderJobs();
+}
+
+function openJobModal(id) {
+  _editingJobId = id !== undefined ? id : null;
+  const modal = document.getElementById('job-modal');
+  modal.style.display = 'flex';
+  document.getElementById('job-modal-title').textContent = _editingJobId ? 'Edit Application' : 'Add Application';
+  const ss = document.getElementById('job-status'), so = document.getElementById('job-source');
+  if (!ss.options.length) JOB_STATUSES.forEach(s => ss.add(new Option(s)));
+  if (!so.options.length) JOB_SOURCES.forEach(s => so.add(new Option(s)));
+  const j = _editingJobId ? jobsData.find(x => x.id === _editingJobId) : null;
+  document.getElementById('job-company').value = j ? j.company : '';
+  document.getElementById('job-position').value = j ? (j.position || '') : '';
+  document.getElementById('job-date').value = j ? (j.dateApplied || '') : new Date().toISOString().slice(0, 10);
+  document.getElementById('job-status').value = j ? (j.status || 'Applied') : 'Applied';
+  document.getElementById('job-source').value = j && JOB_SOURCES.includes(j.source) ? j.source : 'LinkedIn';
+  document.getElementById('job-priority').value = j ? (j.priority || 'Medium') : 'Medium';
+  document.getElementById('job-salmin').value = j ? (j.salaryMin || '') : '';
+  document.getElementById('job-salmax').value = j ? (j.salaryMax || '') : '';
+  document.getElementById('job-location').value = j ? (j.location || '') : '';
+  document.getElementById('job-url').value = j ? (j.url || '') : '';
+  document.getElementById('job-notes').value = j ? (j.notes || '') : '';
+}
+
+function closeJobModal() { document.getElementById('job-modal').style.display = 'none'; }
+
+function saveJobFromModal() {
+  const company = document.getElementById('job-company').value.trim();
+  if (!company) { alert('Company is required.'); return; }
+  const entry = {
+    id: _editingJobId || Date.now(),
+    company,
+    position: document.getElementById('job-position').value.trim(),
+    dateApplied: document.getElementById('job-date').value || null,
+    status: document.getElementById('job-status').value,
+    source: document.getElementById('job-source').value,
+    priority: document.getElementById('job-priority').value,
+    salaryMin: parseFloat(document.getElementById('job-salmin').value) || null,
+    salaryMax: parseFloat(document.getElementById('job-salmax').value) || null,
+    location: document.getElementById('job-location').value.trim(),
+    workType: /remote/i.test(document.getElementById('job-location').value) ? 'Remote' : '',
+    url: document.getElementById('job-url').value.trim() || null,
+    notes: document.getElementById('job-notes').value.trim(),
+    lastUpdate: new Date().toISOString().slice(0, 10)
+  };
+  const idx = jobsData.findIndex(x => x.id === entry.id);
+  if (idx >= 0) jobsData[idx] = { ...jobsData[idx], ...entry };
+  else jobsData.push(entry);
+  saveJobsData();
+  closeJobModal();
+  renderJobs();
+}
+
+function deleteJob(id) {
+  const j = jobsData.find(x => x.id === id);
+  if (!j || !confirm(`Delete application to "${j.company}"?`)) return;
+  jobsData = jobsData.filter(x => x.id !== id);
+  saveJobsData();
+  renderJobs();
+}
+
+document.getElementById('job-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeJobModal();
+});
+
 // ===== DRAG & DROP =====
 function setupDragDrop(zoneId, handler) {
   const zone = document.getElementById(zoneId);
@@ -2470,6 +2706,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   loadData();
   loadBillsAndSubs();
   loadDebtsData();
+  loadJobsData();
 
   // Load per-year data; migrate legacy month-keyed data on first run
   const savedYearly = lsGet('findash_yearly_data');

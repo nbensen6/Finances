@@ -75,6 +75,11 @@ try {
       stmtUpsert.run('findash_yearly_data', JSON.stringify(yearly));
       if (Array.isArray(seed.bills)) stmtUpsert.run('findash_bills', JSON.stringify(seed.bills));
       if (Array.isArray(seed.subs)) stmtUpsert.run('findash_subs', JSON.stringify(seed.subs));
+      // Jobs are seeded write-once: the tracker is actively edited in-app,
+      // so later seed versions must never clobber it
+      if (Array.isArray(seed.jobs) && !stmtGet.get('findash_jobs')) {
+        stmtUpsert.run('findash_jobs', JSON.stringify(seed.jobs));
+      }
       stmtUpsert.run('findash_seed_version', JSON.stringify(seed.version));
       const summary = Object.entries(seed.years || {}).map(([y, m]) => `${y}: ${Object.keys(m).length} months`).join('; ');
       console.log(`Statement data seeded: v${seed.version} (${summary})`
