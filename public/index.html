@@ -236,24 +236,18 @@ canvas { max-height: 300px; }
     </div>
   </div>
 
-  <div class="card mt-20">
-    <h2>Road to $15K Down Payment</h2>
-    <div class="grid-3">
-      <div class="stat">
-        <div class="label">Target</div>
-        <div class="value">$15,000</div>
-        <div class="sub">12 month timeline</div>
+  <div class="card mt-20" id="goal-card">
+    <h2>Road to $7K by Dec 31, 2026</h2>
+    <div class="grid-4" id="goal-stats"></div>
+    <div style="margin-top:12px;">
+      <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;">
+        <span>Progress (net saved since July 1)</span>
+        <span id="goal-progress-label">$0 / $7,000</span>
       </div>
-      <div class="stat">
-        <div class="label">Monthly Savings Needed</div>
-        <div class="value">$1,250</div>
-        <div class="sub">$312.50/week</div>
+      <div style="background:var(--surface2);border-radius:8px;height:20px;overflow:hidden;">
+        <div id="goal-progress-bar" style="height:100%;background:linear-gradient(90deg,var(--green),#55efc4);border-radius:8px;transition:width .5s;width:0%"></div>
       </div>
-      <div class="stat">
-        <div class="label">Available After Budget</div>
-        <div class="value warning">$260</div>
-        <div class="sub">Gap: $990/mo - needs income growth</div>
-      </div>
+      <p style="font-size:12px;color:var(--text-dim);margin-top:8px;" id="goal-note"></p>
     </div>
   </div>
 </div>
@@ -1036,6 +1030,9 @@ function renderDashboard() {
   // Trend chart
   renderTrendChart();
 
+  // Savings goal card
+  renderGoalCard();
+
   // Transactions table with editable categories
   const txData = txSource;
   if (txData) {
@@ -1055,6 +1052,46 @@ function renderDashboard() {
   } else {
     document.querySelector('#tx-table tbody').innerHTML = '<tr><td colspan="4" style="color:var(--text-dim);text-align:center;padding:20px;">Upload a bank statement and send it to this month to see transactions.</td></tr>';
   }
+}
+
+// ===== SAVINGS GOAL: $7K by Dec 31, 2026 =====
+// Progress = sum of monthly net for July-December 2026, so it updates
+// automatically every time a new statement is sent to the dashboard.
+const SAVINGS_GOAL = {
+  amount: 7000,
+  year: '2026',
+  months: ['July', 'August', 'September', 'October', 'November', 'December'],
+  uberTarget: 830 // Uber deposits/mo needed per the plan
+};
+
+function renderGoalCard() {
+  const g = SAVINGS_GOAL;
+  const yr = yearlyData[g.year] || {};
+  let saved = 0, monthsLogged = 0, lastMonth = null, lastUber = 0;
+  for (const m of g.months) {
+    if (!yr[m]) continue;
+    saved += yr[m].net;
+    monthsLogged++;
+    lastMonth = m;
+    lastUber = (yr[m].transactions || []).reduce((a, t) =>
+      a + (t.amount > 0 && /uber/i.test(t.desc) ? t.amount : 0), 0);
+  }
+  saved = Math.round(saved * 100) / 100;
+  const monthsLeft = g.months.length - monthsLogged;
+  const remaining = Math.max(0, g.amount - saved);
+  const pace = monthsLeft > 0 ? remaining / monthsLeft : remaining;
+  const pct = Math.min(100, Math.max(0, saved / g.amount * 100));
+
+  document.getElementById('goal-stats').innerHTML = `
+    <div class="stat"><div class="label">Target</div><div class="value">${fmt(g.amount)}</div><div class="sub">by Dec 31, 2026</div></div>
+    <div class="stat"><div class="label">Saved So Far</div><div class="value ${saved >= 0 ? 'positive' : 'negative'}">${fmtSign(saved)}</div><div class="sub">${monthsLogged} of ${g.months.length} months logged</div></div>
+    <div class="stat"><div class="label">Needed Per Month</div><div class="value ${pace > 1400 ? 'warning' : ''}">${fmt(pace)}</div><div class="sub">${monthsLeft} month${monthsLeft !== 1 ? 's' : ''} left</div></div>
+    <div class="stat"><div class="label">Uber Target</div><div class="value">${fmt(g.uberTarget)}/mo</div><div class="sub">${lastMonth ? lastMonth + ' actual: ' + fmt(lastUber) : 'no goal months logged yet'}</div></div>
+  `;
+  document.getElementById('goal-progress-label').textContent = `${fmt(saved)} / ${fmt(g.amount)}`;
+  document.getElementById('goal-progress-bar').style.width = pct + '%';
+  document.getElementById('goal-note').textContent =
+    'Plan: cut subscriptions/dining/Amazon/entertainment to free ~$500/mo, plus ~$830/mo in Uber deposits. Upload each new statement and this card tracks itself.';
 }
 
 let pieChart, trendChart;
