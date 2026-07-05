@@ -1065,7 +1065,7 @@ const SAVINGS_GOAL = {
   taxTarget: 3000,
   year: '2026',
   months: ['July', 'August', 'September', 'October', 'November', 'December'],
-  uberTarget: 1350,        // Uber deposits/mo needed to fund cash + tax
+  uberTarget: 1000,        // Uber deposits/mo needed (with 401k paused for ~$300/mo)
   taxKeywords: ['cuyahoga', 'county treas', 'property tax']
 };
 
@@ -1106,7 +1106,7 @@ function renderGoalCard() {
   document.getElementById('goal-progress-label').textContent = `${fmt(progress)} / ${fmt(total)}`;
   document.getElementById('goal-progress-bar').style.width = pct + '%';
   document.getElementById('goal-note').textContent =
-    'Plan: cut subscriptions/dining/Amazon/entertainment to free ~$500/mo, pay $500/mo toward the property-tax backlog, and net ~$1,350/mo in Uber deposits. Upload each statement and this card tracks itself.';
+    'Plan: cut subscriptions/dining/Amazon/entertainment to free ~$500/mo, pause 401k for ~$300/mo more take-home, pay $500/mo toward the property-tax backlog, and net ~$1,000/mo in Uber deposits. Upload each statement and this card tracks itself.';
 }
 
 let pieChart, trendChart;
