@@ -1,2 +1,6 @@
 node_modules/
 data/
+
+# personal documents (used as data sources, not app code)
+*.xlsm
+*.pdf

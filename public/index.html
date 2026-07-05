@@ -515,7 +515,18 @@ canvas { max-height: 300px; }
 
   <div class="grid-4 mb-12" id="jobs-stat-cards"></div>
 
-  <div class="card" id="jobs-followup-card">
+  <div class="card">
+    <h2>AI Assistant</h2>
+    <p style="color:var(--text-dim);font-size:13px;margin-bottom:10px;">Paste a job posting, a LinkedIn blurb, or "applied to X today" — Claude parses it, gives a fit call against your profile (remote US, $80K floor, no-degree-friendly), and adds it to the pipeline.</p>
+    <textarea id="ai-job-text" class="api-key-input" rows="6" style="width:100%;resize:vertical;" placeholder="Paste posting text here..."></textarea>
+    <div style="display:flex;gap:10px;align-items:center;margin-top:10px;">
+      <button class="btn btn-primary" onclick="aiAnalyzeJob()">Analyze Posting</button>
+      <span id="ai-job-status" style="color:var(--text-dim);font-size:13px;"></span>
+    </div>
+    <div id="ai-job-result" style="display:none;margin-top:14px;border:1px solid var(--border);border-radius:10px;padding:14px;background:var(--surface2);"></div>
+  </div>
+
+  <div class="card mt-20" id="jobs-followup-card">
     <h2>Needs Attention</h2>
     <div id="jobs-followup-list"></div>
   </div>
@@ -568,6 +579,19 @@ canvas { max-height: 300px; }
       <div style="display:flex;gap:8px;margin-top:16px;">
         <button class="btn btn-primary" onclick="saveJobFromModal()">Save</button>
         <button class="btn" style="background:var(--surface2);" onclick="closeJobModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cover Letter Modal -->
+  <div id="letter-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:210;align-items:center;justify-content:center;overflow-y:auto;">
+    <div class="card" style="width:640px;max-width:94vw;margin:20px auto;">
+      <h2 id="letter-modal-title">Cover Letter</h2>
+      <p id="letter-modal-status" style="color:var(--text-dim);font-size:13px;margin:8px 0;"></p>
+      <textarea id="letter-text" class="api-key-input" rows="16" style="width:100%;resize:vertical;font-size:13px;line-height:1.5;"></textarea>
+      <div style="display:flex;gap:8px;margin-top:12px;">
+        <button class="btn btn-primary" onclick="copyLetter()">Copy to Clipboard</button>
+        <button class="btn" style="background:var(--surface2);" onclick="document.getElementById('letter-modal').style.display='none'">Close</button>
       </div>
     </div>
   </div>
@@ -1480,11 +1504,30 @@ const DEFAULT_CC_DEBTS = [
 
 function ensureDebtAutoTracking() {
   let changed = false;
-  for (const cc of DEFAULT_CC_DEBTS) {
-    if (!debtsData.some(d => d.name.toLowerCase() === cc.name.toLowerCase())) {
-      debtsData.push(JSON.parse(JSON.stringify(cc)));
-      changed = true;
+
+  // Dedupe by name — earlier versions could re-seed the default credit cards
+  // on every render, producing duplicates. Keep the richest copy of each.
+  const richness = d => (d.baseline ? 4 : 0) + (d.keywords ? 2 : 0) + (d.balance > 0 ? 1 : 0);
+  const byName = new Map();
+  for (const d of debtsData) {
+    const key = String(d.name || '').trim().toLowerCase();
+    if (!key) { changed = true; continue; }
+    const prev = byName.get(key);
+    if (!prev) byName.set(key, d);
+    else { byName.set(key, richness(d) > richness(prev) ? d : prev); changed = true; }
+  }
+  if (changed) debtsData = [...byName.values()];
+
+  // Seed the default credit-card debts exactly ONCE (persisted flag), so
+  // deleting one actually deletes it instead of it respawning next render
+  if (!lsGet('findash_cc_seeded')) {
+    for (const cc of DEFAULT_CC_DEBTS) {
+      if (!byName.has(cc.name.toLowerCase())) {
+        debtsData.push(JSON.parse(JSON.stringify(cc)));
+        changed = true;
+      }
     }
+    if (_dataLoaded) lsSet('findash_cc_seeded', JSON.stringify(true));
   }
   for (const d of debtsData) {
     if (!d.keywords) {
@@ -2607,7 +2650,8 @@ function renderJobsTable() {
       <td><select class="cat-select" onchange="setJobStatus(${j.id}, this.value)">${options(j)}</select>
           <span class="badge ${jobBadgeClass(j.status)}" style="margin-left:4px;">${j.status || '—'}</span></td>
       <td>${jobDays(j) ?? '—'}</td>
-      <td style="white-space:nowrap;"><button class="pay-btn" onclick="openJobModal(${j.id})" style="padding:4px 8px;">&#9998;</button>
+      <td style="white-space:nowrap;"><button class="pay-btn" onclick="aiCoverLetter(${j.id})" title="Draft cover letter" style="padding:4px 8px;">&#9993;</button>
+          <button class="pay-btn" onclick="openJobModal(${j.id})" style="padding:4px 8px;">&#9998;</button>
           <button class="pay-btn" onclick="deleteJob(${j.id})" style="padding:4px 8px;color:var(--red);">&#10005;</button></td>
     </tr>`).join('') || '<tr><td colspan="6" style="color:var(--text-dim);text-align:center;padding:20px;">No applications match.</td></tr>';
 }
@@ -2682,6 +2726,129 @@ function deleteJob(id) {
 
 document.getElementById('job-modal').addEventListener('click', function(e) {
   if (e.target === this) closeJobModal();
+});
+
+// ----- Job Hunt AI assistant -----
+let _aiParsedJob = null;
+
+async function aiAnalyzeJob() {
+  const text = document.getElementById('ai-job-text').value.trim();
+  if (!text) { alert('Paste a posting first.'); return; }
+  const st = document.getElementById('ai-job-status');
+  st.textContent = 'Analyzing with Claude...';
+  document.getElementById('ai-job-result').style.display = 'none';
+  try {
+    const r = await fetch('/api/ai/job-parse', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text })
+    });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error || 'Request failed');
+    _aiParsedJob = data.result;
+    renderAiJobResult(data.result);
+    st.textContent = '';
+  } catch (e) {
+    st.textContent = '';
+    alert('AI error: ' + e.message);
+  }
+}
+
+function renderAiJobResult(j) {
+  const fitBadge = { High: 'badge-green', Medium: 'badge-yellow', Low: 'badge-gray', Skip: 'badge-red' }[j.fit] || 'badge-gray';
+  const sal = (j.salaryMin || j.salaryMax)
+    ? `$${(j.salaryMin || 0).toLocaleString()} - $${(j.salaryMax || 0).toLocaleString()}` : 'no salary posted';
+  const div = document.getElementById('ai-job-result');
+  div.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+      <div>
+        <div style="font-weight:700;font-size:15px;">${j.company || '?'} — ${j.position || '?'}</div>
+        <div style="font-size:12px;color:var(--text-dim);">${j.location || 'location unknown'} &middot; ${sal} &middot; ${j.source || 'Other'}</div>
+      </div>
+      <span class="badge ${fitBadge}" style="font-size:13px;">${j.fit} fit</span>
+    </div>
+    <p style="font-size:13px;margin:10px 0 4px;">${j.fitReasons || ''}</p>
+    ${j.gaps ? `<p style="font-size:12px;color:var(--yellow);margin-bottom:10px;">Gaps: ${j.gaps}</p>` : ''}
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:8px;">
+      <label style="font-size:13px;display:flex;align-items:center;gap:6px;">
+        <input type="checkbox" id="ai-applied-check" ${j.alreadyApplied ? 'checked' : ''}> I already applied
+      </label>
+      <button class="btn btn-primary" onclick="aiAddParsedJob()">Add to Pipeline</button>
+      <button class="btn" style="background:var(--surface2);" onclick="aiDraftFromParsed()">Draft Cover Letter</button>
+    </div>`;
+  div.style.display = 'block';
+}
+
+function aiAddParsedJob() {
+  const j = _aiParsedJob;
+  if (!j) return;
+  const applied = document.getElementById('ai-applied-check').checked;
+  const today = new Date().toISOString().slice(0, 10);
+  jobsData.push({
+    id: Date.now(),
+    company: j.company || 'Unknown',
+    position: j.position || '',
+    dateApplied: applied ? today : null,
+    status: applied ? 'Applied' : 'On Hold',
+    source: JOB_SOURCES.includes(j.source) ? j.source : 'Other',
+    priority: j.suggestedPriority || 'Medium',
+    salaryMin: j.salaryMin || null,
+    salaryMax: j.salaryMax || null,
+    location: j.location || '',
+    workType: j.workType || '',
+    url: j.url || null,
+    notes: `${j.fit} fit: ${j.fitReasons || ''}${j.gaps ? ' | Gaps: ' + j.gaps : ''}`,
+    lastUpdate: today
+  });
+  saveJobsData();
+  document.getElementById('ai-job-result').style.display = 'none';
+  document.getElementById('ai-job-text').value = '';
+  _aiParsedJob = null;
+  renderJobs();
+}
+
+async function aiRequestLetter(job, postingText) {
+  const modal = document.getElementById('letter-modal');
+  modal.style.display = 'flex';
+  document.getElementById('letter-modal-title').textContent = 'Cover Letter — ' + job.company;
+  document.getElementById('letter-modal-status').textContent = 'Drafting in your voice (no dashes, under 300 words)...';
+  document.getElementById('letter-text').value = '';
+  try {
+    const r = await fetch('/api/ai/cover-letter', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ job, postingText: postingText || undefined })
+    });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error || 'Request failed');
+    document.getElementById('letter-text').value = data.letter;
+    document.getElementById('letter-modal-status').textContent = 'Review, tweak anything that does not sound like you, then copy.';
+  } catch (e) {
+    document.getElementById('letter-modal-status').textContent = 'Error: ' + e.message;
+  }
+}
+
+function aiCoverLetter(id) {
+  const j = jobsData.find(x => x.id === id);
+  if (!j) return;
+  // if the paste box still holds the posting, use it for a sharper letter
+  aiRequestLetter(j, document.getElementById('ai-job-text').value.trim());
+}
+
+function aiDraftFromParsed() {
+  if (!_aiParsedJob) return;
+  aiRequestLetter(_aiParsedJob, document.getElementById('ai-job-text').value.trim());
+}
+
+function copyLetter() {
+  const t = document.getElementById('letter-text');
+  t.select();
+  navigator.clipboard.writeText(t.value).then(
+    () => { document.getElementById('letter-modal-status').textContent = 'Copied to clipboard.'; },
+    () => { document.execCommand('copy'); document.getElementById('letter-modal-status').textContent = 'Copied.'; }
+  );
+}
+
+document.getElementById('letter-modal').addEventListener('click', function(e) {
+  if (e.target === this) this.style.display = 'none';
 });
 
 // ===== DRAG & DROP =====

@@ -12,6 +12,8 @@ const PORT = process.env.PORT || 3000;
 const SESSION_SECRET = process.env.SESSION_SECRET || 'dev-secret-change-me';
 const AUTH_USER = process.env.AUTH_USER || 'admin';
 const AUTH_PASS = process.env.AUTH_PASS || 'changeme';
+const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY || '';
+const CLAUDE_MODEL = process.env.CLAUDE_MODEL || 'claude-sonnet-5';
 
 // ---------------------------------------------------------------------------
 // Database setup
@@ -310,6 +312,123 @@ app.get('/api/backup', requireAuth, (_req, res) => {
   } catch (err) {
     console.error('GET /api/backup error:', err);
     return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Job Hunt AI assistant — Claude API proxy (key stays server-side)
+// ---------------------------------------------------------------------------
+const NICK_PROFILE = `Candidate profile (Nicholaus "Nick" Bensen, Maple Heights / Cleveland OH):
+- Current: Customer Care Specialist at Busology Tech (Jan 2024-present). SQL-level data integration across ~61 school district SaaS deployments, Jira backlog and ticket/user-story writing, UAT/QA regression testing, Salesforce/HubSpot ticket workflows, PowerShell/Python install automation, sprint ceremonies, cross-functional bridge between engineering and non-technical stakeholders.
+- Portfolio: busroutepro.app — full-stack school bus routing app built SOLO (~48,000 LOC): Python/FastAPI, React/TypeScript, PostgreSQL/PostGIS, Google OR-Tools, 194 REST endpoints. Built heavily with Claude Code / AI tooling. This is his strongest differentiator, along with hands-on AI-agent and LLM experience.
+- Education: Cuyahoga Community College IT cert (2024). NO bachelor's degree. NO formal PM title yet.
+- Job targets, in order: Product Manager / Associate PM / Technical PM / Product Analyst / Product Ops; also Implementation Specialist/Consultant, Solutions Engineer, Technical Account Manager, Customer Success Engineer tracks.
+- Hard constraints: Remote (US) ONLY — skip onsite/hybrid outside Cleveland OH. Salary floor $80,000; prefers $100K+. Skip roles requiring a bachelor's degree with no equivalent-experience language, and roles requiring 4+ years of formal PM experience.
+- Green flags: "no degree required", 1-3 years experience, "we encourage you to apply anyway", AI/agent products, SaaS with technical customers, logistics/routing/edtech domains.`;
+
+async function callClaude(system, userText, maxTokens) {
+  if (!ANTHROPIC_API_KEY) {
+    const err = new Error('ANTHROPIC_API_KEY not configured on server');
+    err.status = 503;
+    throw err;
+  }
+  const resp = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': ANTHROPIC_API_KEY,
+      'anthropic-version': '2023-06-01'
+    },
+    body: JSON.stringify({
+      model: CLAUDE_MODEL,
+      max_tokens: maxTokens || 1500,
+      system: [{ type: 'text', text: system, cache_control: { type: 'ephemeral' } }],
+      messages: [{ role: 'user', content: userText }]
+    })
+  });
+  if (!resp.ok) {
+    const errText = await resp.text();
+    console.error('Claude API error:', resp.status, errText);
+    let detail = errText;
+    try { detail = JSON.parse(errText).error?.message || errText; } catch (_) {}
+    const err = new Error(`Claude API ${resp.status}: ${detail}`);
+    err.status = 502;
+    throw err;
+  }
+  const data = await resp.json();
+  return (data.content || []).filter(c => c.type === 'text').map(c => c.text).join('');
+}
+
+function parseJsonReply(text) {
+  let t = text.trim();
+  const fence = t.match(/```(?:json)?\s*([\s\S]*?)```/);
+  if (fence) t = fence[1].trim();
+  const start = t.indexOf('{');
+  const end = t.lastIndexOf('}');
+  if (start === -1 || end === -1) throw new Error('No JSON in AI response');
+  return JSON.parse(t.slice(start, end + 1));
+}
+
+const JOB_PARSE_SYSTEM = `${NICK_PROFILE}
+
+You are the AI assistant inside Nick's job application tracker. The user pastes either (a) a job posting, (b) a LinkedIn/Built In listing blurb, or (c) a note about an application they already submitted. Extract structured data AND give a blunt fit call using the candidate profile above.
+
+Return JSON only, no markdown fences, no commentary. Schema:
+{
+ "company": string, "position": string, "location": string|null,
+ "workType": "Remote"|"Hybrid"|"Onsite"|null,
+ "salaryMin": number|null, "salaryMax": number|null,
+ "url": string|null,
+ "source": "LinkedIn"|"Indeed"|"Glassdoor"|"Company Website"|"Built In"|"Referral"|"Recruiter"|"AngelList/Wellfound"|"Handshake"|"ZipRecruiter"|"Monster"|"Dice"|"Other",
+ "alreadyApplied": boolean,   // true if the text says they applied/submitted
+ "fit": "High"|"Medium"|"Low"|"Skip",
+ "fitReasons": string,        // 2-3 sentences: what works, in plain language
+ "gaps": string,              // honest gaps/risks vs the posting, 1-2 sentences
+ "suggestedPriority": "High"|"Medium"|"Low"
+}
+Fit rules: Skip if onsite/hybrid outside Cleveland OH, salary tops out under $80K, hard bachelor's requirement with no equivalent-experience language, or 4+ years formal PM required. High = remote, $80K+ (or unposted at a strong-fit company), 0-3 yrs, degree-optional. If information is missing, use null and judge with what's there.`;
+
+const COVER_LETTER_SYSTEM = `${NICK_PROFILE}
+
+You write cover letters AS Nick, in his voice: direct, concrete, confident but not corporate. Rules he insists on:
+- NO dashes as punctuation (no em dashes, no hyphens standing in for commas or colons). Use commas and periods instead. Hyphens inside proper product names from his resume, like OR-Tools, are allowed.
+- Short: 3-4 paragraphs, under 300 words.
+- Lead with the most relevant differentiator for THIS role (Bus Routing Pro for product/technical roles, UAT/SQL/client work for implementation/support roles, AI tooling for AI-product roles).
+- Mention his hands-on AI experience (built production software with Claude Code and LLM APIs) where relevant.
+- Never claim a PM title, a degree, or experience he does not have. Frame Busology work as PM-equivalent: owning tickets, writing user stories, UAT, bridging customers and engineering.
+- Sign off as "Nicholaus J. Bensen".
+Return ONLY the letter text, no preamble, no subject line.`;
+
+app.post('/api/ai/job-parse', requireAuth, async (req, res) => {
+  try {
+    const { text } = req.body || {};
+    if (!text || typeof text !== 'string' || !text.trim()) {
+      return res.status(400).json({ error: 'Missing text' });
+    }
+    if (text.length > 20000) return res.status(400).json({ error: 'Text too long' });
+    const reply = await callClaude(JOB_PARSE_SYSTEM, text.trim(), 1200);
+    return res.json({ result: parseJsonReply(reply) });
+  } catch (err) {
+    console.error('job-parse error:', err);
+    return res.status(err.status || 500).json({ error: err.message || 'AI request failed' });
+  }
+});
+
+app.post('/api/ai/cover-letter', requireAuth, async (req, res) => {
+  try {
+    const { job, postingText } = req.body || {};
+    if (!job || !job.company) return res.status(400).json({ error: 'Missing job details' });
+    const prompt = `Write my cover letter for this application:\n` +
+      `Company: ${job.company}\nPosition: ${job.position || 'unknown'}\n` +
+      (job.location ? `Location: ${job.location}\n` : '') +
+      (job.salaryMin || job.salaryMax ? `Posted salary: ${job.salaryMin || '?'} - ${job.salaryMax || '?'}\n` : '') +
+      (job.notes ? `My notes: ${job.notes}\n` : '') +
+      (postingText ? `\nFull posting:\n${String(postingText).slice(0, 12000)}` : '');
+    const reply = await callClaude(COVER_LETTER_SYSTEM, prompt, 1000);
+    return res.json({ letter: reply.trim() });
+  } catch (err) {
+    console.error('cover-letter error:', err);
+    return res.status(err.status || 500).json({ error: err.message || 'AI request failed' });
   }
 });
 
