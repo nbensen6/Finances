@@ -184,9 +184,12 @@ canvas { max-height: 300px; }
 <main>
 <!-- ============ DASHBOARD PAGE ============ -->
 <div id="page-dashboard" class="page active">
-  <div class="flex-between mb-12">
-    <h1 style="font-size:24px;">Budget Overview</h1>
-    <div class="month-tabs" id="month-tabs"></div>
+  <div class="flex-between mb-12" style="flex-wrap:wrap;gap:10px;">
+    <h1 style="font-size:24px;">Budget Overview <span id="year-title" style="color:var(--accent2);"></span></h1>
+    <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;">
+      <div class="month-tabs" id="year-tabs" style="margin-bottom:0;"></div>
+      <div class="month-tabs" id="month-tabs" style="margin-bottom:0;"></div>
+    </div>
   </div>
 
   <div class="grid-4" id="stat-cards"></div>
@@ -591,8 +594,9 @@ const budgetData = {};
 let stmtTransactions = [];
 let uberEntries = [];
 
-// Pre-loaded data from Budget.xlsx
-const monthlyData = {
+// Legacy pre-loaded data from Budget.xlsx (Oct/Nov are 2025; used only for
+// one-time migration into the per-year model below)
+const legacyMonthlyData = {
   'October': {
     income: 3507.92,
     expenses: { Groceries:41.53, Amazon:143.18, 'Fast Food':19.27, Gas:34.98, Subscription:297.82, Entertainment:86.38, Utilities:100, Insurance:72.92, Shopping:345.47, Loan:1050, Restaurant:162.78, Credit:331, Other:331 },
@@ -619,8 +623,32 @@ const monthlyData = {
   }
 };
 
+// Per-year data model: yearlyData['2026']['March'] = {income, expenses, ...}.
+// monthlyData is a live reference to the currently selected year's months.
+let yearlyData = {};
+let currentYear = '2026';
+let monthlyData = {};
+
+const CAL_MONTH_ORDER = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+function saveYearlyData() { lsSet('findash_yearly_data', JSON.stringify(yearlyData)); }
+
+function sortYearlyData() {
+  for (const y of Object.keys(yearlyData)) {
+    const ordered = {};
+    for (const m of CAL_MONTH_ORDER) if (yearlyData[y][m]) ordered[m] = yearlyData[y][m];
+    for (const m of Object.keys(yearlyData[y])) if (!(m in ordered)) ordered[m] = yearlyData[y][m];
+    yearlyData[y] = ordered;
+  }
+  if (yearlyData[currentYear]) monthlyData = yearlyData[currentYear];
+}
+
+function legacyMonthYear(m) {
+  return ['October','November','December'].includes(m) ? '2025' : '2026';
+}
+
 // All known categories for the dropdown — merged with any user-created ones
-const defaultCategories = ['Income','Groceries','Amazon','Fast Food','Gas','Subscription','Entertainment','Utilities','Insurance','Healthcare','Shopping','Loan','Restaurant','Credit','Travel','Other'];
+const defaultCategories = ['Income','Groceries','Amazon','Fast Food','Gas','Gas Bill','Car Repair','Subscription','Entertainment','Utilities','Insurance','Healthcare','Shopping','Loan','Restaurant','Credit','Travel','Other'];
 // These will be populated after initDataLayer() in the DOMContentLoaded handler
 let customCategories = [];
 let allCategories = [...defaultCategories];
@@ -762,28 +790,42 @@ let marchTransactions = [
 ];
 
 // Bills & Subs — defaults (loaded from server if available)
+// Amounts/status validated against Chase statements Dec 25 2025 – Jun 25 2026
 const defaultBillsData = [
-  {name:'Chase',amount:73,due:'5th',link:'https://secure08ea.chase.com/web/auth/dashboard',type:'bill',balance:929},
-  {name:'Merrick Bank',amount:54,due:'16th',link:'https://logon.merrickbank.com/Account/Overview',type:'bill'},
-  {name:'Concora Credit',amount:40,due:'22nd',link:'https://concoracredit.myfinanceservice.com/summary',type:'bill'},
-  {name:'Car Insurance (Geico)',amount:72.92,due:'30th',link:'https://portfolio.geico.com/dashboard?token=pFkHCsJSTGxx8UPoFeXHsEj9TKDaIPWGRJLgZnzi8p0%3D',type:'bill'},
-  {name:'American Express',amount:40,due:'1st',link:'https://global.americanexpress.com/dashboard?intlink=US-Axp-Shop-Consumer-VAC-CardMember',type:'bill'},
-  {name:'Gov Student Loan (MOHELA)',amount:94,due:'16th',link:'https://myaccount.mohela.studentaid.gov/AccountSummary?LandingFrom=CALM',type:'bill'},
-  {name:'Electric (FirstEnergy)',amount:136,due:'9th',link:'https://www.firstenergycorp.com/my_account.html',type:'bill',note:'Susan owes $375'},
-  {name:'Gas (Dominion)',amount:61.53,due:'20th',link:'https://gasapps.dominionenergy.com/GasMYAWeb/?refresh=true',type:'bill',balance:120},
-  {name:'Yrefy Student Loan',amount:835,due:'1st',link:'https://servicing.salliemae.com/s/dashboard',type:'bill'},
-  {name:'Spectrum Internet',amount:70,due:'3rd',link:'https://www.spectrum.net/account-summary',type:'bill'},
-  {name:'Spectrum Mobile',amount:30,due:'27th',link:'https://www.spectrum.net/account-summary',type:'bill'},
+  {name:'Chase',amount:63,due:'5th',link:'https://secure08ea.chase.com/web/auth/dashboard',type:'bill',balance:929,note:'Autopay varies $61-67/mo (Jun: $63)'},
+  {name:'Merrick Bank',amount:54,due:'16th',link:'https://logon.merrickbank.com/Account/Overview',type:'bill',note:'Not seen in Chase statements Jan-Jun — paid elsewhere?'},
+  {name:'Concora Credit',amount:80,due:'22nd',link:'https://concoracredit.myfinanceservice.com/summary',type:'bill',note:'$80/mo since Jan (was $40); $250 in Mar'},
+  {name:'Car Insurance (Geico)',amount:73.69,due:'30th',link:'https://portfolio.geico.com/dashboard?token=pFkHCsJSTGxx8UPoFeXHsEj9TKDaIPWGRJLgZnzi8p0%3D',type:'bill',note:'Was $74.84, dropped to $73.69 in Jun'},
+  {name:'American Express',amount:40,due:'1st',link:'https://global.americanexpress.com/dashboard?intlink=US-Axp-Shop-Consumer-VAC-CardMember',type:'bill',note:'Confirmed $40/mo; extra $941.40 payment in Apr'},
+  {name:'Gov Student Loan (MOHELA)',amount:94,due:'16th',link:'https://myaccount.mohela.studentaid.gov/AccountSummary?LandingFrom=CALM',type:'bill',note:'Actual: Dept of Ed $280.62 Jan, $187.08 Mar — nothing since'},
+  {name:'Electric (FirstEnergy)',amount:125,due:'9th',link:'https://www.firstenergycorp.com/my_account.html',type:'bill',note:'Paid in lump sums: $400 Mar, $350 Jun (~$125/mo avg). Susan owes $375'},
+  {name:'Gas (Enbridge, was Dominion)',amount:125,due:'20th',link:'https://www.enbridgegas.com/ohio',type:'bill',note:'$750 catch-up payment in Jun (~$125/mo avg)'},
+  {name:'Yrefy Student Loan',amount:835,due:'1st',link:'https://servicing.salliemae.com/s/dashboard',type:'bill',note:'Confirmed $835/mo, all 6 months'},
+  {name:'Spectrum Internet',amount:80,due:'3rd',link:'https://www.spectrum.net/account-summary',type:'bill',note:'Increased from $70 to $80 in May'},
+  {name:'Spectrum Mobile',amount:73.33,due:'27th',link:'https://www.spectrum.net/account-summary',type:'bill',note:'Was $40/mo; Jun charged $129.33 + $73.33 (new device/line?)'},
 ];
 
 const defaultSubsData = [
-  {name:'Peacock',amount:8.63,link:'https://www.peacocktv.com/watch/profiles?return=%2Fwatch%2Fhome',active:true},
-  {name:'Disney+',amount:15.11,link:'https://www.disneyplus.com/home',active:true},
-  {name:'Spotify',amount:11.87,link:'https://open.spotify.com/',active:false},
+  {name:'Claude.ai',amount:89.95,link:'https://claude.ai/',active:true},
+  {name:'WeTeachLeague',amount:39,link:'https://weteachleague.com/',active:true},
+  {name:'Planet Fitness',amount:27.05,link:'https://www.planetfitness.com/',active:true},
+  {name:'RankUpLoL',amount:20,link:null,active:true},
+  {name:'PlanetScale',amount:15,link:'https://planetscale.com/',active:true},
+  {name:'Spotify (via PayPal)',amount:14.03,link:'https://open.spotify.com/',active:true},
+  {name:'Disney+ (via Roku)',amount:12.95,link:'https://www.disneyplus.com/home',active:true},
+  {name:'Peacock',amount:11.87,link:'https://www.peacocktv.com/watch/profiles?return=%2Fwatch%2Fhome',active:true},
+  {name:'Hulu (via PayPal)',amount:8.64,link:'https://www.hulu.com/hub/home',active:true},
+  {name:'HP Instant Ink',amount:5.93,link:'https://www.hpinstantink.com/',active:true},
+  {name:'Fly.io (usage-based)',amount:42.37,link:'https://fly.io/dashboard',active:true},
+  {name:'Cloudflare (usage-based)',amount:11.30,link:'https://dash.cloudflare.com/',active:true},
+  {name:'Ring Doorbell ($53.99/yr, renewed Jan)',amount:4.50,link:'https://ring.com/',active:true},
+  {name:'Apple.com/Bill (not seen since Apr)',amount:25.87,link:null,active:false},
+  {name:'Midjourney (last seen Apr)',amount:10,link:'https://www.midjourney.com/',active:false},
+  {name:'Ideogram (Mar-Apr only)',amount:20,link:null,active:false},
+  {name:'Canva (last seen Mar)',amount:16.20,link:'https://www.canva.com/',active:false},
+  {name:'Uppbeat (last seen Mar)',amount:6.99,link:null,active:false},
+  {name:'Netflix (one charge Feb)',amount:19.43,link:null,active:false},
   {name:'Amazon Prime',amount:6.99,link:'https://www.amazon.com/ref=nav_logo',active:false},
-  {name:'Planet Fitness',amount:27.05,link:'https://www.planetfitness.com/',active:false},
-  {name:'Netflix',amount:8.63,link:null,active:false},
-  {name:'Hulu',amount:20.51,link:'https://www.hulu.com/hub/home',active:false},
   {name:'MLA (MidLaneAcademy)',amount:30,link:'https://midlaneacademy.com/',active:false},
 ];
 
@@ -804,10 +846,12 @@ function loadBillsAndSubs() {
 const categoryKeywords = {
   'Groceries': ['aldi','kroger','discount drug mart','grocery','publix','walmart groc'],
   'Fast Food': ['mcdonald','wendy','burger','pizza','taco bell','chick-fil-a'],
+  'Gas Bill': ['enbridge','dominion','columbia gas'],
+  'Car Repair': ['tire','valvoline','autozone','oreilly','advance auto','auto repair','brake','oil change','midas','monro','firestone','car care'],
   'Gas': ['shell','bp','exxon','gas','fuel','marathon','sunoco','speedway'],
   'Amazon': ['amazon','amzn'],
   'Subscription': ['netflix','spotify','disney','claude','roku','subscription','hulu','peacock','twitch','planet fitness','midjourney','ideogram','canva','planetscale','fly.io','hp instant','uppbeat','apple.com/bill','xbox game','steam','rankuplol','skycastle','weteachleague'],
-  'Utilities': ['electric','water','duke','utility','firstenergy','spectrum','dominion'],
+  'Utilities': ['electric','water','duke','utility','firstenergy','spectrum'],
   'Insurance': ['geico','state farm','insurance'],
   'Restaurant': ['brewdog','nano brew','pins mechanical','condado','piada','panera','biggby','grille','pulp juice','romito','avo modern','coffee cup'],
   'Entertainment': ['golf','bowling','movie','concert','big met'],
@@ -842,18 +886,80 @@ function showPage(name) {
   document.getElementById('page-' + name).classList.add('active');
   document.querySelectorAll('.nav-links button').forEach(b => b.classList.remove('active'));
   event.target.classList.add('active');
+  if (name === 'debts') renderDebts(); // refresh payment-based balances
 }
 
 // ===== DASHBOARD =====
 let currentMonth = 'March';
+const YEAR_TAB = 'Full Year';
+
+function setYear(y) {
+  currentYear = y;
+  if (!yearlyData[y]) yearlyData[y] = {};
+  monthlyData = yearlyData[y];
+  const monthKeys = Object.keys(monthlyData);
+  currentMonth = monthKeys.length ? monthKeys[monthKeys.length - 1] : YEAR_TAB;
+  initDashboard();
+}
+
+// Aggregate every month in monthlyData — new months are included automatically
+function buildYearData() {
+  const agg = { income: 0, expenses: {}, budgets: {}, totalExpenses: 0, net: 0, transactions: [] };
+  for (const m of Object.keys(monthlyData)) {
+    const d = monthlyData[m];
+    agg.income += d.income;
+    agg.totalExpenses += d.totalExpenses;
+    agg.net += d.net;
+    for (const [c, a] of Object.entries(d.expenses || {})) agg.expenses[c] = (agg.expenses[c] || 0) + a;
+    for (const [c, a] of Object.entries(d.budgets || {})) agg.budgets[c] = (agg.budgets[c] || 0) + a;
+    const txs = d.transactions || (m === 'March' && currentYear === '2026' ? marchTransactions : null);
+    if (txs) agg.transactions = agg.transactions.concat(txs);
+  }
+  agg.transactions.sort((a, b) => b.date.localeCompare(a.date));
+  agg.income = Math.round(agg.income * 100) / 100;
+  agg.totalExpenses = Math.round(agg.totalExpenses * 100) / 100;
+  agg.net = Math.round(agg.net * 100) / 100;
+  for (const c in agg.expenses) agg.expenses[c] = Math.round(agg.expenses[c] * 100) / 100;
+  return agg;
+}
+
+// Data and transaction list backing the currently displayed view
+let _dashData = null;
+function currentDashData() {
+  return currentMonth === YEAR_TAB ? buildYearData() : monthlyData[currentMonth];
+}
+function currentTxSource() {
+  if (currentMonth === YEAR_TAB) return (_dashData && _dashData.transactions) || buildYearData().transactions;
+  const d = monthlyData[currentMonth];
+  return (d && d.transactions) || (currentMonth === 'March' && currentYear === '2026' ? marchTransactions : null);
+}
 
 function initDashboard() {
+  // Year tabs
+  const yearTabs = document.getElementById('year-tabs');
+  yearTabs.innerHTML = '';
+  for (const y of Object.keys(yearlyData).sort()) {
+    const btn = document.createElement('button');
+    btn.textContent = y;
+    btn.className = y === currentYear ? 'active' : '';
+    btn.style.fontWeight = '700';
+    btn.onclick = () => setYear(y);
+    yearTabs.appendChild(btn);
+  }
+  document.getElementById('year-title').textContent = currentYear;
+
+  // Month tabs for the selected year
   const tabs = document.getElementById('month-tabs');
   tabs.innerHTML = '';
-  for (const m of Object.keys(monthlyData)) {
+  const monthKeys = Object.keys(monthlyData);
+  if (!monthKeys.includes(currentMonth) && currentMonth !== YEAR_TAB) {
+    currentMonth = monthKeys.length ? monthKeys[monthKeys.length - 1] : YEAR_TAB;
+  }
+  for (const m of [...monthKeys, YEAR_TAB]) {
     const btn = document.createElement('button');
     btn.textContent = m;
     btn.className = m === currentMonth ? 'active' : '';
+    if (m === YEAR_TAB) btn.style.borderColor = 'var(--accent)';
     btn.onclick = () => { currentMonth = m; document.querySelectorAll('#month-tabs button').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); renderDashboard(); };
     tabs.appendChild(btn);
   }
@@ -861,7 +967,8 @@ function initDashboard() {
 }
 
 function renderDashboard() {
-  const data = monthlyData[currentMonth];
+  const data = currentDashData();
+  _dashData = data;
   const cards = document.getElementById('stat-cards');
   cards.innerHTML = `
     <div class="stat"><div class="label">Income</div><div class="value positive">${fmt(data.income)}</div></div>
@@ -872,7 +979,8 @@ function renderDashboard() {
 
   // Credit payoff
   const totalCredit = 3000;
-  const creditPayments = (monthlyData['March']?.expenses?.Credit || 0) + (monthlyData['February']?.expenses?.Credit || 0);
+  const y26 = yearlyData['2026'] || {};
+  const creditPayments = (y26['March']?.expenses?.Credit || 0) + (y26['February']?.expenses?.Credit || 0);
   const pct = Math.min(100, (creditPayments / totalCredit * 100));
   document.getElementById('credit-progress').style.width = pct + '%';
   document.getElementById('credit-paid-label').textContent = fmt(creditPayments) + ' paid';
@@ -880,7 +988,7 @@ function renderDashboard() {
 
   // Category bars - recalculate from transactions if available (to reflect overrides)
   let displayExpenses = data.expenses;
-  const txSource = data.transactions || (currentMonth === 'March' ? marchTransactions : null);
+  const txSource = currentTxSource();
   if (txSource) {
     displayExpenses = {};
     txSource.forEach(tx => {
@@ -917,21 +1025,21 @@ function renderDashboard() {
   renderTrendChart();
 
   // Transactions table with editable categories
-  const txData = data.transactions || (currentMonth === 'March' ? marchTransactions : null);
+  const txData = txSource;
   if (txData) {
     const tbody = document.querySelector('#tx-table tbody');
-    tbody.innerHTML = '';
-    txData.forEach((tx, idx) => {
+    const rows = txData.map((tx, idx) => {
       const cls = tx.amount >= 0 ? 'positive' : 'negative';
       const effCat = getEffectiveCat(tx);
       const options = allCategories.map(c => `<option value="${c}" ${c === effCat ? 'selected' : ''}>${c}</option>`).join('');
-      tbody.innerHTML += `<tr>
+      return `<tr>
         <td>${tx.date}</td>
         <td>${tx.desc}</td>
         <td class="${cls}">${tx.amount >= 0 ? '+' : ''}${fmt(Math.abs(tx.amount))}</td>
         <td><select class="cat-select" onchange="changeTxCategory(${idx}, this.value)">${options}</select></td>
       </tr>`;
     });
+    tbody.innerHTML = rows.join('');
   } else {
     document.querySelector('#tx-table tbody').innerHTML = '<tr><td colspan="4" style="color:var(--text-dim);text-align:center;padding:20px;">Upload a bank statement and send it to this month to see transactions.</td></tr>';
   }
@@ -979,22 +1087,42 @@ function renderTrendChart() {
 
 // ===== CATEGORY DRILL-DOWN MODAL =====
 function openCatModal(cat) {
-  if (currentMonth !== 'March') return;
-  const txs = marchTransactions.filter(tx => getEffectiveCat(tx) === cat);
+  const txSource = currentTxSource();
+  if (!txSource || !txSource.length) return;
+  const txs = txSource.filter(tx => getEffectiveCat(tx) === cat);
   const total = txs.reduce((a,tx) => a + Math.abs(tx.amount), 0);
-  const budget = monthlyData['March'].budgets[cat] || 0;
+  const budget = (_dashData && _dashData.budgets && _dashData.budgets[cat]) || 0;
 
   document.getElementById('cat-modal-title').textContent = cat + ' Transactions';
-  document.getElementById('cat-modal-sub').innerHTML = `
-    ${txs.length} transaction${txs.length !== 1 ? 's' : ''} totaling <strong class="negative">${fmt(total)}</strong>
-    ${budget > 0 ? ` | Budget: <strong>${fmt(budget)}</strong> | <span class="${total > budget ? 'negative' : 'positive'}">${fmtSign(budget - total)}</span>` : ''}
-  `;
+  if (currentMonth === YEAR_TAB) {
+    // Year view: compare average monthly spend against the per-month budget
+    const monthsCount = Math.max(1, Object.keys(monthlyData).length);
+    const avgPerMonth = total / monthsCount;
+    let perMonthBudget = 0;
+    for (const m of Object.keys(monthlyData)) {
+      const b = monthlyData[m].budgets && monthlyData[m].budgets[cat];
+      if (b) perMonthBudget = b; // latest month's budget wins
+    }
+    const diff = avgPerMonth - perMonthBudget;
+    document.getElementById('cat-modal-sub').innerHTML = `
+      ${txs.length} transaction${txs.length !== 1 ? 's' : ''} totaling <strong class="negative">${fmt(total)}</strong> across ${monthsCount} months<br>
+      Avg spent: <strong>${fmt(avgPerMonth)}/mo</strong>
+      ${perMonthBudget > 0
+        ? ` | Budget: <strong>${fmt(perMonthBudget)}/mo</strong> | <span class="${diff > 0 ? 'negative' : 'positive'}">${diff > 0 ? fmt(diff) + '/mo over budget' : fmt(-diff) + '/mo under budget'}</span>`
+        : ' | No budget set'}
+    `;
+  } else {
+    document.getElementById('cat-modal-sub').innerHTML = `
+      ${txs.length} transaction${txs.length !== 1 ? 's' : ''} totaling <strong class="negative">${fmt(total)}</strong>
+      ${budget > 0 ? ` | Budget: <strong>${fmt(budget)}</strong> | <span class="${total > budget ? 'negative' : 'positive'}">${fmtSign(budget - total)}</span>` : ''}
+    `;
+  }
 
   const tbody = document.getElementById('cat-modal-body');
   tbody.innerHTML = '';
   txs.sort((a,b) => b.date.localeCompare(a.date) || Math.abs(b.amount) - Math.abs(a.amount));
   txs.forEach(tx => {
-    const idx = marchTransactions.indexOf(tx);
+    const idx = txSource.indexOf(tx);
     const options = allCategories.map(c => `<option value="${c}" ${c === getEffectiveCat(tx) ? 'selected' : ''}>${c}</option>`).join('');
     tbody.innerHTML += `<tr>
       <td>${tx.date}</td>
@@ -1012,7 +1140,8 @@ function closeCatModal() {
 }
 
 function changeTxCategory(idx, newCat, fromModal) {
-  const tx = marchTransactions[idx];
+  const tx = (currentTxSource() || [])[idx];
+  if (!tx) return;
   const key = txKey(tx);
   if (newCat === tx.cat) {
     delete catOverrides[key]; // Reset to original
@@ -1096,10 +1225,7 @@ function initBills() {
   // Bills list
   const billsList = document.getElementById('bills-list');
   billsList.innerHTML = '';
-  billsData.sort((a,b) => {
-    const order = ['1st','2nd','3rd','5th','9th','16th','20th','22nd','27th','30th'];
-    return order.indexOf(a.due) - order.indexOf(b.due);
-  }).forEach(b => {
+  billsData.sort((a,b) => (parseInt(a.due) || 99) - (parseInt(b.due) || 99)).forEach(b => {
     billsList.innerHTML += `
       <div class="bill-row">
         <div class="bill-info">
@@ -1195,12 +1321,87 @@ function loadDebtsData() {
   debtsData = saved ? JSON.parse(saved) : [...defaultDebtsData];
 }
 
+// ===== DEBT AUTO-TRACKING FROM STATEMENTS =====
+// Debts with `keywords` get payments matched from statement transactions across
+// all years. If a debt has a `baseline` {date, balance}, its displayed balance
+// is baseline minus matched payments dated after the baseline (a payment-based
+// estimate — it can't see interest or new card charges). Editing a debt's
+// balance re-baselines it as of that day.
+const DEBT_AUTO_RULES = [
+  { test: /yrefy/i, keywords: ['yrefy'] },
+  { test: /mohela|gov student/i, keywords: ['mohela', 'dept education', 'student ln'] },
+  { test: /chase/i, keywords: ['chase credit'] },
+  { test: /concora/i, keywords: ['concora'] },
+  { test: /merrick/i, keywords: ['merrick'] },
+  { test: /american express|amex/i, keywords: ['american express'] },
+];
+
+const DEFAULT_CC_DEBTS = [
+  {name:'Chase Credit Card', balance:929, original:929, payment:63, rate:0, category:'credit_card', link:'https://secure08ea.chase.com/web/auth/dashboard', notes:'Est. from payments since Dec 2025 — edit balance to re-baseline', baseline:{date:'2025-12-25', balance:929}},
+  {name:'Concora Credit', balance:0, original:0, payment:80, rate:0, category:'credit_card', link:'https://concoracredit.myfinanceservice.com/summary', notes:'Balance unknown — tracking payments; edit balance to start the estimate'},
+  {name:'American Express', balance:0, original:0, payment:40, rate:0, category:'credit_card', link:'https://global.americanexpress.com/dashboard', notes:'Balance unknown — tracking payments; edit balance to start the estimate'},
+  {name:'Merrick Bank', balance:0, original:0, payment:54, rate:0, category:'credit_card', link:'https://logon.merrickbank.com/Account/Overview', notes:'Balance unknown — no payments seen in Chase statements'},
+];
+
+function ensureDebtAutoTracking() {
+  let changed = false;
+  for (const cc of DEFAULT_CC_DEBTS) {
+    if (!debtsData.some(d => d.name.toLowerCase() === cc.name.toLowerCase())) {
+      debtsData.push(JSON.parse(JSON.stringify(cc)));
+      changed = true;
+    }
+  }
+  for (const d of debtsData) {
+    if (!d.keywords) {
+      const rule = DEBT_AUTO_RULES.find(r => r.test.test(d.name));
+      if (rule) { d.keywords = rule.keywords; changed = true; }
+    }
+  }
+  if (changed && _dataLoaded) saveDebtsData();
+}
+
+function computeDebtPayments(d) {
+  if (!d.keywords || !d.keywords.length) return null;
+  const kws = d.keywords.map(k => k.toLowerCase());
+  let total = 0, count = 0, last = null, afterBaseline = 0;
+  for (const months of Object.values(yearlyData)) {
+    for (const m of Object.values(months)) {
+      for (const tx of (m.transactions || [])) {
+        if (tx.amount >= 0) continue;
+        const desc = String(tx.desc || '').toLowerCase();
+        if (/overdraft fee|insufficient funds|returned item/.test(desc)) continue; // bank fees mention the payee but aren't payments
+        if (kws.some(k => desc.includes(k))) {
+          const amt = Math.abs(tx.amount);
+          total += amt;
+          count++;
+          if (!last || tx.date > last.date) last = { date: tx.date, amount: amt };
+          if (d.baseline && tx.date > d.baseline.date) afterBaseline += amt;
+        }
+      }
+    }
+  }
+  return { total: Math.round(total * 100) / 100, count, last, afterBaseline: Math.round(afterBaseline * 100) / 100 };
+}
+
+function debtEffectiveBalance(d, pay) {
+  if (d.baseline && pay) return Math.max(0, Math.round((d.baseline.balance - pay.afterBaseline) * 100) / 100);
+  return d.balance;
+}
+
+function debtAutoLine(pay) {
+  if (!pay || !pay.count) return '';
+  return `<div style="font-size:11px;color:var(--green);margin-top:2px;">&#9889; ${fmt(pay.total)} paid via statements (${pay.count} payment${pay.count !== 1 ? 's' : ''}) &middot; last ${fmt(pay.last.amount)} on ${pay.last.date}</div>`;
+}
+
 function renderDebts() {
+  ensureDebtAutoTracking();
+  const _payCache = new Map(debtsData.map(d => [d, computeDebtPayments(d)]));
+  const effBal = d => debtEffectiveBalance(d, _payCache.get(d));
   const active = debtsData.filter(d => d.category !== 'student_loan');
   const deferred = debtsData.filter(d => d.category === 'student_loan');
-  const totalActive = active.reduce((a, d) => a + d.balance, 0);
+  const totalActive = active.reduce((a, d) => a + effBal(d), 0);
   const totalOriginal = active.reduce((a, d) => a + d.original, 0);
-  const totalAll = totalActive + deferred.reduce((a, d) => a + d.balance, 0);
+  const totalAll = totalActive + deferred.reduce((a, d) => a + effBal(d), 0);
   const totalPayments = debtsData.reduce((a, d) => a + d.payment, 0);
   const paid = Math.max(0, totalOriginal - totalActive);
   const paidPct = totalOriginal > 0 ? (paid / totalOriginal * 100) : 0;
@@ -1229,10 +1430,11 @@ function renderDebts() {
           <div>
             <div class="bill-name">${d.name}</div>
             <div style="font-size:11px;color:var(--text-dim);">${catLabels[d.category] || d.category}${d.notes ? ' — ' + d.notes : ''}</div>
+            ${debtAutoLine(_payCache.get(d))}
           </div>
         </div>
         <div style="display:flex;align-items:center;gap:10px;">
-          <div class="bill-amount" style="color:var(--negative);">${fmt(d.balance)}</div>
+          <div class="bill-amount" style="color:var(--negative);">${d.baseline || effBal(d) > 0 ? fmt(effBal(d)) : 'Bal. unknown'}</div>
           ${d.link ? `<a href="${d.link}" target="_blank"><button class="pay-btn">View</button></a>` : ''}
           <button class="pay-btn" onclick="editDebt(${idx})" title="Edit">&#9998;</button>
           <button class="pay-btn" onclick="deleteDebt(${idx})" title="Delete" style="color:var(--negative);">&#10005;</button>
@@ -1251,10 +1453,11 @@ function renderDebts() {
           <div>
             <div class="bill-name">${d.name}</div>
             <div style="font-size:11px;color:var(--text-dim);">Payment: ${fmt(d.payment)}/mo${d.notes ? ' — ' + d.notes : ''}</div>
+            ${debtAutoLine(_payCache.get(d))}
           </div>
         </div>
         <div style="display:flex;align-items:center;gap:10px;">
-          <div class="bill-amount" style="color:var(--text-dim);">${d.balance > 0 ? fmt(d.balance) : 'Bal. unknown'}</div>
+          <div class="bill-amount" style="color:var(--text-dim);">${effBal(d) > 0 ? fmt(effBal(d)) : 'Bal. unknown'}</div>
           ${d.link ? `<a href="${d.link}" target="_blank"><button class="pay-btn">View</button></a>` : ''}
           <button class="pay-btn" onclick="editDebt(${idx})" title="Edit">&#9998;</button>
           <button class="pay-btn" onclick="deleteDebt(${idx})" title="Delete" style="color:var(--negative);">&#10005;</button>
@@ -1262,8 +1465,8 @@ function renderDebts() {
       </div>`;
   });
 
-  // Breakdown chart
-  renderDebtChart(active);
+  // Breakdown chart (effective balances, zero-balance debts excluded)
+  renderDebtChart(active.map(d => ({ name: d.name, balance: effBal(d) })).filter(d => d.balance > 0));
 }
 
 function renderDebtChart(active) {
@@ -1305,7 +1508,7 @@ function openDebtModal(index) {
   if (_editingDebtIndex >= 0) {
     const d = debtsData[_editingDebtIndex];
     document.getElementById('debt-name').value = d.name;
-    document.getElementById('debt-balance').value = d.balance;
+    document.getElementById('debt-balance').value = debtEffectiveBalance(d, computeDebtPayments(d));
     document.getElementById('debt-original').value = d.original;
     document.getElementById('debt-payment').value = d.payment;
     document.getElementById('debt-rate').value = d.rate;
@@ -1333,6 +1536,16 @@ function saveDebtFromModal() {
   if (!name) { alert('Please enter a name.'); return; }
 
   const entry = { name, balance, original, payment, rate, category, link, notes };
+  const prev = _editingDebtIndex >= 0 ? debtsData[_editingDebtIndex] : null;
+  if (prev && prev.keywords) entry.keywords = prev.keywords;
+  // A manually entered balance becomes the new baseline as of today, so only
+  // future statement payments reduce it further.
+  const prevEffective = prev ? debtEffectiveBalance(prev, computeDebtPayments(prev)) : null;
+  if (balance > 0 && (!prev || !prev.baseline || Math.abs(balance - prevEffective) > 0.005)) {
+    entry.baseline = { date: new Date().toISOString().slice(0, 10), balance };
+  } else if (prev && prev.baseline && balance > 0) {
+    entry.baseline = prev.baseline;
+  }
   if (_editingDebtIndex >= 0) {
     debtsData[_editingDebtIndex] = entry;
   } else {
@@ -1765,15 +1978,24 @@ function sendStatementToDashboard() {
   const totalExpenses = Object.values(expByCat).reduce((a, b) => a + b, 0);
   const net = Math.round((income - totalExpenses) * 100) / 100;
 
+  // Infer the year from the statement's own transaction dates (majority wins)
+  const yearCounts = {};
+  stmtTransactions.forEach(t => {
+    const y = String(t.date || '').slice(0, 4);
+    if (/^\d{4}$/.test(y)) yearCounts[y] = (yearCounts[y] || 0) + 1;
+  });
+  const year = Object.keys(yearCounts).sort((a, b) => yearCounts[b] - yearCounts[a])[0] || currentYear;
+  if (!yearlyData[year]) yearlyData[year] = {};
+
   // Build budgets from existing data or defaults
-  const existingBudgets = monthlyData[month]?.budgets || {};
+  const existingBudgets = yearlyData[year][month]?.budgets || {};
   const budgets = {};
   for (const cat of Object.keys(expByCat)) {
     budgets[cat] = existingBudgets[cat] || 200;
   }
 
   // Create/update the month entry
-  monthlyData[month] = {
+  yearlyData[year][month] = {
     income: Math.round(income * 100) / 100,
     expenses: expByCat,
     budgets,
@@ -1781,15 +2003,19 @@ function sendStatementToDashboard() {
     net,
     transactions: stmtTransactions
   };
+  sortYearlyData();
 
   // Persist to server
-  lsSet('findash_monthly_data', JSON.stringify(monthlyData));
+  saveYearlyData();
 
-  // Refresh dashboard
+  // Refresh dashboard on that year/month; debt balances pick up new payments
+  currentYear = year;
+  monthlyData = yearlyData[year];
   currentMonth = month;
   initDashboard();
+  renderDebts();
 
-  alert('Statement added to dashboard for ' + month + '!\nIncome: $' + income.toFixed(2) + '\nExpenses: $' + totalExpenses.toFixed(2) + '\nNet: $' + net.toFixed(2));
+  alert('Statement added to dashboard for ' + month + ' ' + year + '!\nIncome: $' + income.toFixed(2) + '\nExpenses: $' + totalExpenses.toFixed(2) + '\nNet: $' + net.toFixed(2));
 }
 
 function renderStmtTable(txs) {
@@ -2167,14 +2393,29 @@ document.addEventListener('DOMContentLoaded', async () => {
   loadBillsAndSubs();
   loadDebtsData();
 
-  // Load any saved monthly data from server (merges with hardcoded defaults)
-  const savedMonthly = lsGet('findash_monthly_data');
-  if (savedMonthly) {
-    const parsed = JSON.parse(savedMonthly);
-    for (const [month, data] of Object.entries(parsed)) {
-      monthlyData[month] = data;
+  // Load per-year data; migrate legacy month-keyed data on first run
+  const savedYearly = lsGet('findash_yearly_data');
+  if (savedYearly) {
+    yearlyData = JSON.parse(savedYearly) || {};
+  } else {
+    const legacy = { ...legacyMonthlyData };
+    const savedMonthly = lsGet('findash_monthly_data');
+    if (savedMonthly) Object.assign(legacy, JSON.parse(savedMonthly));
+    yearlyData = {};
+    for (const [m, d] of Object.entries(legacy)) {
+      const y = legacyMonthYear(m);
+      (yearlyData[y] = yearlyData[y] || {})[m] = d;
     }
+    saveYearlyData();
   }
+  sortYearlyData();
+
+  // Open on the latest year and its most recent month
+  const years = Object.keys(yearlyData).sort();
+  currentYear = years.length ? years[years.length - 1] : '2026';
+  monthlyData = yearlyData[currentYear] || (yearlyData[currentYear] = {});
+  const monthKeys = Object.keys(monthlyData);
+  currentMonth = monthKeys.length ? monthKeys[monthKeys.length - 1] : YEAR_TAB;
 
   initDashboard();
   initBills();

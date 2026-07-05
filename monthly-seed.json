@@ -1,0 +1,3501 @@
+{
+ "version": 5,
+ "updated": "2026-07-05",
+ "years": {
+  "2025": {
+   "October": {
+    "income": 3507.92,
+    "expenses": {
+     "Groceries": 41.53,
+     "Amazon": 143.18,
+     "Fast Food": 19.27,
+     "Gas": 34.98,
+     "Subscription": 297.82,
+     "Entertainment": 86.38,
+     "Utilities": 100,
+     "Insurance": 72.92,
+     "Shopping": 345.47,
+     "Loan": 1050,
+     "Restaurant": 162.78,
+     "Credit": 331,
+     "Other": 331
+    },
+    "budgets": {
+     "Groceries": 50,
+     "Amazon": 100,
+     "Fast Food": 50,
+     "Gas": 80,
+     "Subscription": 200,
+     "Entertainment": 75,
+     "Utilities": 200,
+     "Insurance": 75,
+     "Shopping": 50,
+     "Loan": 1050,
+     "Restaurant": 60,
+     "Credit": 350,
+     "Other": 200
+    },
+    "totalExpenses": 3016.33,
+    "net": 491.59,
+    "source": "Budget.xlsx (Oct 2025)"
+   },
+   "November": {
+    "income": 1697.46,
+    "expenses": {
+     "Groceries": 153.21,
+     "Amazon": 202.01,
+     "Fast Food": 62.93,
+     "Gas": 41.53,
+     "Subscription": 78.97,
+     "Entertainment": 98.6,
+     "Utilities": 858.16,
+     "Insurance": 0,
+     "Shopping": 0,
+     "Loan": 505,
+     "Restaurant": 88.5,
+     "Credit": 311,
+     "Other": 0
+    },
+    "budgets": {
+     "Groceries": 50,
+     "Amazon": 100,
+     "Fast Food": 50,
+     "Gas": 80,
+     "Subscription": 200,
+     "Entertainment": 75,
+     "Utilities": 200,
+     "Insurance": 75,
+     "Shopping": 50,
+     "Loan": 1050,
+     "Restaurant": 60,
+     "Credit": 350,
+     "Other": 200
+    },
+    "totalExpenses": 2399.91,
+    "net": -702.45,
+    "source": "Budget.xlsx (Nov 2025)"
+   }
+  },
+  "2026": {
+   "January": {
+    "income": 3234.1,
+    "expenses": {
+     "Subscription": 899.85,
+     "Other": 140.0,
+     "Amazon": 259.18,
+     "Groceries": 126.62,
+     "Loan": 1115.62,
+     "Restaurant": 295.84,
+     "Utilities": 130.0,
+     "Entertainment": 179.93,
+     "Gas": 108.94,
+     "Fast Food": 5.1,
+     "Healthcare": 108.5,
+     "Shopping": 158.54,
+     "Credit": 186.0,
+     "Insurance": 74.84
+    },
+    "budgets": {
+     "Subscription": 200,
+     "Other": 200,
+     "Amazon": 100,
+     "Groceries": 50,
+     "Loan": 1050,
+     "Restaurant": 60,
+     "Utilities": 200,
+     "Entertainment": 75,
+     "Gas": 80,
+     "Fast Food": 50,
+     "Healthcare": 100,
+     "Shopping": 200,
+     "Credit": 350,
+     "Insurance": 75
+    },
+    "totalExpenses": 3788.96,
+    "net": -554.86,
+    "transactions": [
+     {
+      "date": "2026-01-28",
+      "desc": "Apple.Com/Bill 866-712-7753 CA",
+      "amount": -25.87,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-01-28",
+      "desc": "Roku For Disney Electr 816-2728107 De",
+      "amount": -12.95,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-01-27",
+      "desc": "Fileyourtaxes Com Clover.Com CA",
+      "amount": -40.0,
+      "cat": "Other"
+     },
+     {
+      "date": "2026-01-27",
+      "desc": "Amazon Mktpl*7A2Uq6A Amzn.Com/Bill WA",
+      "amount": -25.98,
+      "cat": "Amazon"
+     },
+     {
+      "date": "2026-01-27",
+      "desc": "Discount Drug Mart 3 Maple Heights OH",
+      "amount": -24.73,
+      "cat": "Groceries"
+     },
+     {
+      "date": "2026-01-27",
+      "desc": "Dept Education Student Ln 6Rkd905Hep1",
+      "amount": -280.62,
+      "cat": "Loan"
+     },
+     {
+      "date": "2026-01-27",
+      "desc": "Paypal Inst Xfer Discord",
+      "amount": -10.79,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-01-26",
+      "desc": "Tst*Pins Mechanical Com Cleveland OH",
+      "amount": -30.77,
+      "cat": "Restaurant"
+     },
+     {
+      "date": "2026-01-26",
+      "desc": "Spectrum Mobile 855-707-7328 MO",
+      "amount": -30.0,
+      "cat": "Utilities"
+     },
+     {
+      "date": "2026-01-26",
+      "desc": "Riot* Ln6Hkf344Nka 866-373-9211 CA",
+      "amount": -5.39,
+      "cat": "Entertainment"
+     },
+     {
+      "date": "2026-01-26",
+      "desc": "Riot* Ln6Yjw1Jagjp 866-373-9211 CA",
+      "amount": -5.39,
+      "cat": "Entertainment"
+     },
+     {
+      "date": "2026-01-26",
+      "desc": "Riot* Ln6Jx1A1Fq8C 866-373-9211 CA",
+      "amount": -5.39,
+      "cat": "Entertainment"
+     },
+     {
+      "date": "2026-01-26",
+      "desc": "Claude.Ai Subscripti Anthropic.Com CA",
+      "amount": -108.0,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-01-23",
+      "desc": "Amazon Mktpl*K30M73R Amzn.Com/Bill WA",
+      "amount": -113.38,
+      "cat": "Amazon"
+     },
+     {
+      "date": "2026-01-22",
+      "desc": "Amazon Mktpl*Bd3R308 Amzn.Com/Bill WA",
+      "amount": -25.98,
+      "cat": "Amazon"
+     },
+     {
+      "date": "2026-01-22",
+      "desc": "Amazon Mktpl*Xa1A143 Amzn.Com/Bill WA",
+      "amount": -6.03,
+      "cat": "Amazon"
+     },
+     {
+      "date": "2026-01-22",
+      "desc": "Uppbeat Iat Paypal 1047784645394",
+      "amount": -6.99,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-01-21",
+      "desc": "Wix Com Inc Payout 870Ggq69Qmz19Ao",
+      "amount": 19.12,
+      "cat": "Income"
+     },
+     {
+      "date": "2026-01-21",
+      "desc": "Paypal Inst Xfer Hulu",
+      "amount": -8.64,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-01-20",
+      "desc": "Discount Drug Mart 3 Maple Heights OH",
+      "amount": 7.55,
+      "cat": "Income"
+     },
+     {
+      "date": "2026-01-20",
+      "desc": "Sunoco 8003081501 Bedford OH",
+      "amount": -40.07,
+      "cat": "Gas"
+     },
+     {
+      "date": "2026-01-20",
+      "desc": "Tst* Latte Factory - Be Beachwood OH",
+      "amount": -12.12,
+      "cat": "Restaurant"
+     },
+     {
+      "date": "2026-01-20",
+      "desc": "Mcdonald's F33898 Garfield Hts OH",
+      "amount": -5.1,
+      "cat": "Fast Food"
+     },
+     {
+      "date": "2026-01-20",
+      "desc": "Weteachleague Melbourne",
+      "amount": -39.0,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-01-20",
+      "desc": "Ohiopetvetsolon.Com 440-2328383 OH",
+      "amount": -108.5,
+      "cat": "Healthcare"
+     },
+     {
+      "date": "2026-01-20",
+      "desc": "Dollar Tree Garfield Heig OH",
+      "amount": -7.02,
+      "cat": "Shopping"
+     },
+     {
+      "date": "2026-01-20",
+      "desc": "Discount Drug Mart 3 Maple Heights OH",
+      "amount": -33.45,
+      "cat": "Groceries"
+     },
+     {
+      "date": "2026-01-20",
+      "desc": "Discount Drug Mart 3 Maple Heights OH",
+      "amount": -18.35,
+      "cat": "Groceries"
+     },
+     {
+      "date": "2026-01-20",
+      "desc": "Heinen's Grocery Sto Mayfield Vill OH",
+      "amount": -5.99,
+      "cat": "Groceries"
+     },
+     {
+      "date": "2026-01-20",
+      "desc": "The Greenville Inn 440-6002879 OH",
+      "amount": -25.53,
+      "cat": "Restaurant"
+     },
+     {
+      "date": "2026-01-20",
+      "desc": "Sq *Heartwood Coffee Orange Villag OH",
+      "amount": -18.0,
+      "cat": "Restaurant"
+     },
+     {
+      "date": "2026-01-20",
+      "desc": "Wp*Rankuplol Maple Heights OH",
+      "amount": -20.0,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-01-20",
+      "desc": "Peacock 3Aec5 Premium 212-6640138 NY",
+      "amount": -11.87,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-01-20",
+      "desc": "Planet Fitness G Iclub Fees",
+      "amount": -27.05,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-01-20",
+      "desc": "Paypal Inst Xfer Steam Games",
+      "amount": -38.87,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-01-20",
+      "desc": "Paypal Inst Xfer Steam Games",
+      "amount": -32.39,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-01-20",
+      "desc": "Paypal Inst Xfer Spotify*P3E819C",
+      "amount": -12.95,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-01-20",
+      "desc": "Paypal Inst Xfer Canva",
+      "amount": -30.0,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-01-16",
+      "desc": "Check #100",
+      "amount": -50.0,
+      "cat": "Other"
+     },
+     {
+      "date": "2026-01-16",
+      "desc": "Amazon Mktpl*Gd2Bi2A Amzn.Com/Bill WA",
+      "amount": -10.09,
+      "cat": "Amazon"
+     },
+     {
+      "date": "2026-01-15",
+      "desc": "Transloc Inc Payroll",
+      "amount": 1477.05,
+      "cat": "Income"
+     },
+     {
+      "date": "2026-01-15",
+      "desc": "Hp *Instant Ink 855-785-2777 CA",
+      "amount": -5.93,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-01-13",
+      "desc": "Uber USA, LLC Partner",
+      "amount": 37.73,
+      "cat": "Income"
+     },
+     {
+      "date": "2026-01-06",
+      "desc": "Chase Credit Crd Autopay",
+      "amount": -66.0,
+      "cat": "Credit"
+     },
+     {
+      "date": "2026-01-05",
+      "desc": "Amazon Mktpl*M108E73 Amzn.Com/Bill WA",
+      "amount": -39.95,
+      "cat": "Amazon"
+     },
+     {
+      "date": "2026-01-05",
+      "desc": "Target T-1324 Mayfield Heig OH",
+      "amount": -23.6,
+      "cat": "Shopping"
+     },
+     {
+      "date": "2026-01-05",
+      "desc": "Ring Basic Plan Ring.Com CA",
+      "amount": -53.99,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-01-05",
+      "desc": "Yrefy Slp5 Payment 224132-34Ee2778",
+      "amount": -835.0,
+      "cat": "Loan"
+     },
+     {
+      "date": "2026-01-02",
+      "desc": "Real Time Transfer Recd From Aba/Contr Bnk-021000021 From: V",
+      "amount": 221.07,
+      "cat": "Income"
+     },
+     {
+      "date": "2026-01-02",
+      "desc": "Printingproxies.Com Paris",
+      "amount": -159.84,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-01-02",
+      "desc": "Apple.Com/US 800-676-2775 CA",
+      "amount": -99.0,
+      "cat": "Shopping"
+     },
+     {
+      "date": "2026-01-02",
+      "desc": "Apple.Com/US 800-692-7753 CA",
+      "amount": -7.92,
+      "cat": "Shopping"
+     },
+     {
+      "date": "2026-01-02",
+      "desc": "Planetscale Inc. Planetscale.C CA",
+      "amount": -5.02,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-01-02",
+      "desc": "Buca-Strongville Strongsville OH",
+      "amount": -209.42,
+      "cat": "Restaurant"
+     },
+     {
+      "date": "2026-01-02",
+      "desc": "Fly.Io Fly.Io CA",
+      "amount": -11.73,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-01-02",
+      "desc": "Planet Fitness G Iclub Fees",
+      "amount": -52.92,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-01-02",
+      "desc": "American Express ACH Pmt A0254",
+      "amount": -40.0,
+      "cat": "Credit"
+     },
+     {
+      "date": "2026-01-02",
+      "desc": "Spectrum Spectrum",
+      "amount": -70.0,
+      "cat": "Utilities"
+     },
+     {
+      "date": "2025-12-31",
+      "desc": "Transloc Inc Payroll",
+      "amount": 1471.58,
+      "cat": "Income"
+     },
+     {
+      "date": "2025-12-31",
+      "desc": "Midjourney Inc. Midjourney.CO CA",
+      "amount": -10.0,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2025-12-31",
+      "desc": "Amazon.Com*Uu3D29Ex3 Amzn.Com/Bill WA",
+      "amount": -37.77,
+      "cat": "Amazon"
+     },
+     {
+      "date": "2025-12-31",
+      "desc": "Venmo Payment 1047302633834",
+      "amount": -50.0,
+      "cat": "Other"
+     },
+     {
+      "date": "2025-12-31",
+      "desc": "Paypal Inst Xfer Cloudflare",
+      "amount": -34.77,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2025-12-30",
+      "desc": "Geico *Auto 800-841-3000 DC",
+      "amount": -74.84,
+      "cat": "Insurance"
+     },
+     {
+      "date": "2025-12-30",
+      "desc": "Concora Credit Payment 043000095789366",
+      "amount": -80.0,
+      "cat": "Credit"
+     },
+     {
+      "date": "2025-12-30",
+      "desc": "Paypal Inst Xfer Walmart Com",
+      "amount": -21.0,
+      "cat": "Shopping"
+     },
+     {
+      "date": "2025-12-29",
+      "desc": "Pmt*Ohio Oplates 877-818-4323 OH",
+      "amount": -66.37,
+      "cat": "Gas"
+     },
+     {
+      "date": "2025-12-29",
+      "desc": "Discount Drug Mart 3 Maple Heights OH",
+      "amount": -13.97,
+      "cat": "Groceries"
+     },
+     {
+      "date": "2025-12-29",
+      "desc": "Spectrum Mobile 855-707-7328 MO",
+      "amount": -30.0,
+      "cat": "Utilities"
+     },
+     {
+      "date": "2025-12-29",
+      "desc": "Aldi 63098 Garfield Garfield Heig OH",
+      "amount": -30.13,
+      "cat": "Groceries"
+     },
+     {
+      "date": "2025-12-29",
+      "desc": "Apple.Com/Bill 866-712-7753 CA",
+      "amount": -25.87,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2025-12-29",
+      "desc": "Roku For Disney Electr 816-2728107 De",
+      "amount": -12.95,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2025-12-29",
+      "desc": "Eb *New Years Eve Part 8014137200 CA",
+      "amount": -163.76,
+      "cat": "Entertainment"
+     },
+     {
+      "date": "2025-12-29",
+      "desc": "Paypal Inst Xfer Discord",
+      "amount": -10.79,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2025-12-26",
+      "desc": "Sunoco 8003081501 Bedford OH",
+      "amount": -2.5,
+      "cat": "Gas"
+     },
+     {
+      "date": "2025-12-26",
+      "desc": "Claude.Ai Subscripti Anthropic.Com CA",
+      "amount": -108.0,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2025-12-26",
+      "desc": "Paypal Inst Xfer Steam Games",
+      "amount": -22.67,
+      "cat": "Subscription"
+     }
+    ],
+    "source": "Chase statement 2025-12-25 to 2026-01-28"
+   },
+   "February": {
+    "income": 3697.82,
+    "expenses": {
+     "Subscription": 426.31,
+     "Credit": 261.0,
+     "Utilities": 110.0,
+     "Entertainment": 568.7,
+     "Other": 497.02,
+     "Amazon": 164.97,
+     "Fast Food": 63.17,
+     "Groceries": 124.42,
+     "Car Repair": 728.4,
+     "Gas": 79.37,
+     "Restaurant": 155.75,
+     "Loan": 835.0,
+     "Insurance": 74.84
+    },
+    "budgets": {
+     "Subscription": 200,
+     "Credit": 350,
+     "Utilities": 200,
+     "Entertainment": 75,
+     "Other": 200,
+     "Amazon": 100,
+     "Fast Food": 50,
+     "Groceries": 50,
+     "Car Repair": 200,
+     "Gas": 80,
+     "Restaurant": 60,
+     "Loan": 1050,
+     "Insurance": 75
+    },
+    "totalExpenses": 4088.95,
+    "net": -391.13,
+    "transactions": [
+     {
+      "date": "2026-02-26",
+      "desc": "Claude.Ai Subscripti Anthropic.Com CA",
+      "amount": -108.0,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-02-25",
+      "desc": "Overdraft Fee For A $80.00 Item - Details: Concora Credit Pa",
+      "amount": -34.0,
+      "cat": "Credit"
+     },
+     {
+      "date": "2026-02-24",
+      "desc": "Spectrum Mobile 855-707-7328 MO",
+      "amount": -40.0,
+      "cat": "Utilities"
+     },
+     {
+      "date": "2026-02-24",
+      "desc": "Concora Credit Payment 043000099936716",
+      "amount": -80.0,
+      "cat": "Credit"
+     },
+     {
+      "date": "2026-02-23",
+      "desc": "Wix Com Inc Payout 870Gg96A2Xtb9Rz",
+      "amount": 19.12,
+      "cat": "Income"
+     },
+     {
+      "date": "2026-02-23",
+      "desc": "Holiday Valley Resor Ellicottville NY",
+      "amount": -232.2,
+      "cat": "Entertainment"
+     },
+     {
+      "date": "2026-02-23",
+      "desc": "Holiday Valley Resor Ellicottville NY",
+      "amount": -218.0,
+      "cat": "Entertainment"
+     },
+     {
+      "date": "2026-02-23",
+      "desc": "Best Lockers - Holid Ellicottville NY",
+      "amount": -7.0,
+      "cat": "Other"
+     },
+     {
+      "date": "2026-02-23",
+      "desc": "Holiday Valley Conce Ellicottville NY",
+      "amount": -4.0,
+      "cat": "Entertainment"
+     },
+     {
+      "date": "2026-02-23",
+      "desc": "Amazon.Com*B92th8S82 Amzn.Com/Bill WA",
+      "amount": -36.74,
+      "cat": "Amazon"
+     },
+     {
+      "date": "2026-02-23",
+      "desc": "Holiday Valley Conce Ellicottville NY",
+      "amount": -16.0,
+      "cat": "Entertainment"
+     },
+     {
+      "date": "2026-02-23",
+      "desc": "Concora Credit Payment 043000097281388",
+      "amount": -40.0,
+      "cat": "Credit"
+     },
+     {
+      "date": "2026-02-23",
+      "desc": "Paypal Inst Xfer Hulu",
+      "amount": -8.64,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-02-23",
+      "desc": "We Teach League Iat Paypal 1048470646761",
+      "amount": -92.56,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-02-23",
+      "desc": "Uppbeat Iat Paypal 1048464840245",
+      "amount": -6.99,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-02-20",
+      "desc": "Chick-Fil-A #04053 440-683-1946 OH",
+      "amount": -15.89,
+      "cat": "Fast Food"
+     },
+     {
+      "date": "2026-02-20",
+      "desc": "Wp*Rankuplol Maple Heights OH",
+      "amount": -20.0,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-02-20",
+      "desc": "Peacock X5325 Premium 212-6640138 NY",
+      "amount": -11.87,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-02-20",
+      "desc": "Paypal Inst Xfer Canva",
+      "amount": -30.0,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-02-20",
+      "desc": "Venmo Payment 1048429170114",
+      "amount": -50.0,
+      "cat": "Other"
+     },
+     {
+      "date": "2026-02-19",
+      "desc": "Irs Treas 310 Tax Ref",
+      "amount": 109.0,
+      "cat": "Income"
+     },
+     {
+      "date": "2026-02-18",
+      "desc": "Aldi 63098 Garfield Garfield Heig OH",
+      "amount": -8.6,
+      "cat": "Groceries"
+     },
+     {
+      "date": "2026-02-18",
+      "desc": "Paypal Inst Xfer Spotify*P3F7899",
+      "amount": -14.03,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-02-17",
+      "desc": "State of Ohio Taxrefunds",
+      "amount": 233.0,
+      "cat": "Income"
+     },
+     {
+      "date": "2026-02-17",
+      "desc": "Chick-Fil-A #04053 440-683-1946 OH",
+      "amount": -25.64,
+      "cat": "Fast Food"
+     },
+     {
+      "date": "2026-02-17",
+      "desc": "Pinstripes Cleveland Beachwood OH",
+      "amount": -108.83,
+      "cat": "Other"
+     },
+     {
+      "date": "2026-02-17",
+      "desc": "Hp *Instant Ink 855-785-2777 CA",
+      "amount": -5.93,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-02-17",
+      "desc": "Amazon Mktpl*Be1Au19 Amzn.Com/Bill WA",
+      "amount": -8.31,
+      "cat": "Amazon"
+     },
+     {
+      "date": "2026-02-17",
+      "desc": "Netflix.Com Netflix.Com CA",
+      "amount": -19.43,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-02-17",
+      "desc": "Amazon.Com*7W69W2U43 Amzn.Com/Bill WA",
+      "amount": -4.46,
+      "cat": "Amazon"
+     },
+     {
+      "date": "2026-02-17",
+      "desc": "Sp Nonprofit-Blindne Araceagainstb AZ",
+      "amount": -25.0,
+      "cat": "Other"
+     },
+     {
+      "date": "2026-02-17",
+      "desc": "Northfield Tire Pros Northfield OH",
+      "amount": -728.4,
+      "cat": "Car Repair"
+     },
+     {
+      "date": "2026-02-17",
+      "desc": "Mcdonald's F28451 Northfield OH",
+      "amount": -9.19,
+      "cat": "Fast Food"
+     },
+     {
+      "date": "2026-02-17",
+      "desc": "Weteachleague Melbourne",
+      "amount": -39.0,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-02-17",
+      "desc": "Microsoft*Store Redmond WA",
+      "amount": -16.19,
+      "cat": "Other"
+     },
+     {
+      "date": "2026-02-17",
+      "desc": "Aldi 63098 Garfield Garfield Heig OH",
+      "amount": -44.34,
+      "cat": "Groceries"
+     },
+     {
+      "date": "2026-02-17",
+      "desc": "Planet Fitness G Iclub Fees",
+      "amount": -27.05,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-02-17",
+      "desc": "Venmo Payment 1048353674488",
+      "amount": -40.0,
+      "cat": "Other"
+     },
+     {
+      "date": "2026-02-13",
+      "desc": "Trapeze Software Payroll",
+      "amount": 1460.04,
+      "cat": "Income"
+     },
+     {
+      "date": "2026-02-13",
+      "desc": "Chick-Fil-A #02216 Macedonia OH",
+      "amount": -12.45,
+      "cat": "Fast Food"
+     },
+     {
+      "date": "2026-02-13",
+      "desc": "Amazon.Com*Yg7N647U3 Amzn.Com/Bill WA",
+      "amount": -13.18,
+      "cat": "Amazon"
+     },
+     {
+      "date": "2026-02-12",
+      "desc": "Amazon Mktpl*Lc0521N Amzn.Com/Bill WA",
+      "amount": -13.77,
+      "cat": "Amazon"
+     },
+     {
+      "date": "2026-02-12",
+      "desc": "Marcs Garfield Garfield Heig OH",
+      "amount": -34.26,
+      "cat": "Groceries"
+     },
+     {
+      "date": "2026-02-12",
+      "desc": "Venmo Payment 1048254248615",
+      "amount": -57.0,
+      "cat": "Other"
+     },
+     {
+      "date": "2026-02-11",
+      "desc": "Real Time Transfer Recd From Aba/Contr Bnk-021000021 From: V",
+      "amount": 35.37,
+      "cat": "Income"
+     },
+     {
+      "date": "2026-02-11",
+      "desc": "Shell Service Statio Garfield Heig OH",
+      "amount": -34.57,
+      "cat": "Gas"
+     },
+     {
+      "date": "2026-02-09",
+      "desc": "Kayoutlet.Com 2032 133-0668500 OH",
+      "amount": 248.4,
+      "cat": "Income"
+     },
+     {
+      "date": "2026-02-09",
+      "desc": "7-Eleven Randolph NY",
+      "amount": -2.26,
+      "cat": "Gas"
+     },
+     {
+      "date": "2026-02-09",
+      "desc": "Holiday Valley Resor Ellicottville NY",
+      "amount": -17.0,
+      "cat": "Entertainment"
+     },
+     {
+      "date": "2026-02-09",
+      "desc": "Holiday Valley Conce Ellicottville NY",
+      "amount": -18.5,
+      "cat": "Entertainment"
+     },
+     {
+      "date": "2026-02-06",
+      "desc": "Real Time Payment Credit Recd From Aba/Contr Bnk-021000089 F",
+      "amount": 44.4,
+      "cat": "Income"
+     },
+     {
+      "date": "2026-02-06",
+      "desc": "Sheetz 0894 Solon OH",
+      "amount": -2.39,
+      "cat": "Gas"
+     },
+     {
+      "date": "2026-02-06",
+      "desc": "Sq *Heartwood Coffee Orange Villag OH",
+      "amount": -5.75,
+      "cat": "Restaurant"
+     },
+     {
+      "date": "2026-02-06",
+      "desc": "Chase Credit Crd Autopay",
+      "amount": -67.0,
+      "cat": "Credit"
+     },
+     {
+      "date": "2026-02-05",
+      "desc": "Uber San Francisco CA",
+      "amount": 0.01,
+      "cat": "Income"
+     },
+     {
+      "date": "2026-02-05",
+      "desc": "Brandywine Pass Sagamore OH",
+      "amount": -63.0,
+      "cat": "Entertainment"
+     },
+     {
+      "date": "2026-02-05",
+      "desc": "Amazon Mktpl*Qs4D012 Amzn.Com/Bill WA",
+      "amount": -47.51,
+      "cat": "Amazon"
+     },
+     {
+      "date": "2026-02-03",
+      "desc": "Real Time Transfer Recd From Aba/Contr Bnk-021000021 From: V",
+      "amount": 88.43,
+      "cat": "Income"
+     },
+     {
+      "date": "2026-02-03",
+      "desc": "Check #101",
+      "amount": -50.0,
+      "cat": "Other"
+     },
+     {
+      "date": "2026-02-03",
+      "desc": "Amazon Mktpl*8J86F86 Amzn.Com/Bill WA",
+      "amount": -12.94,
+      "cat": "Amazon"
+     },
+     {
+      "date": "2026-02-03",
+      "desc": "Yrefy Slp5 Payment 224132-34Ee2778",
+      "amount": -835.0,
+      "cat": "Loan"
+     },
+     {
+      "date": "2026-02-02",
+      "desc": "Tst* Condado Tacos - Independence OH",
+      "amount": -20.4,
+      "cat": "Restaurant"
+     },
+     {
+      "date": "2026-02-02",
+      "desc": "Sunoco 8003081501 Bedford OH",
+      "amount": -7.96,
+      "cat": "Gas"
+     },
+     {
+      "date": "2026-02-02",
+      "desc": "Sq *Heartwood Coffee Orange Villag OH",
+      "amount": -25.0,
+      "cat": "Restaurant"
+     },
+     {
+      "date": "2026-02-02",
+      "desc": "Midjourney Inc. Midjourney.CO CA",
+      "amount": -10.0,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-02-02",
+      "desc": "Planetscale Inc. Planetscale.C CA",
+      "amount": -15.0,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-02-02",
+      "desc": "One Stop Gas & Maple Heights OH",
+      "amount": -32.19,
+      "cat": "Gas"
+     },
+     {
+      "date": "2026-02-02",
+      "desc": "Discount Drug Mart 3 Maple Heights OH",
+      "amount": -30.21,
+      "cat": "Groceries"
+     },
+     {
+      "date": "2026-02-02",
+      "desc": "Fly.Io Fly.Io CA",
+      "amount": -17.81,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-02-02",
+      "desc": "Venmo Payment 1047979031773",
+      "amount": -50.0,
+      "cat": "Other"
+     },
+     {
+      "date": "2026-02-02",
+      "desc": "American Express ACH Pmt A0022",
+      "amount": -40.0,
+      "cat": "Credit"
+     },
+     {
+      "date": "2026-02-02",
+      "desc": "Spectrum Spectrum",
+      "amount": -70.0,
+      "cat": "Utilities"
+     },
+     {
+      "date": "2026-01-30",
+      "desc": "Trapeze Software Payroll",
+      "amount": 1460.05,
+      "cat": "Income"
+     },
+     {
+      "date": "2026-01-30",
+      "desc": "Geico *Auto 800-841-3000 DC",
+      "amount": -74.84,
+      "cat": "Insurance"
+     },
+     {
+      "date": "2026-01-30",
+      "desc": "Venmo Payment 1047963682355",
+      "amount": -93.0,
+      "cat": "Other"
+     },
+     {
+      "date": "2026-01-29",
+      "desc": "Amazon Mktpl*Xv6Ts12 Amzn.Com/Bill WA",
+      "amount": -21.59,
+      "cat": "Amazon"
+     },
+     {
+      "date": "2026-01-29",
+      "desc": "Amazon Mktpl*N78X75T Amzn.Com/Bill WA",
+      "amount": -6.47,
+      "cat": "Amazon"
+     },
+     {
+      "date": "2026-01-29",
+      "desc": "Tst* Luna Bakery & C Moreland Hill OH",
+      "amount": -13.42,
+      "cat": "Restaurant"
+     },
+     {
+      "date": "2026-01-29",
+      "desc": "Discount Drug Mart 3 Maple Heights OH",
+      "amount": -7.01,
+      "cat": "Groceries"
+     },
+     {
+      "date": "2026-01-29",
+      "desc": "Piada Piada.Olo.Com OH",
+      "amount": -91.18,
+      "cat": "Restaurant"
+     }
+    ],
+    "source": "Chase statement 2026-01-29 to 2026-02-26"
+   },
+   "March": {
+    "income": 4253.0,
+    "expenses": {
+     "Amazon": 267.66,
+     "Utilities": 510.0,
+     "Fast Food": 77.23,
+     "Restaurant": 391.14,
+     "Groceries": 95.65,
+     "Gas": 128.84,
+     "Entertainment": 37.0,
+     "Loan": 1022.08,
+     "Subscription": 325.43,
+     "Credit": 356.0,
+     "Other": 53.0,
+     "Healthcare": 477.5,
+     "Insurance": 74.84
+    },
+    "budgets": {
+     "Amazon": 100,
+     "Utilities": 200,
+     "Fast Food": 50,
+     "Restaurant": 60,
+     "Groceries": 50,
+     "Gas": 80,
+     "Entertainment": 75,
+     "Loan": 1050,
+     "Subscription": 200,
+     "Credit": 350,
+     "Other": 200,
+     "Healthcare": 100,
+     "Insurance": 75
+    },
+    "totalExpenses": 3816.37,
+    "net": 436.63,
+    "transactions": [
+     {
+      "date": "2026-03-24",
+      "desc": "Ddcr*Nick Bensen San Francisco CA",
+      "amount": 70.01,
+      "cat": "Income"
+     },
+     {
+      "date": "2026-03-24",
+      "desc": "Amazon.Com*Bd3LA5Uk0 Amzn.Com/Bill WA",
+      "amount": -38.82,
+      "cat": "Amazon"
+     },
+     {
+      "date": "2026-03-24",
+      "desc": "Spectrum Mobile 855-707-7328 MO",
+      "amount": -40.0,
+      "cat": "Utilities"
+     },
+     {
+      "date": "2026-03-23",
+      "desc": "Uber San Francisco CA",
+      "amount": 71.89,
+      "cat": "Income"
+     },
+     {
+      "date": "2026-03-23",
+      "desc": "Wix Com Inc Payout 870B0X6Ae1Wglus",
+      "amount": 19.12,
+      "cat": "Income"
+     },
+     {
+      "date": "2026-03-23",
+      "desc": "Mcdonalds 33898 121-6663215 OH",
+      "amount": -11.47,
+      "cat": "Fast Food"
+     },
+     {
+      "date": "2026-03-23",
+      "desc": "Pulp Juice And Smoothi 216-2644263 OH",
+      "amount": -7.0,
+      "cat": "Restaurant"
+     },
+     {
+      "date": "2026-03-23",
+      "desc": "Discount Drug Mart 3 Maple Heights OH",
+      "amount": -13.06,
+      "cat": "Groceries"
+     },
+     {
+      "date": "2026-03-23",
+      "desc": "Shell Service Statio Garfield Heig OH",
+      "amount": -48.08,
+      "cat": "Gas"
+     },
+     {
+      "date": "2026-03-23",
+      "desc": "Tst*The Grille And T Fairview Park OH",
+      "amount": -3.0,
+      "cat": "Restaurant"
+     },
+     {
+      "date": "2026-03-23",
+      "desc": "Ls Big Met Golf Cours 144-02327247 OH",
+      "amount": -37.0,
+      "cat": "Entertainment"
+     },
+     {
+      "date": "2026-03-23",
+      "desc": "Tst*The Grille And T Fairview Park OH",
+      "amount": -8.0,
+      "cat": "Restaurant"
+     },
+     {
+      "date": "2026-03-23",
+      "desc": "Marathon 177998 Bedford OH",
+      "amount": -3.49,
+      "cat": "Gas"
+     },
+     {
+      "date": "2026-03-23",
+      "desc": "Discount Drug Mart 3 Maple Heights OH",
+      "amount": -22.77,
+      "cat": "Groceries"
+     },
+     {
+      "date": "2026-03-23",
+      "desc": "Dept Education Student Ln 6Rpd68Vavt1",
+      "amount": -187.08,
+      "cat": "Loan"
+     },
+     {
+      "date": "2026-03-23",
+      "desc": "Paypal Inst Xfer Canva",
+      "amount": -16.2,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-03-23",
+      "desc": "Paypal Inst Xfer Hulu",
+      "amount": -8.64,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-03-23",
+      "desc": "Uppbeat Iat Paypal 1049101957776",
+      "amount": -6.99,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-03-20",
+      "desc": "Tst*You And I Tea Solon OH",
+      "amount": -7.63,
+      "cat": "Restaurant"
+     },
+     {
+      "date": "2026-03-20",
+      "desc": "Aldi 63098 Garfield Garfield Heig OH",
+      "amount": -3.07,
+      "cat": "Groceries"
+     },
+     {
+      "date": "2026-03-20",
+      "desc": "Amazon.Com*Bd3G27S31 Amzn.Com/Bill WA",
+      "amount": -27.5,
+      "cat": "Amazon"
+     },
+     {
+      "date": "2026-03-20",
+      "desc": "Wp*Rankuplol Maple Heights OH",
+      "amount": -20.0,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-03-20",
+      "desc": "Amazon.Com*Bd7788SD1 Amzn.Com/Bill WA",
+      "amount": -156.59,
+      "cat": "Amazon"
+     },
+     {
+      "date": "2026-03-20",
+      "desc": "Peacock 3F68E Premium 212-6640138 NY",
+      "amount": -11.87,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-03-19",
+      "desc": "Taco Bell 035453 Mentor OH",
+      "amount": -11.28,
+      "cat": "Fast Food"
+     },
+     {
+      "date": "2026-03-18",
+      "desc": "Paypal Inst Xfer Spotify*P408079",
+      "amount": -14.03,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-03-17",
+      "desc": "Uber USA, LLC Partner",
+      "amount": 127.93,
+      "cat": "Income"
+     },
+     {
+      "date": "2026-03-17",
+      "desc": "Mcdonald's F33898 Garfield Hts OH",
+      "amount": -2.0,
+      "cat": "Fast Food"
+     },
+     {
+      "date": "2026-03-17",
+      "desc": "Amazon.Com*B56FT80M2 Amzn.Com/Bill WA",
+      "amount": -8.37,
+      "cat": "Amazon"
+     },
+     {
+      "date": "2026-03-17",
+      "desc": "Microsoft*Xbox Game PA Msbill.Info WA",
+      "amount": -16.19,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-03-17",
+      "desc": "Weteachleague Melbourne",
+      "amount": -39.0,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-03-17",
+      "desc": "Firstenergy Opco-ACH 110151980403",
+      "amount": -400.0,
+      "cat": "Utilities"
+     },
+     {
+      "date": "2026-03-17",
+      "desc": "Planet Fitness G Iclub Fees",
+      "amount": -27.05,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-03-17",
+      "desc": "Concora Credit Payment 043000096912610",
+      "amount": -250.0,
+      "cat": "Credit"
+     },
+     {
+      "date": "2026-03-16",
+      "desc": "Chick-Fil-A #02216 330-908-3300 OH",
+      "amount": -13.59,
+      "cat": "Fast Food"
+     },
+     {
+      "date": "2026-03-16",
+      "desc": "Biggby Coffee #720 347-5450785 OH",
+      "amount": -13.18,
+      "cat": "Restaurant"
+     },
+     {
+      "date": "2026-03-16",
+      "desc": "Biggby Coffee #720 347-5450785 OH",
+      "amount": -6.39,
+      "cat": "Restaurant"
+     },
+     {
+      "date": "2026-03-16",
+      "desc": "Biggby Coffee #720 347-5450785 OH",
+      "amount": -3.66,
+      "cat": "Restaurant"
+     },
+     {
+      "date": "2026-03-16",
+      "desc": "Discount Drug Mart 3 Maple Heights OH",
+      "amount": -33.07,
+      "cat": "Groceries"
+     },
+     {
+      "date": "2026-03-16",
+      "desc": "Amazon Mktpl*Bd8Jk1C Amzn.Com/Bill WA",
+      "amount": -26.99,
+      "cat": "Amazon"
+     },
+     {
+      "date": "2026-03-16",
+      "desc": "Hp *Instant Ink 855-785-2777 CA",
+      "amount": -5.93,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-03-16",
+      "desc": "Marathon 177998 Bedford OH",
+      "amount": -1.75,
+      "cat": "Gas"
+     },
+     {
+      "date": "2026-03-16",
+      "desc": "Coffee Cup Family Resta Bedford OH",
+      "amount": -26.43,
+      "cat": "Restaurant"
+     },
+     {
+      "date": "2026-03-16",
+      "desc": "Piada - 19 614-4879140 OH",
+      "amount": -14.6,
+      "cat": "Restaurant"
+     },
+     {
+      "date": "2026-03-16",
+      "desc": "Amazon Mktpl*B58G77N Amzn.Com/Bill WA",
+      "amount": -9.39,
+      "cat": "Amazon"
+     },
+     {
+      "date": "2026-03-16",
+      "desc": "Marathon 177998 Bedford OH",
+      "amount": -3.23,
+      "cat": "Gas"
+     },
+     {
+      "date": "2026-03-16",
+      "desc": "Paypal Inst Xfer Twitchinter",
+      "amount": -5.99,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-03-16",
+      "desc": "Paypal Inst Xfer Twitchinter",
+      "amount": -5.99,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-03-13",
+      "desc": "Trapeze Software Payroll",
+      "amount": 1501.2,
+      "cat": "Income"
+     },
+     {
+      "date": "2026-03-13",
+      "desc": "Mcdonalds 33898 121-6663215 OH",
+      "amount": -2.0,
+      "cat": "Fast Food"
+     },
+     {
+      "date": "2026-03-13",
+      "desc": "Aldi 63098 Garfield Garfield Heig OH",
+      "amount": -4.99,
+      "cat": "Groceries"
+     },
+     {
+      "date": "2026-03-12",
+      "desc": "Amazon.Com*Bp7E49Bk1 Amzn.Com/Bill WA",
+      "amount": -14.03,
+      "cat": "Gas"
+     },
+     {
+      "date": "2026-03-12",
+      "desc": "Mcdonald's F33898 Garfield Hts OH",
+      "amount": -2.0,
+      "cat": "Fast Food"
+     },
+     {
+      "date": "2026-03-12",
+      "desc": "Condado Tacos Order.Condado OH",
+      "amount": -53.95,
+      "cat": "Restaurant"
+     },
+     {
+      "date": "2026-03-12",
+      "desc": "Shell Oil 57424359701 Gates Mills OH",
+      "amount": -6.89,
+      "cat": "Gas"
+     },
+     {
+      "date": "2026-03-11",
+      "desc": "Abc*P 00667 Pf Garfi Garfield Heig OH",
+      "amount": -3.0,
+      "cat": "Other"
+     },
+     {
+      "date": "2026-03-11",
+      "desc": "Discount Drug Mart 3 Maple Heights OH",
+      "amount": -9.71,
+      "cat": "Groceries"
+     },
+     {
+      "date": "2026-03-11",
+      "desc": "Discount Drug Mart 3 Maple Heights OH",
+      "amount": -5.99,
+      "cat": "Groceries"
+     },
+     {
+      "date": "2026-03-11",
+      "desc": "Discount Drug Mart 3 Maple Heights OH",
+      "amount": -2.99,
+      "cat": "Groceries"
+     },
+     {
+      "date": "2026-03-10",
+      "desc": "Uber USA, LLC Partner",
+      "amount": 76.75,
+      "cat": "Income"
+     },
+     {
+      "date": "2026-03-10",
+      "desc": "Sunoco 8003081501 Bedford OH",
+      "amount": -4.31,
+      "cat": "Gas"
+     },
+     {
+      "date": "2026-03-09",
+      "desc": "Mcdonalds 36400 121-6332993 OH",
+      "amount": -5.1,
+      "cat": "Fast Food"
+     },
+     {
+      "date": "2026-03-09",
+      "desc": "Joy A Stoler Od And As 440-3492225 OH",
+      "amount": -80.0,
+      "cat": "Healthcare"
+     },
+     {
+      "date": "2026-03-09",
+      "desc": "Berris Optical of Solon Solon OH",
+      "amount": -273.0,
+      "cat": "Healthcare"
+     },
+     {
+      "date": "2026-03-09",
+      "desc": "Tst*You And I Tea Solon OH",
+      "amount": -6.25,
+      "cat": "Restaurant"
+     },
+     {
+      "date": "2026-03-09",
+      "desc": "Tst*Brewdog Cleveland 216-367-2494 OH",
+      "amount": -99.16,
+      "cat": "Restaurant"
+     },
+     {
+      "date": "2026-03-09",
+      "desc": "Romitos Pizza Independence OH",
+      "amount": -20.0,
+      "cat": "Fast Food"
+     },
+     {
+      "date": "2026-03-09",
+      "desc": "Sunoco 8003081501 Bedford OH",
+      "amount": -2.25,
+      "cat": "Gas"
+     },
+     {
+      "date": "2026-03-09",
+      "desc": "Paypal Inst Xfer Skycastle",
+      "amount": -7.99,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-03-06",
+      "desc": "Shell Oil 57424362002 Cleveland OH",
+      "amount": -38.33,
+      "cat": "Gas"
+     },
+     {
+      "date": "2026-03-06",
+      "desc": "Pulp Juice And Smoothi 216-2644263 OH",
+      "amount": -8.05,
+      "cat": "Restaurant"
+     },
+     {
+      "date": "2026-03-06",
+      "desc": "Chase Credit Crd Autopay",
+      "amount": -66.0,
+      "cat": "Credit"
+     },
+     {
+      "date": "2026-03-05",
+      "desc": "Mcdonalds 28451 133-0467075 OH",
+      "amount": -5.0,
+      "cat": "Fast Food"
+     },
+     {
+      "date": "2026-03-05",
+      "desc": "Shell Oil 57424359701 Gates Mills OH",
+      "amount": -6.48,
+      "cat": "Gas"
+     },
+     {
+      "date": "2026-03-05",
+      "desc": "Paypal Inst Xfer Steam Games",
+      "amount": -24.29,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-03-04",
+      "desc": "Venmo Cashout",
+      "amount": 505.0,
+      "cat": "Income"
+     },
+     {
+      "date": "2026-03-04",
+      "desc": "Panera Bread #203388 P Brecksville OH",
+      "amount": -6.58,
+      "cat": "Restaurant"
+     },
+     {
+      "date": "2026-03-03",
+      "desc": "Uber USA, LLC Partner",
+      "amount": 256.5,
+      "cat": "Income"
+     },
+     {
+      "date": "2026-03-03",
+      "desc": "Check #102",
+      "amount": -50.0,
+      "cat": "Other"
+     },
+     {
+      "date": "2026-03-03",
+      "desc": "Coff.Ee* Vermilliona Buymeacoffee. CA",
+      "amount": -5.0,
+      "cat": "Restaurant"
+     },
+     {
+      "date": "2026-03-03",
+      "desc": "Ohiopetvetsolon.Com 440-2328383 OH",
+      "amount": -124.5,
+      "cat": "Healthcare"
+     },
+     {
+      "date": "2026-03-03",
+      "desc": "Yrefy Slp5 Payment 224132-34Ee2778",
+      "amount": -835.0,
+      "cat": "Loan"
+     },
+     {
+      "date": "2026-03-02",
+      "desc": "Ideogram Ai Toronto On",
+      "amount": -20.0,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-03-02",
+      "desc": "Apple.Com/Bill 866-712-7753 CA",
+      "amount": -25.87,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-03-02",
+      "desc": "Midjourney Inc. Midjourney.CO CA",
+      "amount": -10.0,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-03-02",
+      "desc": "Roku For Disney Electr 816-2728107 De",
+      "amount": -12.95,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-03-02",
+      "desc": "Geico *Auto 800-841-3000 DC",
+      "amount": -74.84,
+      "cat": "Insurance"
+     },
+     {
+      "date": "2026-03-02",
+      "desc": "Tst* Avo Modern Mexican Cleveland OH",
+      "amount": -71.55,
+      "cat": "Restaurant"
+     },
+     {
+      "date": "2026-03-02",
+      "desc": "Planetscale Inc. Planetscale.C CA",
+      "amount": -15.0,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-03-02",
+      "desc": "Tst*Pins Mechanical Com Cleveland OH",
+      "amount": -12.52,
+      "cat": "Restaurant"
+     },
+     {
+      "date": "2026-03-02",
+      "desc": "Tst* Nano Brew Cleveland OH",
+      "amount": -11.66,
+      "cat": "Restaurant"
+     },
+     {
+      "date": "2026-03-02",
+      "desc": "Mcdonald's F33898 Garfield Hts OH",
+      "amount": -4.79,
+      "cat": "Fast Food"
+     },
+     {
+      "date": "2026-03-02",
+      "desc": "Tst*Pins Mechanical Com Cleveland OH",
+      "amount": -13.0,
+      "cat": "Restaurant"
+     },
+     {
+      "date": "2026-03-02",
+      "desc": "Panera Bread #204636 440-543-3000 OH",
+      "amount": -13.53,
+      "cat": "Restaurant"
+     },
+     {
+      "date": "2026-03-02",
+      "desc": "Fly.Io Fly.Io CA",
+      "amount": -20.66,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-03-02",
+      "desc": "American Express ACH Pmt A3876",
+      "amount": -40.0,
+      "cat": "Credit"
+     },
+     {
+      "date": "2026-03-02",
+      "desc": "Spectrum Spectrum",
+      "amount": -70.0,
+      "cat": "Utilities"
+     },
+     {
+      "date": "2026-02-27",
+      "desc": "Trapeze Software Payroll",
+      "amount": 1624.6,
+      "cat": "Income"
+     },
+     {
+      "date": "2026-02-27",
+      "desc": "Paypal Inst Xfer Discord",
+      "amount": -10.79,
+      "cat": "Subscription"
+     }
+    ],
+    "source": "Chase statement 2026-02-27 to 2026-03-25"
+   },
+   "April": {
+    "income": 4775.19,
+    "expenses": {
+     "Fast Food": 33.53,
+     "Entertainment": 36.71,
+     "Amazon": 78.95,
+     "Utilities": 110.0,
+     "Credit": 1122.4,
+     "Groceries": 260.63,
+     "Subscription": 372.01,
+     "Shopping": 18.22,
+     "Healthcare": 32.0,
+     "Other": 125.0,
+     "Gas": 66.43,
+     "Loan": 835.0,
+     "Car Repair": 942.75,
+     "Restaurant": 8.5,
+     "Insurance": 74.84
+    },
+    "budgets": {
+     "Fast Food": 50,
+     "Entertainment": 75,
+     "Amazon": 100,
+     "Utilities": 200,
+     "Credit": 350,
+     "Groceries": 50,
+     "Subscription": 200,
+     "Shopping": 200,
+     "Healthcare": 100,
+     "Other": 200,
+     "Gas": 80,
+     "Loan": 1050,
+     "Car Repair": 200,
+     "Restaurant": 60,
+     "Insurance": 75
+    },
+    "totalExpenses": 4116.97,
+    "net": 658.22,
+    "transactions": [
+     {
+      "date": "2026-04-24",
+      "desc": "Chick-Fil-A #04053 440-683-1946 OH",
+      "amount": -14.59,
+      "cat": "Fast Food"
+     },
+     {
+      "date": "2026-04-24",
+      "desc": "St. Denis Golf Course Chardon OH",
+      "amount": -28.34,
+      "cat": "Entertainment"
+     },
+     {
+      "date": "2026-04-24",
+      "desc": "Glf*Golfnowreservation 844-8004653 FL",
+      "amount": -8.37,
+      "cat": "Entertainment"
+     },
+     {
+      "date": "2026-04-24",
+      "desc": "Amazon.Com*By50H6850 Amzn.Com/Bill WA",
+      "amount": -15.3,
+      "cat": "Amazon"
+     },
+     {
+      "date": "2026-04-24",
+      "desc": "Spectrum Mobile 855-707-7328 MO",
+      "amount": -40.0,
+      "cat": "Utilities"
+     },
+     {
+      "date": "2026-04-24",
+      "desc": "Concora Credit Payment 043000094667394",
+      "amount": -80.0,
+      "cat": "Credit"
+     },
+     {
+      "date": "2026-04-22",
+      "desc": "Discount Drug Mart 3 Maple Heights OH",
+      "amount": -17.31,
+      "cat": "Groceries"
+     },
+     {
+      "date": "2026-04-21",
+      "desc": "Wix Com Inc Payout 870B5W6Aqd57Mc2",
+      "amount": 19.12,
+      "cat": "Income"
+     },
+     {
+      "date": "2026-04-21",
+      "desc": "Aldi 63098 Garfield Garfield Heig OH",
+      "amount": -27.02,
+      "cat": "Groceries"
+     },
+     {
+      "date": "2026-04-21",
+      "desc": "Paypal Purchase Hulu",
+      "amount": -8.64,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-04-20",
+      "desc": "Tiktok Shop Tiktok.Com CA",
+      "amount": -18.22,
+      "cat": "Shopping"
+     },
+     {
+      "date": "2026-04-20",
+      "desc": "Mcdonald's F33898 Garfield Hts OH",
+      "amount": -10.34,
+      "cat": "Fast Food"
+     },
+     {
+      "date": "2026-04-20",
+      "desc": "Discount Drug Mart 3 Maple Heights OH",
+      "amount": -10.79,
+      "cat": "Groceries"
+     },
+     {
+      "date": "2026-04-20",
+      "desc": "Wp*Rankuplol Maple Heights OH",
+      "amount": -20.0,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-04-20",
+      "desc": "Peacock D104F Premium 212-6640138 NY",
+      "amount": -11.87,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-04-20",
+      "desc": "Paypal Purchase Spotify*P418Fe0",
+      "amount": -14.03,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-04-17",
+      "desc": "Hp *Instant Ink 855-785-2777 CA",
+      "amount": -5.93,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-04-17",
+      "desc": "Ohiopetvetsolon.Com 440-2328383 OH",
+      "amount": -32.0,
+      "cat": "Healthcare"
+     },
+     {
+      "date": "2026-04-17",
+      "desc": "Amazon Mktpl*B77B62H Amzn.Com/Bill WA",
+      "amount": -10.79,
+      "cat": "Amazon"
+     },
+     {
+      "date": "2026-04-17",
+      "desc": "Weteachleague Melbourne",
+      "amount": -39.0,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-04-17",
+      "desc": "Planet Fitness G Iclub Fees",
+      "amount": -27.05,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-04-17",
+      "desc": "Paypal Purchase Cloudflare",
+      "amount": -15.34,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-04-16",
+      "desc": "Aldi 63098 Garfield Garfield Heig OH",
+      "amount": -48.8,
+      "cat": "Groceries"
+     },
+     {
+      "date": "2026-04-16",
+      "desc": "Marcs 17 Gh Garfield Heig OH",
+      "amount": -59.62,
+      "cat": "Groceries"
+     },
+     {
+      "date": "2026-04-16",
+      "desc": "Discount Drug Mart 3 Maple Heights OH",
+      "amount": -4.59,
+      "cat": "Groceries"
+     },
+     {
+      "date": "2026-04-16",
+      "desc": "Amazon.Com*B78114Gj0 Amzn.Com/Bill WA",
+      "amount": -7.53,
+      "cat": "Amazon"
+     },
+     {
+      "date": "2026-04-15",
+      "desc": "Trapeze Software Payroll",
+      "amount": 1501.19,
+      "cat": "Income"
+     },
+     {
+      "date": "2026-04-15",
+      "desc": "Venmo Payment 1049631210497",
+      "amount": -75.0,
+      "cat": "Other"
+     },
+     {
+      "date": "2026-04-14",
+      "desc": "Uber USA, LLC Partner",
+      "amount": 5.0,
+      "cat": "Income"
+     },
+     {
+      "date": "2026-04-06",
+      "desc": "Uber San Francisco CA",
+      "amount": 20.62,
+      "cat": "Income"
+     },
+     {
+      "date": "2026-04-06",
+      "desc": "Chase Credit Crd Autopay",
+      "amount": -61.0,
+      "cat": "Credit"
+     },
+     {
+      "date": "2026-04-03",
+      "desc": "Fly.Io Fly.Io CA",
+      "amount": -27.54,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-04-03",
+      "desc": "Amazon Mktpl*Bg72D5V Amzn.Com/Bill WA",
+      "amount": -6.47,
+      "cat": "Amazon"
+     },
+     {
+      "date": "2026-04-02",
+      "desc": "Uber San Francisco CA",
+      "amount": 111.65,
+      "cat": "Income"
+     },
+     {
+      "date": "2026-04-02",
+      "desc": "Uber San Francisco CA",
+      "amount": 78.58,
+      "cat": "Income"
+     },
+     {
+      "date": "2026-04-02",
+      "desc": "Ck*Bensen Nicholaus Visa Direct OH",
+      "amount": 39.3,
+      "cat": "Income"
+     },
+     {
+      "date": "2026-04-02",
+      "desc": "Check #103",
+      "amount": -50.0,
+      "cat": "Other"
+     },
+     {
+      "date": "2026-04-02",
+      "desc": "Amazon.Com*B745M9Cs2 Amzn.Com/Bill WA",
+      "amount": -38.86,
+      "cat": "Amazon"
+     },
+     {
+      "date": "2026-04-02",
+      "desc": "Marcs 17 Gh Garfield Heig OH",
+      "amount": -8.27,
+      "cat": "Groceries"
+     },
+     {
+      "date": "2026-04-02",
+      "desc": "Aldi 63098 Garfield Garfield Heig OH",
+      "amount": -8.99,
+      "cat": "Groceries"
+     },
+     {
+      "date": "2026-04-02",
+      "desc": "Shell Service Station Independence OH",
+      "amount": -42.53,
+      "cat": "Gas"
+     },
+     {
+      "date": "2026-04-02",
+      "desc": "Yrefy Slp5 Payment 224132-34Ee2778",
+      "amount": -835.0,
+      "cat": "Loan"
+     },
+     {
+      "date": "2026-04-02",
+      "desc": "Spectrum Spectrum",
+      "amount": -70.0,
+      "cat": "Utilities"
+     },
+     {
+      "date": "2026-04-01",
+      "desc": "Northfield Tire Pros Northfield OH",
+      "amount": -942.75,
+      "cat": "Car Repair"
+     },
+     {
+      "date": "2026-04-01",
+      "desc": "Planetscale Inc. Planetscale.C CA",
+      "amount": -15.0,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-03-31",
+      "desc": "Trapeze Software Payroll",
+      "amount": 1501.19,
+      "cat": "Income"
+     },
+     {
+      "date": "2026-03-31",
+      "desc": "Trapeze Software Payroll",
+      "amount": 886.65,
+      "cat": "Income"
+     },
+     {
+      "date": "2026-03-31",
+      "desc": "Uber USA, LLC Partner",
+      "amount": 104.74,
+      "cat": "Income"
+     },
+     {
+      "date": "2026-03-31",
+      "desc": "Doordash, Inc. Doordash, St-I0P8W6S5G4N7",
+      "amount": 7.15,
+      "cat": "Income"
+     },
+     {
+      "date": "2026-03-31",
+      "desc": "Amazon Mktpl*Bg9Bp1E Amzn.Com/Bill WA",
+      "amount": -15.6,
+      "cat": "Gas"
+     },
+     {
+      "date": "2026-03-31",
+      "desc": "Sunoco 0587737800 Moreland Hill OH",
+      "amount": -3.99,
+      "cat": "Gas"
+     },
+     {
+      "date": "2026-03-31",
+      "desc": "Aldi 63098 Garfield Garfield Heig OH",
+      "amount": -6.99,
+      "cat": "Groceries"
+     },
+     {
+      "date": "2026-03-31",
+      "desc": "Midjourney Inc. Midjourney.CO CA",
+      "amount": -10.0,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-03-31",
+      "desc": "American Express ACH Pmt M9930",
+      "amount": -941.4,
+      "cat": "Credit"
+     },
+     {
+      "date": "2026-03-31",
+      "desc": "American Express ACH Pmt A1770",
+      "amount": -40.0,
+      "cat": "Credit"
+     },
+     {
+      "date": "2026-03-30",
+      "desc": "Pulp Juice And Smoothi 440-6461916 OH",
+      "amount": -8.5,
+      "cat": "Restaurant"
+     },
+     {
+      "date": "2026-03-30",
+      "desc": "Ideogram Ai Toronto On",
+      "amount": -20.0,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-03-30",
+      "desc": "Apple.Com/Bill 866-712-7753 CA",
+      "amount": -25.87,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-03-30",
+      "desc": "Roku For Disney Electr 816-2728107 De",
+      "amount": -12.95,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-03-30",
+      "desc": "Aldi 63098 Garfield Garfield Heig OH",
+      "amount": -68.25,
+      "cat": "Groceries"
+     },
+     {
+      "date": "2026-03-30",
+      "desc": "Geico *Auto 800-841-3000 DC",
+      "amount": -74.84,
+      "cat": "Insurance"
+     },
+     {
+      "date": "2026-03-27",
+      "desc": "ATM Cash Deposit 03/27 6200 Brecksville Rd Independence OH",
+      "amount": 500.0,
+      "cat": "Income"
+     },
+     {
+      "date": "2026-03-27",
+      "desc": "Chipotle 0121 Mayfield Heig OH",
+      "amount": -8.6,
+      "cat": "Fast Food"
+     },
+     {
+      "date": "2026-03-27",
+      "desc": "Paypal Inst Xfer Discord",
+      "amount": -10.79,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-03-26",
+      "desc": "Shell Oil 57424359701 Gates Mills OH",
+      "amount": -4.31,
+      "cat": "Gas"
+     },
+     {
+      "date": "2026-03-26",
+      "desc": "Claude.Ai Subscripti Anthropic.Com CA",
+      "amount": -108.0,
+      "cat": "Subscription"
+     }
+    ],
+    "source": "Chase statement 2026-03-26 to 2026-04-24"
+   },
+   "May": {
+    "income": 3549.79,
+    "expenses": {
+     "Other": 89.55,
+     "Gas": 182.43,
+     "Subscription": 290.24,
+     "Restaurant": 248.61,
+     "Shopping": 178.99,
+     "Fast Food": 38.86,
+     "Utilities": 120.0,
+     "Entertainment": 161.49,
+     "Groceries": 666.77,
+     "Credit": 145.0,
+     "Amazon": 651.46,
+     "Loan": 835.0,
+     "Healthcare": 108.5,
+     "Insurance": 74.83
+    },
+    "budgets": {
+     "Other": 200,
+     "Gas": 80,
+     "Subscription": 200,
+     "Restaurant": 60,
+     "Shopping": 200,
+     "Fast Food": 50,
+     "Utilities": 200,
+     "Entertainment": 75,
+     "Groceries": 50,
+     "Credit": 350,
+     "Amazon": 100,
+     "Loan": 1050,
+     "Healthcare": 100,
+     "Insurance": 75
+    },
+    "totalExpenses": 3791.73,
+    "net": -241.94,
+    "transactions": [
+     {
+      "date": "2026-05-27",
+      "desc": "Prime Video *Hq1D9717 888-802-3080 WA",
+      "amount": -4.31,
+      "cat": "Other"
+     },
+     {
+      "date": "2026-05-27",
+      "desc": "Marathon 177998 Bedford OH",
+      "amount": -10.0,
+      "cat": "Gas"
+     },
+     {
+      "date": "2026-05-27",
+      "desc": "Paypal Purchase Discord",
+      "amount": -10.79,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-05-26",
+      "desc": "Dunkin #358270 Northfield OH",
+      "amount": -8.2,
+      "cat": "Restaurant"
+     },
+     {
+      "date": "2026-05-26",
+      "desc": "2951 Great Clips At Wal Macedonia OH",
+      "amount": -25.0,
+      "cat": "Other"
+     },
+     {
+      "date": "2026-05-26",
+      "desc": "Tst*Wild Eagle Steak 330-346-3147 OH",
+      "amount": -43.02,
+      "cat": "Restaurant"
+     },
+     {
+      "date": "2026-05-26",
+      "desc": "Marathon 177998 Bedford OH",
+      "amount": -41.89,
+      "cat": "Gas"
+     },
+     {
+      "date": "2026-05-26",
+      "desc": "Target T-1324 Mayfield Heig OH",
+      "amount": -5.55,
+      "cat": "Shopping"
+     },
+     {
+      "date": "2026-05-26",
+      "desc": "Target T-1324 Mayfield Heig OH",
+      "amount": -59.39,
+      "cat": "Shopping"
+     },
+     {
+      "date": "2026-05-26",
+      "desc": "Chick-Fil-A #04053 440-683-1946 OH",
+      "amount": -13.59,
+      "cat": "Fast Food"
+     },
+     {
+      "date": "2026-05-26",
+      "desc": "Ohio Turnpike Plaza Berea OH",
+      "amount": -10.5,
+      "cat": "Gas"
+     },
+     {
+      "date": "2026-05-26",
+      "desc": "Wally`S Market Swanton OH",
+      "amount": -1.49,
+      "cat": "Other"
+     },
+     {
+      "date": "2026-05-26",
+      "desc": "Ohio Turnpike Plaza Berea OH",
+      "amount": -10.5,
+      "cat": "Gas"
+     },
+     {
+      "date": "2026-05-26",
+      "desc": "Sheetz 0347 North Ridgevi OH",
+      "amount": -2.39,
+      "cat": "Gas"
+     },
+     {
+      "date": "2026-05-26",
+      "desc": "Spectrum Mobile 855-707-7328 MO",
+      "amount": -40.0,
+      "cat": "Utilities"
+     },
+     {
+      "date": "2026-05-26",
+      "desc": "Gleneagles Golf Course Twinsburg OH",
+      "amount": -51.0,
+      "cat": "Entertainment"
+     },
+     {
+      "date": "2026-05-26",
+      "desc": "Tst* Aaron And Moses - Twinsburg OH",
+      "amount": -1.5,
+      "cat": "Restaurant"
+     },
+     {
+      "date": "2026-05-26",
+      "desc": "Gleneagles Golf Course Twinsburg OH",
+      "amount": -12.0,
+      "cat": "Entertainment"
+     },
+     {
+      "date": "2026-05-26",
+      "desc": "Tst* Aaron And Moses - Twinsburg OH",
+      "amount": -2.0,
+      "cat": "Restaurant"
+     },
+     {
+      "date": "2026-05-26",
+      "desc": "Wholefds Orv #10664 Orange OH",
+      "amount": -225.14,
+      "cat": "Groceries"
+     },
+     {
+      "date": "2026-05-26",
+      "desc": "Wholefds Orv #10664 Orange OH",
+      "amount": -6.0,
+      "cat": "Groceries"
+     },
+     {
+      "date": "2026-05-26",
+      "desc": "Claude.Ai Subscripti Anthropic.Com CA",
+      "amount": -21.6,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-05-26",
+      "desc": "Concora Credit Payment 043000091223316",
+      "amount": -80.0,
+      "cat": "Credit"
+     },
+     {
+      "date": "2026-05-22",
+      "desc": "Chick-Fil-A #04053 440-683-1946 OH",
+      "amount": -6.15,
+      "cat": "Fast Food"
+     },
+     {
+      "date": "2026-05-22",
+      "desc": "Amazon Mktpl*P94Jo3M Amzn.Com/Bill WA",
+      "amount": -17.45,
+      "cat": "Amazon"
+     },
+     {
+      "date": "2026-05-22",
+      "desc": "Mcdonald's F262 Maple Heights OH",
+      "amount": -8.88,
+      "cat": "Fast Food"
+     },
+     {
+      "date": "2026-05-21",
+      "desc": "Wix Com Inc Payout 870B356B29Oxcz5",
+      "amount": 19.12,
+      "cat": "Income"
+     },
+     {
+      "date": "2026-05-21",
+      "desc": "Paypal Purchase Hulu",
+      "amount": -8.64,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-05-20",
+      "desc": "Venmo Cashout",
+      "amount": 355.0,
+      "cat": "Income"
+     },
+     {
+      "date": "2026-05-20",
+      "desc": "Amazon Mktpl*2T7Rn71 Amzn.Com/Bill WA",
+      "amount": -109.48,
+      "cat": "Amazon"
+     },
+     {
+      "date": "2026-05-20",
+      "desc": "Amazon.Com*X56Bk0Ka3 Amzn.Com/Bill WA",
+      "amount": -69.12,
+      "cat": "Amazon"
+     },
+     {
+      "date": "2026-05-20",
+      "desc": "Wp*Rankuplol Maple Heights OH",
+      "amount": -20.0,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-05-20",
+      "desc": "Peacock 984D5 Premium 212-6640138 NY",
+      "amount": -11.87,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-05-19",
+      "desc": "Cleveland Metroparks Cleveland OH",
+      "amount": -14.0,
+      "cat": "Entertainment"
+     },
+     {
+      "date": "2026-05-19",
+      "desc": "Marcs 17 Gh Garfield Heig OH",
+      "amount": -150.1,
+      "cat": "Groceries"
+     },
+     {
+      "date": "2026-05-18",
+      "desc": "Bob Evans Rest #0509 Beachwood OH",
+      "amount": -53.7,
+      "cat": "Restaurant"
+     },
+     {
+      "date": "2026-05-18",
+      "desc": "Weteachleague Melbourne",
+      "amount": -39.0,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-05-18",
+      "desc": "Target T-1324 Mayfield Heig OH",
+      "amount": -57.61,
+      "cat": "Shopping"
+     },
+     {
+      "date": "2026-05-18",
+      "desc": "Target T-1324 Mayfield Heig OH",
+      "amount": -2.59,
+      "cat": "Shopping"
+     },
+     {
+      "date": "2026-05-18",
+      "desc": "Tst* The Double Bogey G Bedford OH",
+      "amount": -12.0,
+      "cat": "Restaurant"
+     },
+     {
+      "date": "2026-05-18",
+      "desc": "Planet Fitness G Iclub Fees",
+      "amount": -27.05,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-05-18",
+      "desc": "Paypal Purchase Spotify*P42929A",
+      "amount": -14.03,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-05-15",
+      "desc": "Trapeze Software Payroll",
+      "amount": 1501.19,
+      "cat": "Income"
+     },
+     {
+      "date": "2026-05-15",
+      "desc": "Hp *Instant Ink 855-785-2777 CA",
+      "amount": -5.93,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-05-15",
+      "desc": "Sun Valley Beverage Cleveland OH",
+      "amount": -103.63,
+      "cat": "Groceries"
+     },
+     {
+      "date": "2026-05-14",
+      "desc": "Marathon 177998 Bedford OH",
+      "amount": -4.49,
+      "cat": "Gas"
+     },
+     {
+      "date": "2026-05-14",
+      "desc": "Paypal Purchase Steam Games",
+      "amount": -29.15,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-05-11",
+      "desc": "Amazon Mktpl*Bv2Hf3S Amzn.Com/Bill WA",
+      "amount": -10.79,
+      "cat": "Amazon"
+     },
+     {
+      "date": "2026-05-11",
+      "desc": "Marathon 177998 Bedford OH",
+      "amount": -42.26,
+      "cat": "Gas"
+     },
+     {
+      "date": "2026-05-11",
+      "desc": "Glf*Blackbrookgolf Mentor OH",
+      "amount": -48.0,
+      "cat": "Entertainment"
+     },
+     {
+      "date": "2026-05-11",
+      "desc": "Glf*Blackbrookgolf Mentor OH",
+      "amount": -5.49,
+      "cat": "Entertainment"
+     },
+     {
+      "date": "2026-05-11",
+      "desc": "Www Costco Com 800-955-2292 WA",
+      "amount": -65.0,
+      "cat": "Groceries"
+     },
+     {
+      "date": "2026-05-11",
+      "desc": "Costco Whse #0344 Cleveland OH",
+      "amount": -92.37,
+      "cat": "Groceries"
+     },
+     {
+      "date": "2026-05-11",
+      "desc": "Paypal Purchase Steam Games",
+      "amount": -8.63,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-05-08",
+      "desc": "Amazon Mktpl*Bf11P4M Amzn.Com/Bill WA",
+      "amount": -24.83,
+      "cat": "Amazon"
+     },
+     {
+      "date": "2026-05-07",
+      "desc": "Discount Drug Mart 3 Maple Heights OH",
+      "amount": -21.2,
+      "cat": "Groceries"
+     },
+     {
+      "date": "2026-05-07",
+      "desc": "Pulp Juice And Smoothi 216-2644263 OH",
+      "amount": -15.75,
+      "cat": "Restaurant"
+     },
+     {
+      "date": "2026-05-06",
+      "desc": "Amazon Mktpl*Bv1ND6J Amzn.Com/Bill WA",
+      "amount": -30.22,
+      "cat": "Amazon"
+     },
+     {
+      "date": "2026-05-06",
+      "desc": "Chase Credit Crd Autopay",
+      "amount": -65.0,
+      "cat": "Credit"
+     },
+     {
+      "date": "2026-05-05",
+      "desc": "Amazon Mktpl*Bv6H71R Amzn.Com/Bill WA",
+      "amount": -80.96,
+      "cat": "Amazon"
+     },
+     {
+      "date": "2026-05-05",
+      "desc": "Marathon 177998 Bedford OH",
+      "amount": -4.28,
+      "cat": "Gas"
+     },
+     {
+      "date": "2026-05-04",
+      "desc": "Real Time Transfer Recd From Aba/Contr Bnk-021000021 From: V",
+      "amount": 39.3,
+      "cat": "Income"
+     },
+     {
+      "date": "2026-05-04",
+      "desc": "Check #104",
+      "amount": -50.0,
+      "cat": "Other"
+     },
+     {
+      "date": "2026-05-04",
+      "desc": "Fly.Io Fly.Io CA",
+      "amount": -33.21,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-05-04",
+      "desc": "Makeplayingcards.Com Shatin",
+      "amount": -53.85,
+      "cat": "Shopping"
+     },
+     {
+      "date": "2026-05-04",
+      "desc": "Get Go #3218 Garfield Hts OH",
+      "amount": -41.15,
+      "cat": "Gas"
+     },
+     {
+      "date": "2026-05-04",
+      "desc": "Get Go #3218 5637 Tr Garfield Heig OH",
+      "amount": -4.19,
+      "cat": "Gas"
+     },
+     {
+      "date": "2026-05-04",
+      "desc": "Propark: Lightning Pay Propark.Com CT",
+      "amount": -8.75,
+      "cat": "Other"
+     },
+     {
+      "date": "2026-05-04",
+      "desc": "Tst*Pins Mechanical Com Cleveland OH",
+      "amount": -8.94,
+      "cat": "Restaurant"
+     },
+     {
+      "date": "2026-05-04",
+      "desc": "Tst*Pins Mechanical Com Cleveland OH",
+      "amount": -10.62,
+      "cat": "Restaurant"
+     },
+     {
+      "date": "2026-05-04",
+      "desc": "Tst*Pins Mechanical Com Cleveland OH",
+      "amount": -5.59,
+      "cat": "Restaurant"
+     },
+     {
+      "date": "2026-05-04",
+      "desc": "Yrefy Slp5 Payment 224132-34Ee2778",
+      "amount": -835.0,
+      "cat": "Loan"
+     },
+     {
+      "date": "2026-05-04",
+      "desc": "Spectrum Spectrum",
+      "amount": -80.0,
+      "cat": "Utilities"
+     },
+     {
+      "date": "2026-05-01",
+      "desc": "Marathon 177998 Bedford OH",
+      "amount": -5.39,
+      "cat": "Gas"
+     },
+     {
+      "date": "2026-05-01",
+      "desc": "Ohiopetvetsolon.Com 440-2328383 OH",
+      "amount": -108.5,
+      "cat": "Healthcare"
+     },
+     {
+      "date": "2026-05-01",
+      "desc": "Amazon Mktpl*Bj9H761 Amzn.Com/Bill WA",
+      "amount": -16.19,
+      "cat": "Amazon"
+     },
+     {
+      "date": "2026-05-01",
+      "desc": "Marathon 177998 Bedford OH",
+      "amount": -5.39,
+      "cat": "Gas"
+     },
+     {
+      "date": "2026-05-01",
+      "desc": "Planetscale Inc. Planetscale.C CA",
+      "amount": -15.0,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-04-30",
+      "desc": "Trapeze Software Payroll",
+      "amount": 1501.18,
+      "cat": "Income"
+     },
+     {
+      "date": "2026-04-30",
+      "desc": "Geico *Auto 800-841-3000 DC",
+      "amount": -74.83,
+      "cat": "Insurance"
+     },
+     {
+      "date": "2026-04-29",
+      "desc": "Venmo Cashout",
+      "amount": 134.0,
+      "cat": "Income"
+     },
+     {
+      "date": "2026-04-29",
+      "desc": "Amazon Mktpl*Bv10304 Amzn.Com/Bill WA",
+      "amount": -260.13,
+      "cat": "Amazon"
+     },
+     {
+      "date": "2026-04-28",
+      "desc": "Mcdonald's F33898 Garfield Hts OH",
+      "amount": -10.24,
+      "cat": "Fast Food"
+     },
+     {
+      "date": "2026-04-28",
+      "desc": "Amazon Mktpl*Bv0Ly7C Amzn.Com/Bill WA",
+      "amount": -32.29,
+      "cat": "Amazon"
+     },
+     {
+      "date": "2026-04-28",
+      "desc": "Roku For Disney Electr 816-2728107 De",
+      "amount": -12.95,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-04-27",
+      "desc": "Marcs 17 Gh Garfield Heig OH",
+      "amount": -3.33,
+      "cat": "Groceries"
+     },
+     {
+      "date": "2026-04-27",
+      "desc": "Pulp Juice And Smoothi 216-2644263 OH",
+      "amount": -24.75,
+      "cat": "Restaurant"
+     },
+     {
+      "date": "2026-04-27",
+      "desc": "Tst* 8968 - Applebee's Macedonia OH",
+      "amount": -48.87,
+      "cat": "Restaurant"
+     },
+     {
+      "date": "2026-04-27",
+      "desc": "Ls Shawnee Hills Golf 144-02327247 OH",
+      "amount": -31.0,
+      "cat": "Entertainment"
+     },
+     {
+      "date": "2026-04-27",
+      "desc": "Claude.Ai Subscripti Anthropic.Com CA",
+      "amount": -21.6,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-04-27",
+      "desc": "Tst* The Double Bogey G Bedford OH",
+      "amount": -13.67,
+      "cat": "Restaurant"
+     },
+     {
+      "date": "2026-04-27",
+      "desc": "Paypal Purchase Discord",
+      "amount": -10.79,
+      "cat": "Subscription"
+     }
+    ],
+    "source": "Chase statement 2026-04-25 to 2026-05-27"
+   },
+   "June": {
+    "income": 4255.11,
+    "expenses": {
+     "Entertainment": 217.84,
+     "Gas": 176.08,
+     "Other": 60.45,
+     "Utilities": 632.66,
+     "Credit": 183.0,
+     "Subscription": 308.08,
+     "Groceries": 208.09,
+     "Fast Food": 68.61,
+     "Healthcare": 151.9,
+     "Shopping": 234.89,
+     "Gas Bill": 750.0,
+     "Amazon": 212.51,
+     "Car Repair": 399.78,
+     "Restaurant": 366.04,
+     "Loan": 835.0,
+     "Insurance": 73.69
+    },
+    "budgets": {
+     "Entertainment": 75,
+     "Gas": 80,
+     "Other": 200,
+     "Utilities": 200,
+     "Credit": 350,
+     "Subscription": 200,
+     "Groceries": 50,
+     "Fast Food": 50,
+     "Healthcare": 100,
+     "Shopping": 200,
+     "Gas Bill": 125,
+     "Amazon": 100,
+     "Car Repair": 200,
+     "Restaurant": 60,
+     "Loan": 1050,
+     "Insurance": 75
+    },
+    "totalExpenses": 4878.62,
+    "net": -623.51,
+    "transactions": [
+     {
+      "date": "2026-06-25",
+      "desc": "Riot* Ln64Lkq3Pwfe 866-373-9211 CA",
+      "amount": -23.75,
+      "cat": "Entertainment"
+     },
+     {
+      "date": "2026-06-25",
+      "desc": "Shell Oil 57424359701 Gates Mills OH",
+      "amount": -9.18,
+      "cat": "Gas"
+     },
+     {
+      "date": "2026-06-25",
+      "desc": "Uber *Eats San Francisco CA",
+      "amount": -4.31,
+      "cat": "Other"
+     },
+     {
+      "date": "2026-06-24",
+      "desc": "Spectrum Mobile 855-707-7328 MO",
+      "amount": -73.33,
+      "cat": "Utilities"
+     },
+     {
+      "date": "2026-06-24",
+      "desc": "Concora Credit Payment 043000096785862",
+      "amount": -80.0,
+      "cat": "Credit"
+     },
+     {
+      "date": "2026-06-23",
+      "desc": "Wix Com Inc Payout 870B2A6Bfdawh9D",
+      "amount": 19.12,
+      "cat": "Income"
+     },
+     {
+      "date": "2026-06-22",
+      "desc": "Uber San Francisco CA",
+      "amount": 69.31,
+      "cat": "Income"
+     },
+     {
+      "date": "2026-06-22",
+      "desc": "Hp *Instant Ink 855-785-2777 CA",
+      "amount": -5.93,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-06-22",
+      "desc": "Wp*Rankuplol Maple Heights OH",
+      "amount": -20.0,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-06-22",
+      "desc": "Peacock 1Aa8D Premium 212-6640138 NY",
+      "amount": -11.87,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-06-22",
+      "desc": "Sunoco 8003081501 Bedford OH",
+      "amount": -11.53,
+      "cat": "Gas"
+     },
+     {
+      "date": "2026-06-22",
+      "desc": "Ferraras Imported Fo Mayfield Heig OH",
+      "amount": -11.96,
+      "cat": "Groceries"
+     },
+     {
+      "date": "2026-06-22",
+      "desc": "Discount Drug Mart 3 Maple Heights OH",
+      "amount": -11.33,
+      "cat": "Groceries"
+     },
+     {
+      "date": "2026-06-22",
+      "desc": "Mcdonalds 12172 121-6378993 OH",
+      "amount": -24.34,
+      "cat": "Fast Food"
+     },
+     {
+      "date": "2026-06-22",
+      "desc": "Shell Service Statio Garfield Heig OH",
+      "amount": -54.21,
+      "cat": "Gas"
+     },
+     {
+      "date": "2026-06-22",
+      "desc": "Cvs/Pharmacy #03 03301 Woodmere OH",
+      "amount": -30.85,
+      "cat": "Healthcare"
+     },
+     {
+      "date": "2026-06-22",
+      "desc": "Paypal Purchase Hulu",
+      "amount": -8.64,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-06-18",
+      "desc": "Garfield Ace Hardware Cleveland OH",
+      "amount": -37.35,
+      "cat": "Shopping"
+     },
+     {
+      "date": "2026-06-18",
+      "desc": "Paypal Purchase Spotify*P43A73F",
+      "amount": -14.03,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-06-17",
+      "desc": "Weteachleague Melbourne",
+      "amount": -39.0,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-06-17",
+      "desc": "Planet Fitness G Iclub Fees",
+      "amount": -27.05,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-06-16",
+      "desc": "Uber USA, LLC Partner",
+      "amount": 46.12,
+      "cat": "Income"
+     },
+     {
+      "date": "2026-06-16",
+      "desc": "Garfield Ace Hardware Cleveland OH",
+      "amount": -72.35,
+      "cat": "Shopping"
+     },
+     {
+      "date": "2026-06-15",
+      "desc": "Trapeze Software Payroll",
+      "amount": 1501.19,
+      "cat": "Income"
+     },
+     {
+      "date": "2026-06-15",
+      "desc": "Glf*Blackbrookgolf Mentor OH",
+      "amount": -48.0,
+      "cat": "Entertainment"
+     },
+     {
+      "date": "2026-06-15",
+      "desc": "Mcdonald's F28451 Northfield OH",
+      "amount": -5.77,
+      "cat": "Fast Food"
+     },
+     {
+      "date": "2026-06-15",
+      "desc": "Marcs 17 Gh Garfield Hts OH",
+      "amount": -66.64,
+      "cat": "Groceries"
+     },
+     {
+      "date": "2026-06-15",
+      "desc": "Enbridge Gas OH Billpay 6180017447375",
+      "amount": -750.0,
+      "cat": "Gas Bill"
+     },
+     {
+      "date": "2026-06-15",
+      "desc": "Firstenergy Opco-ACH 110151980403",
+      "amount": -350.0,
+      "cat": "Utilities"
+     },
+     {
+      "date": "2026-06-12",
+      "desc": "Garfield Ace Hardware Cleveland OH",
+      "amount": -125.19,
+      "cat": "Shopping"
+     },
+     {
+      "date": "2026-06-12",
+      "desc": "Arbys 0991 Garfield Heig OH",
+      "amount": -4.79,
+      "cat": "Other"
+     },
+     {
+      "date": "2026-06-12",
+      "desc": "Paypal Purchase Cloudflare",
+      "amount": -11.3,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-06-11",
+      "desc": "Mcdonald's F33898 Garfield Hts OH",
+      "amount": -5.28,
+      "cat": "Fast Food"
+     },
+     {
+      "date": "2026-06-10",
+      "desc": "Marcs 17 Gh Garfield Heig OH",
+      "amount": -11.72,
+      "cat": "Groceries"
+     },
+     {
+      "date": "2026-06-09",
+      "desc": "Real Time Transfer Recd From Aba/Contr Bnk-021000021 From: V",
+      "amount": 147.38,
+      "cat": "Income"
+     },
+     {
+      "date": "2026-06-09",
+      "desc": "Amazon.Com*4W6Ro4I93 Amzn.Com/Bill WA",
+      "amount": -20.39,
+      "cat": "Amazon"
+     },
+     {
+      "date": "2026-06-09",
+      "desc": "Amazon.Com*TX9Up59P3 Amzn.Com/Bill WA",
+      "amount": -40.01,
+      "cat": "Amazon"
+     },
+     {
+      "date": "2026-06-09",
+      "desc": "Ohiopetvetsolon.Com 440-2328383 OH",
+      "amount": -121.05,
+      "cat": "Healthcare"
+     },
+     {
+      "date": "2026-06-09",
+      "desc": "Uber *One Membership San Francisco CA",
+      "amount": -9.99,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-06-08",
+      "desc": "Amazon.Com*Gr9V026K3 Amzn.Com/Bill WA",
+      "amount": -28.24,
+      "cat": "Amazon"
+     },
+     {
+      "date": "2026-06-08",
+      "desc": "Northfield Tire Pros Northfield OH",
+      "amount": -399.78,
+      "cat": "Car Repair"
+     },
+     {
+      "date": "2026-06-08",
+      "desc": "Mcdonald's F28451 Northfield OH",
+      "amount": -14.16,
+      "cat": "Fast Food"
+     },
+     {
+      "date": "2026-06-08",
+      "desc": "Tst* Caribou Coffee New Springfie OH",
+      "amount": -8.03,
+      "cat": "Restaurant"
+     },
+     {
+      "date": "2026-06-08",
+      "desc": "Tst*POP Morgantown WV",
+      "amount": -11.43,
+      "cat": "Restaurant"
+     },
+     {
+      "date": "2026-06-08",
+      "desc": "Sq *Short Story Brewing Westover WV",
+      "amount": -63.85,
+      "cat": "Restaurant"
+     },
+     {
+      "date": "2026-06-08",
+      "desc": "Parkmobile 770-818-9036 GA",
+      "amount": -1.35,
+      "cat": "Other"
+     },
+     {
+      "date": "2026-06-08",
+      "desc": "Sheetz 0275 Morgantown WV",
+      "amount": -2.64,
+      "cat": "Gas"
+     },
+     {
+      "date": "2026-06-08",
+      "desc": "Amazon.Com*6I8Pb29Z3 Amzn.Com/Bill WA",
+      "amount": -12.28,
+      "cat": "Amazon"
+     },
+     {
+      "date": "2026-06-08",
+      "desc": "Amazon Mktpl*5Z03A7O Amzn.Com/Bill WA",
+      "amount": -36.67,
+      "cat": "Amazon"
+     },
+     {
+      "date": "2026-06-08",
+      "desc": "Chase Credit Crd Autopay",
+      "amount": -63.0,
+      "cat": "Credit"
+     },
+     {
+      "date": "2026-06-05",
+      "desc": "Amazon.Com*0Y90149V3 Amzn.Com/Bill WA",
+      "amount": -12.74,
+      "cat": "Amazon"
+     },
+     {
+      "date": "2026-06-05",
+      "desc": "Amazon.Com*0Q8K85Ox3 Amzn.Com/Bill WA",
+      "amount": -10.21,
+      "cat": "Amazon"
+     },
+     {
+      "date": "2026-06-05",
+      "desc": "Circle K 05627 10216 N Northfield OH",
+      "amount": -52.05,
+      "cat": "Gas"
+     },
+     {
+      "date": "2026-06-04",
+      "desc": "Marathon 177998 Bedford OH",
+      "amount": -6.47,
+      "cat": "Gas"
+     },
+     {
+      "date": "2026-06-03",
+      "desc": "Top Golf Bay Reservat 800-453-0660 TX",
+      "amount": -20.09,
+      "cat": "Entertainment"
+     },
+     {
+      "date": "2026-06-03",
+      "desc": "Tst* Topgolf - Clevel Independence OH",
+      "amount": -217.88,
+      "cat": "Restaurant"
+     },
+     {
+      "date": "2026-06-02",
+      "desc": "Check #105",
+      "amount": -50.0,
+      "cat": "Other"
+     },
+     {
+      "date": "2026-06-02",
+      "desc": "Fly.Io Fly.Io CA",
+      "amount": -42.37,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-06-02",
+      "desc": "Yrefy Slp5 Payment 224132-34Ee2778",
+      "amount": -835.0,
+      "cat": "Loan"
+     },
+     {
+      "date": "2026-06-02",
+      "desc": "Spectrum Spectrum",
+      "amount": -80.0,
+      "cat": "Utilities"
+     },
+     {
+      "date": "2026-06-01",
+      "desc": "Venmo Cashout",
+      "amount": 375.0,
+      "cat": "Income"
+     },
+     {
+      "date": "2026-06-01",
+      "desc": "Amazon Mktpl*Ub29J6K Amzn.Com/Bill WA",
+      "amount": -26.99,
+      "cat": "Amazon"
+     },
+     {
+      "date": "2026-06-01",
+      "desc": "Starbucks Store 0940 Garfield Heig OH",
+      "amount": -14.85,
+      "cat": "Restaurant"
+     },
+     {
+      "date": "2026-06-01",
+      "desc": "Marcs 17 Gh Garfield Hts OH",
+      "amount": -106.44,
+      "cat": "Groceries"
+     },
+     {
+      "date": "2026-06-01",
+      "desc": "Shell Oil 57424362002 Cleveland OH",
+      "amount": -40.0,
+      "cat": "Gas"
+     },
+     {
+      "date": "2026-06-01",
+      "desc": "Geico *Auto 800-841-3000 DC",
+      "amount": -73.69,
+      "cat": "Insurance"
+     },
+     {
+      "date": "2026-06-01",
+      "desc": "Fat Heads Brewery 440-8011001 OH",
+      "amount": -50.0,
+      "cat": "Restaurant"
+     },
+     {
+      "date": "2026-06-01",
+      "desc": "Mcdonald's F33898 Garfield Hts OH",
+      "amount": -19.06,
+      "cat": "Fast Food"
+     },
+     {
+      "date": "2026-06-01",
+      "desc": "Claude.Ai Subscripti Anthropic.Com CA",
+      "amount": -89.95,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-06-01",
+      "desc": "Spectrum Mobile 855-707-7328 MO",
+      "amount": -129.33,
+      "cat": "Utilities"
+     },
+     {
+      "date": "2026-06-01",
+      "desc": "Amazon Mktpl*4C8Yr5N Amzn.Com/Bill WA",
+      "amount": -24.98,
+      "cat": "Amazon"
+     },
+     {
+      "date": "2026-06-01",
+      "desc": "Planetscale Inc. Planetscale.C CA",
+      "amount": -15.0,
+      "cat": "Subscription"
+     },
+     {
+      "date": "2026-06-01",
+      "desc": "American Express ACH Pmt A8448",
+      "amount": -40.0,
+      "cat": "Credit"
+     },
+     {
+      "date": "2026-05-29",
+      "desc": "Trapeze Software Payroll",
+      "amount": 1501.19,
+      "cat": "Income"
+     },
+     {
+      "date": "2026-05-29",
+      "desc": "Trapeze Software Payroll",
+      "amount": 595.8,
+      "cat": "Income"
+     },
+     {
+      "date": "2026-05-29",
+      "desc": "Cleveland Metroparks Cleveland OH",
+      "amount": -10.0,
+      "cat": "Entertainment"
+     },
+     {
+      "date": "2026-05-28",
+      "desc": "Glf*Golfnowreservation 844-8004653 FL",
+      "amount": -9.0,
+      "cat": "Entertainment"
+     },
+     {
+      "date": "2026-05-28",
+      "desc": "Ls Shawnee Hills Golf 144-02327247 OH",
+      "amount": -107.0,
+      "cat": "Entertainment"
+     },
+     {
+      "date": "2026-05-28",
+      "desc": "Roku For Disney Electr 816-2728107 De",
+      "amount": -12.95,
+      "cat": "Subscription"
+     }
+    ],
+    "source": "Chase statement 2026-05-28 to 2026-06-25"
+   }
+  }
+ },
+ "bills": [
+  {
+   "name": "Chase",
+   "amount": 63,
+   "due": "5th",
+   "link": "https://secure08ea.chase.com/web/auth/dashboard",
+   "type": "bill",
+   "balance": 929,
+   "note": "Autopay varies $61-67/mo (Jun: $63)"
+  },
+  {
+   "name": "Merrick Bank",
+   "amount": 54,
+   "due": "16th",
+   "link": "https://logon.merrickbank.com/Account/Overview",
+   "type": "bill",
+   "note": "Not seen in Chase statements Jan-Jun \u2014 paid elsewhere?"
+  },
+  {
+   "name": "Concora Credit",
+   "amount": 80,
+   "due": "22nd",
+   "link": "https://concoracredit.myfinanceservice.com/summary",
+   "type": "bill",
+   "note": "$80/mo since Jan (was $40); $250 in Mar"
+  },
+  {
+   "name": "Car Insurance (Geico)",
+   "amount": 73.69,
+   "due": "30th",
+   "link": "https://portfolio.geico.com/dashboard?token=pFkHCsJSTGxx8UPoFeXHsEj9TKDaIPWGRJLgZnzi8p0%3D",
+   "type": "bill",
+   "note": "Was $74.84, dropped to $73.69 in Jun"
+  },
+  {
+   "name": "American Express",
+   "amount": 40,
+   "due": "1st",
+   "link": "https://global.americanexpress.com/dashboard?intlink=US-Axp-Shop-Consumer-VAC-CardMember",
+   "type": "bill",
+   "note": "Confirmed $40/mo; extra $941.40 payment in Apr"
+  },
+  {
+   "name": "Gov Student Loan (MOHELA)",
+   "amount": 94,
+   "due": "16th",
+   "link": "https://myaccount.mohela.studentaid.gov/AccountSummary?LandingFrom=CALM",
+   "type": "bill",
+   "note": "Actual: Dept of Ed $280.62 Jan, $187.08 Mar \u2014 nothing since"
+  },
+  {
+   "name": "Electric (FirstEnergy)",
+   "amount": 125,
+   "due": "9th",
+   "link": "https://www.firstenergycorp.com/my_account.html",
+   "type": "bill",
+   "note": "Paid in lump sums: $400 Mar, $350 Jun (~$125/mo avg). Susan owes $375"
+  },
+  {
+   "name": "Gas (Enbridge, was Dominion)",
+   "amount": 125,
+   "due": "20th",
+   "link": "https://www.enbridgegas.com/ohio",
+   "type": "bill",
+   "note": "$750 catch-up payment in Jun (~$125/mo avg)"
+  },
+  {
+   "name": "Yrefy Student Loan",
+   "amount": 835,
+   "due": "1st",
+   "link": "https://servicing.salliemae.com/s/dashboard",
+   "type": "bill",
+   "note": "Confirmed $835/mo, all 6 months"
+  },
+  {
+   "name": "Spectrum Internet",
+   "amount": 80,
+   "due": "3rd",
+   "link": "https://www.spectrum.net/account-summary",
+   "type": "bill",
+   "note": "Increased from $70 to $80 in May"
+  },
+  {
+   "name": "Spectrum Mobile",
+   "amount": 73.33,
+   "due": "27th",
+   "link": "https://www.spectrum.net/account-summary",
+   "type": "bill",
+   "note": "Was $40/mo; Jun charged $129.33 + $73.33 (new device/line?)"
+  }
+ ],
+ "subs": [
+  {
+   "name": "Claude.ai",
+   "amount": 89.95,
+   "link": "https://claude.ai/",
+   "active": true
+  },
+  {
+   "name": "WeTeachLeague",
+   "amount": 39,
+   "link": "https://weteachleague.com/",
+   "active": true
+  },
+  {
+   "name": "Planet Fitness",
+   "amount": 27.05,
+   "link": "https://www.planetfitness.com/",
+   "active": true
+  },
+  {
+   "name": "RankUpLoL",
+   "amount": 20,
+   "link": null,
+   "active": true
+  },
+  {
+   "name": "PlanetScale",
+   "amount": 15,
+   "link": "https://planetscale.com/",
+   "active": true
+  },
+  {
+   "name": "Spotify (via PayPal)",
+   "amount": 14.03,
+   "link": "https://open.spotify.com/",
+   "active": true
+  },
+  {
+   "name": "Disney+ (via Roku)",
+   "amount": 12.95,
+   "link": "https://www.disneyplus.com/home",
+   "active": true
+  },
+  {
+   "name": "Peacock",
+   "amount": 11.87,
+   "link": "https://www.peacocktv.com/watch/profiles?return=%2Fwatch%2Fhome",
+   "active": true
+  },
+  {
+   "name": "Hulu (via PayPal)",
+   "amount": 8.64,
+   "link": "https://www.hulu.com/hub/home",
+   "active": true
+  },
+  {
+   "name": "HP Instant Ink",
+   "amount": 5.93,
+   "link": "https://www.hpinstantink.com/",
+   "active": true
+  },
+  {
+   "name": "Fly.io (usage-based)",
+   "amount": 42.37,
+   "link": "https://fly.io/dashboard",
+   "active": true
+  },
+  {
+   "name": "Cloudflare (usage-based)",
+   "amount": 11.3,
+   "link": "https://dash.cloudflare.com/",
+   "active": true
+  },
+  {
+   "name": "Ring Doorbell ($53.99/yr, renewed Jan)",
+   "amount": 4.5,
+   "link": "https://ring.com/",
+   "active": true
+  },
+  {
+   "name": "Apple.com/Bill (not seen since Apr)",
+   "amount": 25.87,
+   "link": null,
+   "active": false
+  },
+  {
+   "name": "Midjourney (last seen Apr)",
+   "amount": 10,
+   "link": "https://www.midjourney.com/",
+   "active": false
+  },
+  {
+   "name": "Ideogram (Mar-Apr only)",
+   "amount": 20,
+   "link": null,
+   "active": false
+  },
+  {
+   "name": "Canva (last seen Mar)",
+   "amount": 16.2,
+   "link": "https://www.canva.com/",
+   "active": false
+  },
+  {
+   "name": "Uppbeat (last seen Mar)",
+   "amount": 6.99,
+   "link": null,
+   "active": false
+  },
+  {
+   "name": "Netflix (one charge Feb)",
+   "amount": 19.43,
+   "link": null,
+   "active": false
+  },
+  {
+   "name": "Amazon Prime",
+   "amount": 6.99,
+   "link": "https://www.amazon.com/ref=nav_logo",
+   "active": false
+  },
+  {
+   "name": "MLA (MidLaneAcademy)",
+   "amount": 30,
+   "link": "https://midlaneacademy.com/",
+   "active": false
+  }
+ ]
+}

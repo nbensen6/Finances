@@ -39,6 +39,53 @@ const stmtUpsert = db.prepare(
 const stmtDelete = db.prepare('DELETE FROM kv_store WHERE key = ?');
 
 // ---------------------------------------------------------------------------
+// Seed monthly dashboard data from bundled statement export (monthly-seed.json).
+// Merges per-month into findash_monthly_data and runs once per seed version,
+// so in-app category edits aren't clobbered on later restarts.
+// ---------------------------------------------------------------------------
+try {
+  const seedPath = path.join(__dirname, 'monthly-seed.json');
+  if (fs.existsSync(seedPath)) {
+    const seed = JSON.parse(fs.readFileSync(seedPath, 'utf8'));
+    const verRow = stmtGet.get('findash_seed_version');
+    let applied = 0;
+    if (verRow) { try { applied = Number(JSON.parse(verRow.value)) || 0; } catch (_) {} }
+    if (applied < seed.version) {
+      // Per-year model (seed v3+): merge into findash_yearly_data, migrating
+      // any legacy month-keyed data (Oct/Nov/Dec -> 2025, else 2026) first.
+      let yearly = {};
+      const yRow = stmtGet.get('findash_yearly_data');
+      if (yRow) {
+        try { yearly = JSON.parse(yRow.value) || {}; } catch (_) {}
+      } else {
+        const mRow = stmtGet.get('findash_monthly_data');
+        if (mRow) {
+          try {
+            const legacy = JSON.parse(mRow.value) || {};
+            for (const [m, d] of Object.entries(legacy)) {
+              const y = ['October', 'November', 'December'].includes(m) ? '2025' : '2026';
+              (yearly[y] = yearly[y] || {})[m] = d;
+            }
+          } catch (_) {}
+        }
+      }
+      for (const [y, months] of Object.entries(seed.years || {})) {
+        yearly[y] = Object.assign(yearly[y] || {}, months);
+      }
+      stmtUpsert.run('findash_yearly_data', JSON.stringify(yearly));
+      if (Array.isArray(seed.bills)) stmtUpsert.run('findash_bills', JSON.stringify(seed.bills));
+      if (Array.isArray(seed.subs)) stmtUpsert.run('findash_subs', JSON.stringify(seed.subs));
+      stmtUpsert.run('findash_seed_version', JSON.stringify(seed.version));
+      const summary = Object.entries(seed.years || {}).map(([y, m]) => `${y}: ${Object.keys(m).length} months`).join('; ');
+      console.log(`Statement data seeded: v${seed.version} (${summary})`
+        + (seed.bills ? `, ${seed.bills.length} bills` : '') + (seed.subs ? `, ${seed.subs.length} subs` : ''));
+    }
+  }
+} catch (err) {
+  console.error('Monthly seed error:', err);
+}
+
+// ---------------------------------------------------------------------------
 // SQLite session store (survives machine restarts / Fly suspends)
 // ---------------------------------------------------------------------------
 db.exec(`
