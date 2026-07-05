@@ -237,12 +237,12 @@ canvas { max-height: 300px; }
   </div>
 
   <div class="card mt-20" id="goal-card">
-    <h2>Road to $7K by Dec 31, 2026</h2>
+    <h2>Road to $10K by Dec 31, 2026 <span style="font-size:13px;color:var(--text-dim);font-weight:400;">($7K cash + $3K property tax)</span></h2>
     <div class="grid-4" id="goal-stats"></div>
     <div style="margin-top:12px;">
       <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;">
-        <span>Progress (net saved since July 1)</span>
-        <span id="goal-progress-label">$0 / $7,000</span>
+        <span>Net-worth progress since July 1</span>
+        <span id="goal-progress-label">$0 / $10,000</span>
       </div>
       <div style="background:var(--surface2);border-radius:8px;height:20px;overflow:hidden;">
         <div id="goal-progress-bar" style="height:100%;background:linear-gradient(90deg,var(--green),#55efc4);border-radius:8px;transition:width .5s;width:0%"></div>
@@ -642,7 +642,7 @@ function legacyMonthYear(m) {
 }
 
 // All known categories for the dropdown — merged with any user-created ones
-const defaultCategories = ['Income','Groceries','Amazon','Fast Food','Gas','Gas Bill','Car Repair','Subscription','Entertainment','Utilities','Insurance','Healthcare','Shopping','Loan','Restaurant','Credit','Travel','Other'];
+const defaultCategories = ['Income','Groceries','Amazon','Fast Food','Gas','Gas Bill','Car Repair','Subscription','Entertainment','Utilities','Insurance','Healthcare','Shopping','Loan','Restaurant','Credit','Taxes','Travel','Other'];
 // These will be populated after initDataLayer() in the DOMContentLoaded handler
 let customCategories = [];
 let allCategories = [...defaultCategories];
@@ -795,6 +795,7 @@ const defaultBillsData = [
   {name:'Electric (FirstEnergy)',amount:125,due:'9th',link:'https://www.firstenergycorp.com/my_account.html',type:'bill',note:'Paid in lump sums: $400 Mar, $350 Jun (~$125/mo avg). Susan owes $375'},
   {name:'Gas (Enbridge, was Dominion)',amount:125,due:'20th',link:'https://www.enbridgegas.com/ohio',type:'bill',note:'$750 catch-up payment in Jun (~$125/mo avg)'},
   {name:'Yrefy Student Loan',amount:835,due:'1st',link:'https://servicing.salliemae.com/s/dashboard',type:'bill',note:'Confirmed $835/mo, all 6 months'},
+  {name:'Property Tax Payment Plan',amount:500,due:'15th',link:'https://myplace.cuyahogacounty.gov/',type:'bill',note:'Self-imposed $500/mo toward $8,579 Maple Heights balance (started Jul 2026)'},
   {name:'Spectrum Internet',amount:80,due:'3rd',link:'https://www.spectrum.net/account-summary',type:'bill',note:'Increased from $70 to $80 in May'},
   {name:'Spectrum Mobile',amount:73.33,due:'27th',link:'https://www.spectrum.net/account-summary',type:'bill',note:'Was $40/mo; Jun charged $129.33 + $73.33 (new device/line?)'},
 ];
@@ -852,6 +853,7 @@ const categoryKeywords = {
   'Healthcare': ['optical','doctor','dentist','berris','stoler','ohiopetvet','vet'],
   'Loan': ['yrefy','dept education','student loan','mohela','sallie mae'],
   'Credit': ['concora','chase credit','american express','merrick'],
+  'Taxes': ['cuyahoga','county treas','property tax','usataxpymt','fileyourtaxes','oh dept taxation','neorsd'],
   'Income': ['payroll','direct dep','uber','venmo','cashout','wix','partner'],
 };
 
@@ -1054,44 +1056,57 @@ function renderDashboard() {
   }
 }
 
-// ===== SAVINGS GOAL: $7K by Dec 31, 2026 =====
-// Progress = sum of monthly net for July-December 2026, so it updates
-// automatically every time a new statement is sent to the dashboard.
+// ===== GOAL: $10K net-worth gain by Dec 31, 2026 =====
+// Cash saved ($7K target) + property-tax debt paid down ($3K target, $500/mo).
+// Both count as progress since paying the tax backlog builds net worth.
+// Recomputes from July-December 2026 statements on every upload.
 const SAVINGS_GOAL = {
-  amount: 7000,
+  cashTarget: 7000,
+  taxTarget: 3000,
   year: '2026',
   months: ['July', 'August', 'September', 'October', 'November', 'December'],
-  uberTarget: 830 // Uber deposits/mo needed per the plan
+  uberTarget: 1350,        // Uber deposits/mo needed to fund cash + tax
+  taxKeywords: ['cuyahoga', 'county treas', 'property tax']
 };
 
 function renderGoalCard() {
   const g = SAVINGS_GOAL;
+  const total = g.cashTarget + g.taxTarget;
   const yr = yearlyData[g.year] || {};
-  let saved = 0, monthsLogged = 0, lastMonth = null, lastUber = 0;
+  let cash = 0, taxPaid = 0, monthsLogged = 0, lastMonth = null, lastUber = 0;
   for (const m of g.months) {
     if (!yr[m]) continue;
-    saved += yr[m].net;
     monthsLogged++;
     lastMonth = m;
-    lastUber = (yr[m].transactions || []).reduce((a, t) =>
-      a + (t.amount > 0 && /uber/i.test(t.desc) ? t.amount : 0), 0);
+    const txs = yr[m].transactions || [];
+    // Net for the month, but add back property-tax payments — they leave
+    // checking yet build net worth, so they count toward the goal not against it
+    const monthTax = txs.reduce((a, t) => {
+      const d = String(t.desc || '').toLowerCase();
+      return a + (t.amount < 0 && g.taxKeywords.some(k => d.includes(k)) ? Math.abs(t.amount) : 0);
+    }, 0);
+    cash += yr[m].net + monthTax;
+    taxPaid += monthTax;
+    lastUber = txs.reduce((a, t) => a + (t.amount > 0 && /uber/i.test(t.desc) ? t.amount : 0), 0);
   }
-  saved = Math.round(saved * 100) / 100;
+  cash = Math.round(cash * 100) / 100;
+  taxPaid = Math.round(taxPaid * 100) / 100;
+  const progress = cash + taxPaid;
   const monthsLeft = g.months.length - monthsLogged;
-  const remaining = Math.max(0, g.amount - saved);
+  const remaining = Math.max(0, total - progress);
   const pace = monthsLeft > 0 ? remaining / monthsLeft : remaining;
-  const pct = Math.min(100, Math.max(0, saved / g.amount * 100));
+  const pct = Math.min(100, Math.max(0, progress / total * 100));
 
   document.getElementById('goal-stats').innerHTML = `
-    <div class="stat"><div class="label">Target</div><div class="value">${fmt(g.amount)}</div><div class="sub">by Dec 31, 2026</div></div>
-    <div class="stat"><div class="label">Saved So Far</div><div class="value ${saved >= 0 ? 'positive' : 'negative'}">${fmtSign(saved)}</div><div class="sub">${monthsLogged} of ${g.months.length} months logged</div></div>
-    <div class="stat"><div class="label">Needed Per Month</div><div class="value ${pace > 1400 ? 'warning' : ''}">${fmt(pace)}</div><div class="sub">${monthsLeft} month${monthsLeft !== 1 ? 's' : ''} left</div></div>
+    <div class="stat"><div class="label">Cash Saved</div><div class="value ${cash >= 0 ? 'positive' : 'negative'}">${fmtSign(cash)}</div><div class="sub">of ${fmt(g.cashTarget)} target</div></div>
+    <div class="stat"><div class="label">Tax Paid Down</div><div class="value positive">${fmt(taxPaid)}</div><div class="sub">of ${fmt(g.taxTarget)} ($500/mo)</div></div>
+    <div class="stat"><div class="label">Needed Per Month</div><div class="value ${pace > 1800 ? 'warning' : ''}">${fmt(pace)}</div><div class="sub">${monthsLeft} month${monthsLeft !== 1 ? 's' : ''} left</div></div>
     <div class="stat"><div class="label">Uber Target</div><div class="value">${fmt(g.uberTarget)}/mo</div><div class="sub">${lastMonth ? lastMonth + ' actual: ' + fmt(lastUber) : 'no goal months logged yet'}</div></div>
   `;
-  document.getElementById('goal-progress-label').textContent = `${fmt(saved)} / ${fmt(g.amount)}`;
+  document.getElementById('goal-progress-label').textContent = `${fmt(progress)} / ${fmt(total)}`;
   document.getElementById('goal-progress-bar').style.width = pct + '%';
   document.getElementById('goal-note').textContent =
-    'Plan: cut subscriptions/dining/Amazon/entertainment to free ~$500/mo, plus ~$830/mo in Uber deposits. Upload each new statement and this card tracks itself.';
+    'Plan: cut subscriptions/dining/Amazon/entertainment to free ~$500/mo, pay $500/mo toward the property-tax backlog, and net ~$1,350/mo in Uber deposits. Upload each statement and this card tracks itself.';
 }
 
 let pieChart, trendChart;
@@ -1351,7 +1366,7 @@ function renderBillCalendar() {
 
 // ===== DEBTS =====
 const defaultDebtsData = [
-  {name:'Property Tax (Maple Heights)',balance:8579.15,original:8579.15,payment:0,rate:0,category:'property_tax',link:null,notes:'Prior balance + 2025 1st/2nd half. Accruing penalties/interest since 2021.'},
+  {name:'Property Tax (Maple Heights)',balance:8579.15,original:8579.15,payment:500,rate:0,category:'property_tax',link:'https://myplace.cuyahogacounty.gov/',notes:'Prior balance + 2025 1st/2nd half. Paying $500/mo starting Jul 2026.',keywords:['cuyahoga','county treas','property tax'],baseline:{date:'2026-06-30',balance:8579.15}},
   {name:'NEORSD Wastewater',balance:2968.98,original:2968.98,payment:0,rate:0,category:'sewer',link:null,notes:'Cleveland wastewater — 2022 prior + 2023 prior + 2025 current'},
   {name:'Sewer Maintenance',balance:1151.61,original:1151.61,payment:0,rate:0,category:'sewer',link:null,notes:'C100420 + C100420S + C100420W combined'},
   {name:'Garbage Collection',balance:819.61,original:819.61,payment:0,rate:0,category:'garbage',link:null,notes:'Maple Heights garbage 2021-2024 + trash collection 2025'},
@@ -1383,6 +1398,10 @@ const DEBT_AUTO_RULES = [
   { test: /concora/i, keywords: ['concora'] },
   { test: /merrick/i, keywords: ['merrick'] },
   { test: /american express|amex/i, keywords: ['american express'] },
+  // Property tax: match county payments and re-baseline as of Jun 30 so the
+  // new $500/mo plan (starting Jul) draws the balance down automatically.
+  { test: /property tax/i, keywords: ['cuyahoga', 'county treas', 'property tax'],
+    baseline: { date: '2026-06-30' } },
 ];
 
 const DEFAULT_CC_DEBTS = [
@@ -1403,7 +1422,16 @@ function ensureDebtAutoTracking() {
   for (const d of debtsData) {
     if (!d.keywords) {
       const rule = DEBT_AUTO_RULES.find(r => r.test.test(d.name));
-      if (rule) { d.keywords = rule.keywords; changed = true; }
+      if (rule) {
+        d.keywords = rule.keywords;
+        // Seed a baseline from the debt's current balance so matched payments
+        // reduce it (only when the rule opts in and none exists yet)
+        if (rule.baseline && !d.baseline && d.balance > 0) {
+          d.baseline = { date: rule.baseline.date, balance: d.balance };
+          if (!d.payment) d.payment = 500;
+        }
+        changed = true;
+      }
     }
   }
   if (changed && _dataLoaded) saveDebtsData();
