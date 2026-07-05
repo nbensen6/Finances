@@ -848,7 +848,7 @@ const categoryKeywords = {
   'Fast Food': ['mcdonald','wendy','burger','pizza','taco bell','chick-fil-a'],
   'Gas Bill': ['enbridge','dominion','columbia gas'],
   'Car Repair': ['tire','valvoline','autozone','oreilly','advance auto','auto repair','brake','oil change','midas','monro','firestone','car care'],
-  'Gas': ['shell','bp','exxon','gas','fuel','marathon','sunoco','speedway'],
+  'Gas': ['shell','bp#','bp ','exxon','gas','fuel','marathon','sunoco','speedway'],
   'Amazon': ['amazon','amzn'],
   'Subscription': ['netflix','spotify','disney','claude','roku','subscription','hulu','peacock','twitch','planet fitness','midjourney','ideogram','canva','planetscale','fly.io','hp instant','uppbeat','apple.com/bill','xbox game','steam','rankuplol','skycastle','weteachleague'],
   'Utilities': ['electric','water','duke','utility','firstenergy','spectrum'],
@@ -905,16 +905,21 @@ function setYear(y) {
 // Aggregate every month in monthlyData — new months are included automatically
 function buildYearData() {
   const agg = { income: 0, expenses: {}, budgets: {}, totalExpenses: 0, net: 0, transactions: [] };
+  const pmBudgets = {}; // latest defined per-month budget for each category
   for (const m of Object.keys(monthlyData)) {
     const d = monthlyData[m];
     agg.income += d.income;
     agg.totalExpenses += d.totalExpenses;
     agg.net += d.net;
     for (const [c, a] of Object.entries(d.expenses || {})) agg.expenses[c] = (agg.expenses[c] || 0) + a;
-    for (const [c, a] of Object.entries(d.budgets || {})) agg.budgets[c] = (agg.budgets[c] || 0) + a;
+    for (const [c, a] of Object.entries(d.budgets || {})) pmBudgets[c] = a;
     const txs = d.transactions || (m === 'March' && currentYear === '2026' ? marchTransactions : null);
     if (txs) agg.transactions = agg.transactions.concat(txs);
   }
+  // Annualize budgets: per-month budget x months tracked so far, so lump/annual
+  // payments (e.g. a gas bill paid once for the year) compare fairly
+  const monthsCount = Math.max(1, Object.keys(monthlyData).length);
+  for (const [c, a] of Object.entries(pmBudgets)) agg.budgets[c] = Math.round(a * monthsCount * 100) / 100;
   agg.transactions.sort((a, b) => b.date.localeCompare(a.date));
   agg.income = Math.round(agg.income * 100) / 100;
   agg.totalExpenses = Math.round(agg.totalExpenses * 100) / 100;
@@ -1001,20 +1006,27 @@ function renderDashboard() {
   const barsDiv = document.getElementById('category-bars');
   barsDiv.innerHTML = '';
   const maxVal = Math.max(...Object.values(displayExpenses));
+  const isYearView = currentMonth === YEAR_TAB;
+  const monthsCount = isYearView ? Math.max(1, Object.keys(monthlyData).length) : 1;
   for (const [cat, amt] of Object.entries(displayExpenses).sort((a,b) => b[1]-a[1])) {
-    const budget = data.budgets[cat] || 0;
-    const over = amt > budget;
+    const budget = data.budgets[cat] || 0; // annualized in year view
+    const pmBudget = budget / monthsCount;
+    const avg = amt / monthsCount;
+    const over = budget > 0 && (isYearView ? avg > pmBudget + 0.005 : amt > budget);
     const pctBar = (amt / maxVal * 100);
     const budgetPct = budget > 0 ? (budget / maxVal * 100) : 0;
     const escapedCat = cat.replace(/'/g, "\\'");
+    const vals = isYearView
+      ? `${fmt(amt)} &middot; avg ${fmt(avg)}/mo vs ${pmBudget > 0 ? fmt(pmBudget) + '/mo' : '—'} <span style="color:${over?'var(--red)':'var(--green)'}">${pmBudget > 0 ? fmtSign(pmBudget - avg) + '/mo' : ''}</span>`
+      : `${fmt(amt)} / ${budget > 0 ? fmt(budget) : '—'} <span style="color:${over?'var(--red)':'var(--green)'}">${budget > 0 ? fmtSign(budget - amt) : ''}</span>`;
     barsDiv.innerHTML += `
       <div class="category-bar-row" onclick="openCatModal('${escapedCat}')" title="Click to see ${cat} transactions">
         <div class="cat-label">${cat}</div>
         <div class="cat-bar-wrap">
           <div class="cat-bar" style="width:${pctBar}%;background:${over ? 'var(--red)' : 'var(--green)'}"></div>
-          ${budget > 0 ? `<div class="cat-bar-budget" style="left:${budgetPct}%" title="Budget: ${fmt(budget)}"></div>` : ''}
+          ${budget > 0 ? `<div class="cat-bar-budget" style="left:${budgetPct}%" title="Budget: ${fmt(budget)}${isYearView ? ' (' + fmt(pmBudget) + '/mo x ' + monthsCount + ')' : ''}"></div>` : ''}
         </div>
-        <div class="cat-vals">${fmt(amt)} / ${budget > 0 ? fmt(budget) : '—'} <span style="color:${over?'var(--red)':'var(--green)'}">${budget > 0 ? fmtSign(budget - amt) : ''}</span></div>
+        <div class="cat-vals">${vals}</div>
       </div>`;
   }
 

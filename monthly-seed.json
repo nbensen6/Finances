@@ -1,5 +1,5 @@
 {
- "version": 5,
+ "version": 6,
  "updated": "2026-07-05",
  "years": {
   "2025": {
@@ -1100,12 +1100,12 @@
    "March": {
     "income": 4253.0,
     "expenses": {
-     "Amazon": 267.66,
+     "Amazon": 281.69,
      "Utilities": 510.0,
      "Fast Food": 77.23,
      "Restaurant": 391.14,
      "Groceries": 95.65,
-     "Gas": 128.84,
+     "Gas": 114.81,
      "Entertainment": 37.0,
      "Loan": 1022.08,
      "Subscription": 325.43,
@@ -1442,7 +1442,7 @@
       "date": "2026-03-12",
       "desc": "Amazon.Com*Bp7E49Bk1 Amzn.Com/Bill WA",
       "amount": -14.03,
-      "cat": "Gas"
+      "cat": "Amazon"
      },
      {
       "date": "2026-03-12",
@@ -1734,7 +1734,7 @@
     "expenses": {
      "Fast Food": 33.53,
      "Entertainment": 36.71,
-     "Amazon": 78.95,
+     "Amazon": 94.55,
      "Utilities": 110.0,
      "Credit": 1122.4,
      "Groceries": 260.63,
@@ -1742,7 +1742,7 @@
      "Shopping": 18.22,
      "Healthcare": 32.0,
      "Other": 125.0,
-     "Gas": 66.43,
+     "Gas": 50.83,
      "Loan": 835.0,
      "Car Repair": 942.75,
      "Restaurant": 8.5,
@@ -2066,7 +2066,7 @@
       "date": "2026-03-31",
       "desc": "Amazon Mktpl*Bg9Bp1E Amzn.Com/Bill WA",
       "amount": -15.6,
-      "cat": "Gas"
+      "cat": "Amazon"
      },
      {
       "date": "2026-03-31",
