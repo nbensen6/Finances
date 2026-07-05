@@ -35,10 +35,11 @@ window.pdfjsReady = (async () => {
 body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
 
 /* NAV */
-nav { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 24px; display: flex; align-items: center; height: 60px; position: sticky; top: 0; z-index: 100; }
-nav .logo { font-size: 18px; font-weight: 700; color: var(--accent2); margin-right: 40px; }
-nav .nav-links { display: flex; gap: 4px; }
-nav .nav-links button { background: none; border: none; color: var(--text-dim); padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.2s; }
+nav { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 16px; display: flex; align-items: center; height: 60px; position: sticky; top: 0; z-index: 100; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+nav::-webkit-scrollbar { display: none; }
+nav .logo { font-size: 18px; font-weight: 700; color: var(--accent2); margin-right: 24px; flex-shrink: 0; }
+nav .nav-links { display: flex; gap: 4px; flex-shrink: 0; }
+nav .nav-links button { background: none; border: none; color: var(--text-dim); padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.2s; white-space: nowrap; }
 nav .nav-links button:hover { color: var(--text); background: var(--surface2); }
 nav .nav-links button.active { color: var(--accent2); background: rgba(108,92,231,0.15); }
 
