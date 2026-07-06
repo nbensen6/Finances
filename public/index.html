@@ -2668,12 +2668,19 @@ function renderJobsTable() {
   if (statusFilter === '__active__') rows = rows.filter(jobIsActive);
   else if (statusFilter) rows = rows.filter(j => j.status === statusFilter);
   if (q) rows = rows.filter(j => (j.company + ' ' + (j.position || '')).toLowerCase().includes(q));
-  rows.sort((a, b) => String(b.dateApplied || '').localeCompare(String(a.dateApplied || '')));
+  // Leads (added but not yet applied — no date) surface at the TOP, newest
+  // first; then applied jobs by application date, most recent first
+  rows.sort((a, b) => {
+    const aLead = !a.dateApplied, bLead = !b.dateApplied;
+    if (aLead !== bLead) return aLead ? -1 : 1;
+    if (aLead) return String(b.lastUpdate || '').localeCompare(String(a.lastUpdate || '')) || (b.id - a.id);
+    return String(b.dateApplied).localeCompare(String(a.dateApplied));
+  });
 
   const options = j => JOB_STATUSES.map(s => `<option ${s === j.status ? 'selected' : ''}>${s}</option>`).join('');
   document.querySelector('#jobs-table tbody').innerHTML = rows.map(j => `
     <tr>
-      <td style="white-space:nowrap;">${j.dateApplied || '—'}</td>
+      <td style="white-space:nowrap;">${j.dateApplied || '<span style="color:var(--accent2);font-weight:600;">Lead</span>'}</td>
       <td>${j.url ? `<a href="${j.url}" target="_blank" style="color:var(--accent2);">${j.company}</a>` : j.company}</td>
       <td style="font-size:13px;">${j.position || ''}${j.notes ? `<div style="font-size:11px;color:var(--text-dim);">${String(j.notes).slice(0, 80)}</div>` : ''}</td>
       <td><select class="cat-select" onchange="setJobStatus(${j.id}, this.value)">${options(j)}</select>
