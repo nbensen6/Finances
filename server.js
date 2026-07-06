@@ -381,6 +381,19 @@ async function callClaudeStructured(system, userText, schema, maxTokens) {
   return block.input;
 }
 
+// Web-search-backed completion — lets Claude search the live web (Built In,
+// startup ATS boards) and returns its final text with any postings it found
+async function callClaudeWebSearch(system, userText, maxTokens) {
+  const data = await anthropicRequest({
+    model: CLAUDE_MODEL,
+    max_tokens: maxTokens || 3000,
+    system: [{ type: 'text', text: system, cache_control: { type: 'ephemeral' } }],
+    tools: [{ type: 'web_search_20250305', name: 'web_search', max_uses: 6 }],
+    messages: [{ role: 'user', content: userText }]
+  });
+  return (data.content || []).filter(c => c.type === 'text').map(c => c.text).join('\n');
+}
+
 const JOB_PARSE_SCHEMA = {
   type: 'object',
   properties: {
@@ -452,6 +465,57 @@ app.post('/api/ai/cover-letter', requireAuth, async (req, res) => {
   } catch (err) {
     console.error('cover-letter error:', err);
     return res.status(err.status || 500).json({ error: err.message || 'AI request failed' });
+  }
+});
+
+const FIND_JOBS_SCHEMA = {
+  type: 'object',
+  properties: {
+    jobs: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          company: { type: 'string' },
+          position: { type: 'string' },
+          salaryMin: { type: ['number', 'null'] },
+          salaryMax: { type: ['number', 'null'] },
+          location: { type: ['string', 'null'] },
+          url: { type: ['string', 'null'] },
+          source: { type: 'string' },
+          fit: { type: 'string', enum: ['High', 'Medium', 'Low'] },
+          fitReasons: { type: 'string' },
+          gaps: { type: 'string' },
+          suggestedPriority: { type: 'string', enum: ['High', 'Medium', 'Low'] }
+        },
+        required: ['company', 'position', 'fit', 'fitReasons', 'suggestedPriority']
+      }
+    }
+  },
+  required: ['jobs']
+};
+
+app.post('/api/ai/find-jobs', requireAuth, async (req, res) => {
+  try {
+    const { exclude } = req.body || {};
+    const excludeList = Array.isArray(exclude) ? exclude.slice(0, 200) : [];
+    const searchSystem = `${NICK_PROFILE}\n\nYou are Nick's automated job scout. Search the live web for CURRENTLY OPEN, recently posted job listings that fit his profile and hard constraints. Prioritize Built In (builtin.com), plus Greenhouse, Lever, and Ashby boards. Cover the product track (APM/PM/Technical PM/Product Analyst/Product Ops), the technical track (Implementation, Solutions Engineer, Technical Account Manager, Customer Success Engineer), and the AI track (Applied AI PM, Forward Deployed Engineer, AI Solutions). For each promising role, note company, exact title, salary if posted, location/remote, and the listing URL. Apply the hard filters strictly: remote US only, $80k+ floor, no 4+ years formal PM requirement, degree-optional preferred. Find 6 to 10 strong matches.`;
+    const excludeNote = excludeList.length
+      ? `\n\nDo NOT return roles already in his tracker (skip these company+title pairs): ${excludeList.map(e => `${e.company} / ${e.position}`).join('; ')}.`
+      : '';
+    const searchText = `Find me fresh remote job postings that fit, posted as recently as possible. Return real listings with working URLs.${excludeNote}`;
+    const found = await callClaudeWebSearch(searchSystem, searchText, 4000);
+
+    // Structure the search findings into clean rows with fit calls
+    const structured = await callClaudeStructured(
+      `${NICK_PROFILE}\n\nConvert the scout's findings into structured rows. Only include roles that pass the hard filters (remote US, $80k+ or unposted-but-plausible, not 4+ yrs formal PM, degree-optional). Give an honest fit call and gaps for each. Keep the real listing URL.`,
+      `Scout findings to structure:\n\n${found}`,
+      FIND_JOBS_SCHEMA, 3000
+    );
+    return res.json({ jobs: (structured && structured.jobs) || [] });
+  } catch (err) {
+    console.error('find-jobs error:', err);
+    return res.status(err.status || 500).json({ error: err.message || 'Job search failed' });
   }
 });
 

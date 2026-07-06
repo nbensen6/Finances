@@ -17,18 +17,20 @@ window.pdfjsReady = (async () => {
 </script>
 <style>
 :root {
-  --bg: #0f1117;
-  --surface: #1a1d27;
-  --surface2: #232733;
-  --border: #2e3345;
-  --text: #e4e6f0;
-  --text-dim: #8b8fa3;
-  --accent: #6c5ce7;
-  --accent2: #a29bfe;
-  --green: #00b894;
-  --red: #e17055;
-  --yellow: #fdcb6e;
-  --blue: #74b9ff;
+  /* Palette: Lexus NX — warm black cabin, cognac saddle leather, sunset gold,
+     with the console's blue ambient glow as the info accent */
+  --bg: #14110c;
+  --surface: #1f1a13;
+  --surface2: #2a2318;
+  --border: #3a3020;
+  --text: #f2ebdd;
+  --text-dim: #a99c85;
+  --accent: #c17a3f;
+  --accent2: #dba86a;
+  --green: #4fae86;
+  --red: #d9704e;
+  --yellow: #e0a53f;
+  --blue: #6ea6d6;
   --radius: 12px;
 }
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -41,7 +43,7 @@ nav .logo { font-size: 18px; font-weight: 700; color: var(--accent2); margin-rig
 nav .nav-links { display: flex; gap: 4px; flex-shrink: 0; }
 nav .nav-links button { background: none; border: none; color: var(--text-dim); padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.2s; white-space: nowrap; }
 nav .nav-links button:hover { color: var(--text); background: var(--surface2); }
-nav .nav-links button.active { color: var(--accent2); background: rgba(108,92,231,0.15); }
+nav .nav-links button.active { color: var(--accent2); background: rgba(193,122,63,0.16); }
 
 /* LAYOUT */
 main { max-width: 1280px; margin: 0 auto; padding: 24px; }
@@ -72,13 +74,13 @@ main { max-width: 1280px; margin: 0 auto; padding: 24px; }
 table { width: 100%; border-collapse: collapse; }
 th { text-align: left; font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; padding: 10px 12px; border-bottom: 1px solid var(--border); }
 td { padding: 10px 12px; border-bottom: 1px solid var(--border); font-size: 14px; }
-tr:hover { background: rgba(108,92,231,0.05); }
+tr:hover { background: rgba(193,122,63,0.06); }
 
 /* PROGRESS BAR */
 .progress-wrap { background: var(--surface2); border-radius: 10px; height: 20px; overflow: hidden; margin: 8px 0; }
 .progress-bar { height: 100%; border-radius: 10px; transition: width 0.6s ease; }
 .progress-green { background: linear-gradient(90deg, #00b894, #55efc4); }
-.progress-accent { background: linear-gradient(90deg, #6c5ce7, #a29bfe); }
+.progress-accent { background: linear-gradient(90deg, var(--accent), var(--accent2)); }
 .progress-red { background: linear-gradient(90deg, #e17055, #fab1a0); }
 
 /* BADGES */
@@ -98,7 +100,7 @@ tr:hover { background: rgba(108,92,231,0.05); }
 
 /* FILE UPLOAD */
 .upload-zone { border: 2px dashed var(--border); border-radius: var(--radius); padding: 40px; text-align: center; cursor: pointer; transition: all 0.2s; }
-.upload-zone:hover { border-color: var(--accent); background: rgba(108,92,231,0.05); }
+.upload-zone:hover { border-color: var(--accent); background: rgba(193,122,63,0.06); }
 .upload-zone p { color: var(--text-dim); margin-top: 8px; }
 .upload-zone input { display: none; }
 
@@ -516,9 +518,14 @@ canvas { max-height: 300px; }
   <div class="grid-4 mb-12" id="jobs-stat-cards"></div>
 
   <div class="card">
-    <h2>AI Assistant</h2>
-    <p style="color:var(--text-dim);font-size:13px;margin-bottom:10px;">Paste a job posting, a LinkedIn blurb, or "applied to X today" — Claude parses it, gives a fit call against your profile (remote US, $80K floor, no-degree-friendly), and adds it to the pipeline.</p>
-    <textarea id="ai-job-text" class="api-key-input" rows="6" style="width:100%;resize:vertical;" placeholder="Paste posting text here..."></textarea>
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+      <h2 style="margin:0;">AI Assistant</h2>
+      <button class="btn btn-primary" onclick="aiFindJobs(false)" id="ai-find-btn">Find New Jobs</button>
+    </div>
+    <p style="color:var(--text-dim);font-size:13px;margin:10px 0;">Tap <strong>Find New Jobs</strong> and Claude searches Built In and startup boards for fresh postings that fit you (remote US, $80K+, no-degree-friendly), skipping anything already in your pipeline. Or paste a specific posting below to analyze and log it.</p>
+    <div id="ai-find-status" style="color:var(--accent2);font-size:13px;margin-bottom:8px;"></div>
+    <div id="ai-find-results" style="display:none;margin-bottom:14px;"></div>
+    <textarea id="ai-job-text" class="api-key-input" rows="5" style="width:100%;resize:vertical;" placeholder="...or paste a single posting's text here to analyze it"></textarea>
     <div style="display:flex;gap:10px;align-items:center;margin-top:10px;">
       <button class="btn btn-primary" onclick="aiAnalyzeJob()">Analyze Posting</button>
       <span id="ai-job-status" style="color:var(--text-dim);font-size:13px;"></span>
@@ -973,7 +980,7 @@ function showPage(name) {
   document.querySelectorAll('.nav-links button').forEach(b => b.classList.remove('active'));
   event.target.classList.add('active');
   if (name === 'debts') renderDebts(); // refresh payment-based balances
-  if (name === 'jobs') renderJobs();
+  if (name === 'jobs') { renderJobs(); maybeAutoFindJobs(); }
 }
 
 // ===== DASHBOARD =====
@@ -1204,7 +1211,7 @@ let pieChart, trendChart;
 function renderPieChart(canvasId, expenses) {
   const ctx = document.getElementById(canvasId).getContext('2d');
   if (pieChart) pieChart.destroy();
-  const colors = ['#6c5ce7','#00b894','#e17055','#fdcb6e','#74b9ff','#a29bfe','#55efc4','#fab1a0','#81ecec','#ff7675','#ffeaa7','#dfe6e9','#636e72','#b2bec3','#fd79a8'];
+  const colors = ['#c17a3f','#e0a53f','#8a9a5b','#d9704e','#6ea6d6','#dba86a','#4fae86','#b5613a','#c9a24b','#9c6b4a','#7d8f9c','#d4915c','#5a8f7a','#a8763a','#8b7355'];
   pieChart = new Chart(ctx, {
     type: 'doughnut',
     data: {
@@ -1213,7 +1220,7 @@ function renderPieChart(canvasId, expenses) {
     },
     options: {
       responsive: true,
-      plugins: { legend: { position: 'right', labels: { color: '#8b8fa3', font: { size: 11 }, padding: 8 } } }
+      plugins: { legend: { position: 'right', labels: { color: '#a99c85', font: { size: 11 }, padding: 8 } } }
     }
   });
 }
@@ -1234,8 +1241,8 @@ function renderTrendChart() {
     },
     options: {
       responsive: true,
-      scales: { y: { ticks: { color:'#8b8fa3', callback: v => '$'+v }, grid: { color:'#2e3345' } }, x: { ticks: { color:'#8b8fa3' }, grid: { display:false } } },
-      plugins: { legend: { labels: { color:'#8b8fa3' } } }
+      scales: { y: { ticks: { color:'#a99c85', callback: v => '$'+v }, grid: { color:'#3a3020' } }, x: { ticks: { color:'#a99c85' }, grid: { display:false } } },
+      plugins: { legend: { labels: { color:'#a99c85' } } }
     }
   });
 }
@@ -1446,7 +1453,7 @@ function renderBillCalendar() {
     const dayStr = d + (['st','nd','rd'][((d+90)%100-10)%10-1] || 'th');
     const dueBills = billsData.filter(b => b.due === dayStr);
     const hasBill = dueBills.length > 0;
-    html += `<div class="day-cell" style="${hasBill ? 'border:1px solid var(--accent);background:rgba(108,92,231,0.1);' : ''}">
+    html += `<div class="day-cell" style="${hasBill ? 'border:1px solid var(--accent);background:rgba(193,122,63,0.12);' : ''}">
       <div class="day-date">${d}</div>
       ${dueBills.map(b => `<div style="font-size:10px;color:var(--accent2);margin-top:2px;">${b.name}<br>${fmt(b.amount)}</div>`).join('')}
     </div>`;
@@ -1661,7 +1668,7 @@ function renderDebtChart(active) {
   if (debtBreakdownChart) debtBreakdownChart.destroy();
   if (active.length === 0) return;
 
-  const colors = ['#6c5ce7','#e17055','#00b894','#fdcb6e','#0984e3','#d63031','#00cec9','#636e72'];
+  const colors = ['#c17a3f','#d9704e','#4fae86','#e0a53f','#6ea6d6','#b5613a','#8a9a5b','#9c6b4a'];
   debtBreakdownChart = new Chart(ctx, {
     type: 'doughnut',
     data: {
@@ -2096,11 +2103,11 @@ function renderStatements() {
   });
 
   const ctx = document.getElementById('stmt-chart-pie').getContext('2d');
-  const colors = ['#6c5ce7','#00b894','#e17055','#fdcb6e','#74b9ff','#a29bfe','#55efc4','#fab1a0','#81ecec','#ff7675','#ffeaa7','#dfe6e9','#636e72','#b2bec3','#fd79a8'];
+  const colors = ['#c17a3f','#e0a53f','#8a9a5b','#d9704e','#6ea6d6','#dba86a','#4fae86','#b5613a','#c9a24b','#9c6b4a','#7d8f9c','#d4915c','#5a8f7a','#a8763a','#8b7355'];
   new Chart(ctx, {
     type: 'doughnut',
     data: { labels: Object.keys(catTotals), datasets: [{ data: Object.values(catTotals), backgroundColor: colors, borderWidth:0 }] },
-    options: { responsive: true, plugins: { legend: { position:'right', labels: { color:'#8b8fa3', font:{size:11} } } } }
+    options: { responsive: true, plugins: { legend: { position:'right', labels: { color:'#a99c85', font:{size:11} } } } }
   });
 
   // Daily chart
@@ -2113,7 +2120,7 @@ function renderStatements() {
   new Chart(ctx2, {
     type: 'bar',
     data: { labels: sortedDays, datasets: [{ label:'Spending', data: sortedDays.map(d => dailyTotals[d]), backgroundColor:'rgba(225,112,85,0.7)', borderRadius:4 }] },
-    options: { responsive:true, scales:{ y:{ticks:{color:'#8b8fa3',callback:v=>'$'+v},grid:{color:'#2e3345'}}, x:{ticks:{color:'#8b8fa3',maxRotation:45},grid:{display:false}} }, plugins:{legend:{display:false}} }
+    options: { responsive:true, scales:{ y:{ticks:{color:'#a99c85',callback:v=>'$'+v},grid:{color:'#3a3020'}}, x:{ticks:{color:'#a99c85',maxRotation:45},grid:{display:false}} }, plugins:{legend:{display:false}} }
   });
 
   // Filter dropdown
@@ -2459,7 +2466,7 @@ function renderUber() {
     },
     options: {
       responsive: true,
-      scales: { y:{ ticks:{color:'#8b8fa3',callback:v=>'$'+v}, grid:{color:'#2e3345'} }, x:{ticks:{color:'#8b8fa3'}, grid:{display:false}} },
+      scales: { y:{ ticks:{color:'#a99c85',callback:v=>'$'+v}, grid:{color:'#3a3020'} }, x:{ticks:{color:'#a99c85'}, grid:{display:false}} },
       plugins: {
         legend:{display:false},
         annotation: { annotations: { goalLine: { type:'line', yMin:goal, yMax:goal, borderColor:'var(--yellow)', borderWidth:2, borderDash:[5,5] } } }
@@ -2487,12 +2494,12 @@ function renderUber() {
     data: {
       labels: weekKeys.map(w => 'Week ' + w.slice(5)),
       datasets: [
-        { label:'Weekly Total', data: weekKeys.map(w => weeks[w].total), backgroundColor:'rgba(108,92,231,0.7)', borderRadius:6 }
+        { label:'Weekly Total', data: weekKeys.map(w => weeks[w].total), backgroundColor:'rgba(193,122,63,0.8)', borderRadius:6 }
       ]
     },
     options: {
       responsive: true,
-      scales: { y:{ticks:{color:'#8b8fa3',callback:v=>'$'+v},grid:{color:'#2e3345'}}, x:{ticks:{color:'#8b8fa3'},grid:{display:false}} },
+      scales: { y:{ticks:{color:'#a99c85',callback:v=>'$'+v},grid:{color:'#3a3020'}}, x:{ticks:{color:'#a99c85'},grid:{display:false}} },
       plugins: { legend:{display:false} }
     }
   });
@@ -2783,6 +2790,101 @@ function renderAiJobResult(j) {
   div.style.display = 'block';
 }
 
+// ----- Daily automated job search (Claude web search) -----
+let _foundJobs = [];
+
+async function aiFindJobs(isAuto) {
+  const btn = document.getElementById('ai-find-btn');
+  const status = document.getElementById('ai-find-status');
+  const results = document.getElementById('ai-find-results');
+  btn.disabled = true;
+  status.textContent = isAuto ? 'Daily check: searching for new postings...' : 'Searching Built In and startup boards (this takes ~30-60s)...';
+  try {
+    const exclude = jobsData.map(j => ({ company: j.company, position: j.position }));
+    const r = await fetch('/api/ai/find-jobs', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ exclude })
+    });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error || 'Search failed');
+    // Drop anything that snuck through matching an existing application
+    const seen = new Set(jobsData.map(j => (j.company + '|' + j.position).toLowerCase()));
+    _foundJobs = (data.jobs || []).filter(j => !seen.has((j.company + '|' + j.position).toLowerCase()));
+    localStorage.setItem('findash_last_jobcheck', new Date().toISOString().slice(0, 10));
+    renderFoundJobs();
+    status.textContent = _foundJobs.length
+      ? `Found ${_foundJobs.length} new posting${_foundJobs.length !== 1 ? 's' : ''} — ${new Date().toLocaleDateString()}`
+      : 'No new matches right now. Check back tomorrow.';
+  } catch (e) {
+    status.textContent = '';
+    if (!isAuto) alert('Job search error: ' + e.message);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function renderFoundJobs() {
+  const div = document.getElementById('ai-find-results');
+  if (!_foundJobs.length) { div.style.display = 'none'; return; }
+  const fitBadge = { High: 'badge-green', Medium: 'badge-yellow', Low: 'badge-gray' };
+  div.innerHTML = _foundJobs.map((j, i) => {
+    const sal = (j.salaryMin || j.salaryMax) ? `$${(j.salaryMin || 0).toLocaleString()} - $${(j.salaryMax || 0).toLocaleString()}` : 'salary not posted';
+    return `<div style="border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:10px;background:var(--surface2);">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;">
+        <div>
+          <div style="font-weight:700;">${j.company} — ${j.position}</div>
+          <div style="font-size:12px;color:var(--text-dim);">${j.location || 'remote'} &middot; ${sal}</div>
+        </div>
+        <span class="badge ${fitBadge[j.fit] || 'badge-gray'}">${j.fit} fit</span>
+      </div>
+      <p style="font-size:12px;margin:8px 0;">${j.fitReasons || ''}${j.gaps ? ` <span style="color:var(--yellow);">Gaps: ${j.gaps}</span>` : ''}</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        ${j.url ? `<a href="${j.url}" target="_blank"><button class="pay-btn">Open Listing</button></a>` : ''}
+        <button class="pay-btn" onclick="addFoundJob(${i})">Add to Pipeline</button>
+        <button class="pay-btn" onclick="coverLetterForFound(${i})">Cover Letter</button>
+      </div>
+    </div>`;
+  }).join('');
+  div.style.display = 'block';
+}
+
+function foundToJob(j, applied) {
+  const today = new Date().toISOString().slice(0, 10);
+  return {
+    id: Date.now() + Math.floor(Math.random() * 1000),
+    company: j.company, position: j.position,
+    dateApplied: applied ? today : null,
+    status: applied ? 'Applied' : 'On Hold',
+    source: j.source || 'Other', priority: j.suggestedPriority || 'Medium',
+    salaryMin: j.salaryMin || null, salaryMax: j.salaryMax || null,
+    location: j.location || '', workType: /remote/i.test(j.location || '') ? 'Remote' : '',
+    url: j.url || null,
+    notes: `${j.fit} fit: ${j.fitReasons || ''}${j.gaps ? ' | Gaps: ' + j.gaps : ''}`,
+    lastUpdate: today
+  };
+}
+
+function addFoundJob(i) {
+  const j = _foundJobs[i];
+  if (!j) return;
+  jobsData.push(foundToJob(j, false));
+  saveJobsData();
+  _foundJobs.splice(i, 1);
+  renderFoundJobs();
+  renderJobs();
+}
+
+function coverLetterForFound(i) {
+  const j = _foundJobs[i];
+  if (j) aiRequestLetter(j, '');
+}
+
+function maybeAutoFindJobs() {
+  const last = localStorage.getItem('findash_last_jobcheck');
+  const today = new Date().toISOString().slice(0, 10);
+  if (last !== today) aiFindJobs(true);
+}
+
 function aiAddParsedJob() {
   const j = _aiParsedJob;
   if (!j) return;
@@ -2897,12 +2999,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
   sortYearlyData();
 
-  // Open on the latest year and its most recent month
+  // Open on the latest year's Full Year view by default
   const years = Object.keys(yearlyData).sort();
   currentYear = years.length ? years[years.length - 1] : '2026';
   monthlyData = yearlyData[currentYear] || (yearlyData[currentYear] = {});
-  const monthKeys = Object.keys(monthlyData);
-  currentMonth = monthKeys.length ? monthKeys[monthKeys.length - 1] : YEAR_TAB;
+  currentMonth = YEAR_TAB;
 
   initDashboard();
   initBills();
