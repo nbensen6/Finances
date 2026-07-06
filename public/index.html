@@ -989,12 +989,20 @@ function fmtSign(n) {
 
 // ===== NAVIGATION =====
 function showPage(name) {
+  const page = document.getElementById('page-' + name);
+  if (!page) return;
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.getElementById('page-' + name).classList.add('active');
+  page.classList.add('active');
+  // Highlight the matching nav button (works on click AND on programmatic
+  // restore, where there is no click event)
   document.querySelectorAll('.nav-links button').forEach(b => b.classList.remove('active'));
-  event.target.classList.add('active');
+  const btn = [...document.querySelectorAll('.nav-links button')]
+    .find(b => (b.getAttribute('onclick') || '').includes(`'${name}'`));
+  if (btn) btn.classList.add('active');
+  localStorage.setItem('findash_page', name);
+  window.scrollTo(0, 0);
   if (name === 'debts') renderDebts(); // refresh payment-based balances
-  if (name === 'jobs') { renderJobs(); maybeAutoFindJobs(); }
+  if (name === 'jobs') { renderJobs(); renderFoundJobs(); maybeAutoFindJobs(); }
 }
 
 // ===== DASHBOARD =====
@@ -2807,6 +2815,13 @@ function renderAiJobResult(j) {
 // ----- Daily automated job search (Claude web search) -----
 let _foundJobs = [];
 
+function saveFoundJobs() {
+  try { localStorage.setItem('findash_found_jobs', JSON.stringify(_foundJobs)); } catch (_) {}
+}
+function loadFoundJobs() {
+  try { _foundJobs = JSON.parse(localStorage.getItem('findash_found_jobs') || '[]') || []; } catch (_) { _foundJobs = []; }
+}
+
 async function aiFindJobs(isAuto) {
   const btn = document.getElementById('ai-find-btn');
   const status = document.getElementById('ai-find-status');
@@ -2825,6 +2840,7 @@ async function aiFindJobs(isAuto) {
     const seen = new Set(jobsData.map(j => (j.company + '|' + j.position).toLowerCase()));
     _foundJobs = (data.jobs || []).filter(j => !seen.has((j.company + '|' + j.position).toLowerCase()));
     localStorage.setItem('findash_last_jobcheck', new Date().toISOString().slice(0, 10));
+    saveFoundJobs();
     renderFoundJobs();
     status.textContent = _foundJobs.length
       ? `Found ${_foundJobs.length} new posting${_foundJobs.length !== 1 ? 's' : ''} — ${new Date().toLocaleDateString()}`
@@ -2884,8 +2900,11 @@ function addFoundJob(i) {
   jobsData.push(foundToJob(j, false));
   saveJobsData();
   _foundJobs.splice(i, 1);
+  saveFoundJobs();
   renderFoundJobs();
   renderJobs();
+  const st = document.getElementById('ai-find-status');
+  if (st) st.textContent = `Added ${j.company} to your pipeline. It's in the Applications table below.`;
 }
 
 function coverLetterForFound(i) {
@@ -3030,6 +3049,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Set default uber date to today
   document.getElementById('uber-date').value = '2026-03-24';
+
+  // Restore the last-viewed page and any saved job-search results
+  loadFoundJobs();
+  const savedPage = localStorage.getItem('findash_page');
+  if (savedPage && savedPage !== 'dashboard' && document.getElementById('page-' + savedPage)) {
+    showPage(savedPage);
+  }
 });
 </script>
 </body>
