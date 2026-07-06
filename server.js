@@ -326,24 +326,40 @@ const NICK_PROFILE = `Candidate profile (Nicholaus "Nick" Bensen, Maple Heights 
 - Hard constraints: Remote (US) ONLY — skip onsite/hybrid outside Cleveland OH. Salary floor $80,000; prefers $100K+. Skip roles requiring a bachelor's degree with no equivalent-experience language, and roles requiring 4+ years of formal PM experience.
 - Green flags: "no degree required", 1-3 years experience, "we encourage you to apply anyway", AI/agent products, SaaS with technical customers, logistics/routing/edtech domains.`;
 
-async function anthropicRequest(body) {
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+async function anthropicRequest(body, attempt = 0) {
   if (!ANTHROPIC_API_KEY) {
     const err = new Error('ANTHROPIC_API_KEY not configured on server');
     err.status = 503;
     throw err;
   }
-  const resp = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': ANTHROPIC_API_KEY,
-      'anthropic-version': '2023-06-01'
-    },
-    body: JSON.stringify(body)
-  });
+  let resp;
+  try {
+    resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify(body)
+    });
+  } catch (netErr) {
+    // Network blip / reset — retry a couple of times before giving up
+    if (attempt < 2) { await sleep(1000 * (attempt + 1)); return anthropicRequest(body, attempt + 1); }
+    const err = new Error('Network error reaching Claude API');
+    err.status = 502;
+    throw err;
+  }
   if (!resp.ok) {
     const errText = await resp.text();
-    console.error('Claude API error:', resp.status, errText);
+    console.error('Claude API error:', resp.status, errText, 'attempt', attempt);
+    // Retry transient errors: 429 rate limit, 500/502/503, 529 overloaded
+    if ([429, 500, 502, 503, 529].includes(resp.status) && attempt < 3) {
+      await sleep(1500 * (attempt + 1));
+      return anthropicRequest(body, attempt + 1);
+    }
     let detail = errText;
     try { detail = JSON.parse(errText).error?.message || errText; } catch (_) {}
     const err = new Error(`Claude API ${resp.status}: ${detail}`);
@@ -388,7 +404,7 @@ async function callClaudeWebSearch(system, userText, maxTokens) {
     model: CLAUDE_MODEL,
     max_tokens: maxTokens || 3000,
     system: [{ type: 'text', text: system, cache_control: { type: 'ephemeral' } }],
-    tools: [{ type: 'web_search_20250305', name: 'web_search', max_uses: 6 }],
+    tools: [{ type: 'web_search_20250305', name: 'web_search', max_uses: 4 }],
     messages: [{ role: 'user', content: userText }]
   });
   return (data.content || []).filter(c => c.type === 'text').map(c => c.text).join('\n');

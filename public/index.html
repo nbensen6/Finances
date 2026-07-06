@@ -2834,7 +2834,8 @@ async function aiFindJobs(isAuto) {
   const status = document.getElementById('ai-find-status');
   const results = document.getElementById('ai-find-results');
   btn.disabled = true;
-  status.textContent = isAuto ? 'Daily check: searching for new postings...' : 'Searching Built In and startup boards (this takes ~30-60s)...';
+  btn.textContent = 'Searching...';
+  status.textContent = isAuto ? 'Daily check: searching for new postings (up to ~90s)...' : 'Searching Built In and startup boards — this can take up to 90 seconds, hang tight...';
   try {
     const exclude = jobsData.map(j => ({ company: j.company, position: j.position }));
     const r = await fetch('/api/ai/find-jobs', {
@@ -2854,9 +2855,11 @@ async function aiFindJobs(isAuto) {
       : 'No new matches right now. Check back tomorrow.';
   } catch (e) {
     status.textContent = '';
-    if (!isAuto) alert('Job search error: ' + e.message);
+    status.textContent = 'Search failed — ' + e.message + '. Try again in a moment.';
+    if (!isAuto) alert('Job search error: ' + e.message + '\n\nThis is usually a temporary hiccup — try again in a few seconds.');
   } finally {
     btn.disabled = false;
+    btn.textContent = 'Find New Jobs';
   }
 }
 
