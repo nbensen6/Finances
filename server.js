@@ -326,7 +326,7 @@ const NICK_PROFILE = `Candidate profile (Nicholaus "Nick" Bensen, Maple Heights 
 - Hard constraints: Remote (US) ONLY — skip onsite/hybrid outside Cleveland OH. Salary floor $80,000; prefers $100K+. Skip roles requiring a bachelor's degree with no equivalent-experience language, and roles requiring 4+ years of formal PM experience.
 - Green flags: "no degree required", 1-3 years experience, "we encourage you to apply anyway", AI/agent products, SaaS with technical customers, logistics/routing/edtech domains.`;
 
-async function callClaude(system, userText, maxTokens) {
+async function anthropicRequest(body) {
   if (!ANTHROPIC_API_KEY) {
     const err = new Error('ANTHROPIC_API_KEY not configured on server');
     err.status = 503;
@@ -339,12 +339,7 @@ async function callClaude(system, userText, maxTokens) {
       'x-api-key': ANTHROPIC_API_KEY,
       'anthropic-version': '2023-06-01'
     },
-    body: JSON.stringify({
-      model: CLAUDE_MODEL,
-      max_tokens: maxTokens || 1500,
-      system: [{ type: 'text', text: system, cache_control: { type: 'ephemeral' } }],
-      messages: [{ role: 'user', content: userText }]
-    })
+    body: JSON.stringify(body)
   });
   if (!resp.ok) {
     const errText = await resp.text();
@@ -355,38 +350,62 @@ async function callClaude(system, userText, maxTokens) {
     err.status = 502;
     throw err;
   }
-  const data = await resp.json();
+  return resp.json();
+}
+
+// Plain text completion (for prose like cover letters)
+async function callClaude(system, userText, maxTokens) {
+  const data = await anthropicRequest({
+    model: CLAUDE_MODEL,
+    max_tokens: maxTokens || 1500,
+    system: [{ type: 'text', text: system, cache_control: { type: 'ephemeral' } }],
+    messages: [{ role: 'user', content: userText }]
+  });
   return (data.content || []).filter(c => c.type === 'text').map(c => c.text).join('');
 }
 
-function parseJsonReply(text) {
-  let t = text.trim();
-  const fence = t.match(/```(?:json)?\s*([\s\S]*?)```/);
-  if (fence) t = fence[1].trim();
-  const start = t.indexOf('{');
-  const end = t.lastIndexOf('}');
-  if (start === -1 || end === -1) throw new Error('No JSON in AI response');
-  return JSON.parse(t.slice(start, end + 1));
+// Structured output via forced tool use — guarantees a valid object matching
+// `schema`, so there is no brittle JSON-from-prose parsing (the old approach
+// that produced "No JSON in AI response" when the model replied conversationally)
+async function callClaudeStructured(system, userText, schema, maxTokens) {
+  const data = await anthropicRequest({
+    model: CLAUDE_MODEL,
+    max_tokens: maxTokens || 1500,
+    system: [{ type: 'text', text: system, cache_control: { type: 'ephemeral' } }],
+    tools: [{ name: 'record', description: 'Record the structured result.', input_schema: schema }],
+    tool_choice: { type: 'tool', name: 'record' },
+    messages: [{ role: 'user', content: userText }]
+  });
+  const block = (data.content || []).find(c => c.type === 'tool_use');
+  if (!block) throw new Error('Model did not return structured output');
+  return block.input;
 }
+
+const JOB_PARSE_SCHEMA = {
+  type: 'object',
+  properties: {
+    company: { type: 'string' },
+    position: { type: 'string' },
+    location: { type: ['string', 'null'] },
+    workType: { type: ['string', 'null'], enum: ['Remote', 'Hybrid', 'Onsite', null] },
+    salaryMin: { type: ['number', 'null'] },
+    salaryMax: { type: ['number', 'null'] },
+    url: { type: ['string', 'null'] },
+    source: { type: 'string', enum: ['LinkedIn', 'Indeed', 'Glassdoor', 'Company Website', 'Built In', 'Referral', 'Recruiter', 'AngelList/Wellfound', 'Handshake', 'ZipRecruiter', 'Monster', 'Dice', 'Other'] },
+    alreadyApplied: { type: 'boolean', description: 'true if the text says they already applied/submitted' },
+    fit: { type: 'string', enum: ['High', 'Medium', 'Low', 'Skip'] },
+    fitReasons: { type: 'string', description: '2-3 sentences: what works, plain language' },
+    gaps: { type: 'string', description: 'honest gaps/risks vs the posting, 1-2 sentences' },
+    suggestedPriority: { type: 'string', enum: ['High', 'Medium', 'Low'] }
+  },
+  required: ['company', 'position', 'source', 'alreadyApplied', 'fit', 'fitReasons', 'gaps', 'suggestedPriority']
+};
 
 const JOB_PARSE_SYSTEM = `${NICK_PROFILE}
 
-You are the AI assistant inside Nick's job application tracker. The user pastes either (a) a job posting, (b) a LinkedIn/Built In listing blurb, or (c) a note about an application they already submitted. Extract structured data AND give a blunt fit call using the candidate profile above.
+You are the AI assistant inside Nick's job application tracker. The user pastes either (a) a job posting, (b) a LinkedIn/Built In listing blurb, or (c) a note about an application they already submitted. Extract the structured fields and give a blunt fit call using the candidate profile above.
 
-Return JSON only, no markdown fences, no commentary. Schema:
-{
- "company": string, "position": string, "location": string|null,
- "workType": "Remote"|"Hybrid"|"Onsite"|null,
- "salaryMin": number|null, "salaryMax": number|null,
- "url": string|null,
- "source": "LinkedIn"|"Indeed"|"Glassdoor"|"Company Website"|"Built In"|"Referral"|"Recruiter"|"AngelList/Wellfound"|"Handshake"|"ZipRecruiter"|"Monster"|"Dice"|"Other",
- "alreadyApplied": boolean,   // true if the text says they applied/submitted
- "fit": "High"|"Medium"|"Low"|"Skip",
- "fitReasons": string,        // 2-3 sentences: what works, in plain language
- "gaps": string,              // honest gaps/risks vs the posting, 1-2 sentences
- "suggestedPriority": "High"|"Medium"|"Low"
-}
-Fit rules: Skip if onsite/hybrid outside Cleveland OH, salary tops out under $80K, hard bachelor's requirement with no equivalent-experience language, or 4+ years formal PM required. High = remote, $80K+ (or unposted at a strong-fit company), 0-3 yrs, degree-optional. If information is missing, use null and judge with what's there.`;
+Fit rules: Skip if onsite/hybrid outside Cleveland OH, salary tops out under $80K, hard bachelor's requirement with no equivalent-experience language, or 4+ years formal PM required. High = remote, $80K+ (or unposted at a strong-fit company), 0-3 yrs, degree-optional. If information is missing, use null and judge with what's there. Be honest in "gaps" — do not oversell fit.`;
 
 const COVER_LETTER_SYSTEM = `${NICK_PROFILE}
 
@@ -406,8 +425,12 @@ app.post('/api/ai/job-parse', requireAuth, async (req, res) => {
       return res.status(400).json({ error: 'Missing text' });
     }
     if (text.length > 20000) return res.status(400).json({ error: 'Text too long' });
-    const reply = await callClaude(JOB_PARSE_SYSTEM, text.trim(), 1200);
-    return res.json({ result: parseJsonReply(reply) });
+    // Reject bare-URL pastes early — the server can't open links
+    if (/^https?:\/\/\S+$/i.test(text.trim())) {
+      return res.status(400).json({ error: 'That looks like just a link. Open it and paste the posting TEXT (title, description, requirements) instead.' });
+    }
+    const result = await callClaudeStructured(JOB_PARSE_SYSTEM, text.trim(), JOB_PARSE_SCHEMA, 2000);
+    return res.json({ result });
   } catch (err) {
     console.error('job-parse error:', err);
     return res.status(err.status || 500).json({ error: err.message || 'AI request failed' });

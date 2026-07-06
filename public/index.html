@@ -2735,6 +2735,11 @@ async function aiAnalyzeJob() {
   const text = document.getElementById('ai-job-text').value.trim();
   if (!text) { alert('Paste a posting first.'); return; }
   const st = document.getElementById('ai-job-status');
+  if (/^https?:\/\/\S+$/i.test(text)) {
+    st.textContent = '';
+    alert("That's just a link — I can't open URLs. Open the posting and paste its text (title, description, requirements) into the box.");
+    return;
+  }
   st.textContent = 'Analyzing with Claude...';
   document.getElementById('ai-job-result').style.display = 'none';
   try {
