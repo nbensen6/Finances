@@ -153,9 +153,37 @@
 <body>
   <div class="login-card">
     <div class="brand">
-      <div class="brand-icon">
-        <i class="fas fa-chart-line"></i>
-      </div>
+      <svg viewBox="0 0 640 250" style="width:100%;max-width:280px;display:block;margin:0 auto 0.5rem;" role="img" aria-label="Crossover">
+        <defs>
+          <linearGradient id="cog" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d9a066"/><stop offset="0.5" stop-color="#c17a3f"/><stop offset="1" stop-color="#8f5a2c"/></linearGradient>
+          <linearGradient id="glass" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a3020"/><stop offset="1" stop-color="#14110c"/></linearGradient>
+          <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#e0a53f" stop-opacity="0.28"/><stop offset="1" stop-color="#e0a53f" stop-opacity="0"/></radialGradient>
+        </defs>
+        <ellipse cx="440" cy="140" rx="230" ry="120" fill="url(#glow)"/>
+        <ellipse cx="325" cy="214" rx="250" ry="14" fill="#000" opacity="0.4"/>
+        <!-- body: tall crossover stance with fastback roofline -->
+        <path fill="url(#cog)" d="M 38 182 L 52 150 Q 60 118 96 114 L 240 108 L 296 62 Q 312 54 344 56 L 402 60 Q 450 64 474 96 L 508 122 L 560 126 Q 588 130 596 152 L 602 182 L 548 182 A 52 52 0 0 0 444 182 L 212 182 A 52 52 0 0 0 108 182 Z"/>
+        <!-- rising character line -->
+        <path fill="#8f5a2c" opacity="0.5" d="M 112 150 L 470 138 L 598 148 L 598 156 L 470 146 L 112 158 Z"/>
+        <!-- black lower cladding + wheel-arch trim (crossover cue) -->
+        <path d="M 108 182 A 52 52 0 0 1 212 182" fill="none" stroke="#14110c" stroke-width="8"/>
+        <path d="M 444 182 A 52 52 0 0 1 548 182" fill="none" stroke="#14110c" stroke-width="8"/>
+        <path fill="#14110c" opacity="0.9" d="M 210 176 L 446 176 L 446 184 L 210 184 Z"/>
+        <!-- compact raked greenhouse -->
+        <path fill="url(#glass)" d="M 248 106 L 298 66 Q 312 58 342 60 L 398 64 Q 438 68 458 94 L 466 106 Z"/>
+        <rect x="356" y="62" width="9" height="44" fill="#8f5a2c" opacity="0.85"/>
+        <!-- L-shaped headlight -->
+        <path fill="#e0a53f" d="M 46 148 L 74 138 L 76 147 L 52 156 Z" opacity="0.95"/>
+        <!-- spear taillight -->
+        <path fill="#d9704e" d="M 588 150 L 600 154 L 600 164 L 586 160 Z" opacity="0.9"/>
+        <rect x="288" y="132" width="34" height="5" rx="2.5" fill="#2a2318" opacity="0.7"/>
+        <!-- front wheel -->
+        <circle cx="160" cy="182" r="48" fill="#14110c"/><circle cx="160" cy="182" r="48" fill="none" stroke="#2a2318" stroke-width="4"/><circle cx="160" cy="182" r="22" fill="#1f1a13" stroke="#c17a3f" stroke-width="2.5"/>
+        <g stroke="#a8763a" stroke-width="3" stroke-linecap="round"><line x1="160" y1="162" x2="160" y2="202"/><line x1="140" y1="182" x2="180" y2="182"/><line x1="146" y1="168" x2="174" y2="196"/><line x1="146" y1="196" x2="174" y2="168"/></g>
+        <!-- rear wheel -->
+        <circle cx="496" cy="182" r="48" fill="#14110c"/><circle cx="496" cy="182" r="48" fill="none" stroke="#2a2318" stroke-width="4"/><circle cx="496" cy="182" r="22" fill="#1f1a13" stroke="#c17a3f" stroke-width="2.5"/>
+        <g stroke="#a8763a" stroke-width="3" stroke-linecap="round"><line x1="496" y1="162" x2="496" y2="202"/><line x1="476" y1="182" x2="516" y2="182"/><line x1="482" y1="168" x2="510" y2="196"/><line x1="482" y1="196" x2="510" y2="168"/></g>
+      </svg>
       <h1>FinDash</h1>
       <p>Sign in to your finances dashboard</p>
     </div>
