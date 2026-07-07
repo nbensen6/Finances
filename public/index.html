@@ -431,14 +431,6 @@ canvas { max-height: 300px; }
     </div>
 
     <div class="card mt-20">
-      <h2>AI Analysis</h2>
-      <p style="color:var(--text-dim);font-size:13px;margin-bottom:12px;">Use your Claude API key for spending insights. Key is stored on the server.</p>
-      <input type="password" class="api-key-input" id="claude-api-key" placeholder="Enter Claude API key (sk-ant-...)" />
-      <button class="btn btn-primary" onclick="runClaudeAnalysis()">Analyze with Claude</button>
-      <div id="claude-result" class="analysis-box hidden"></div>
-    </div>
-
-    <div class="card mt-20">
       <h2>Transactions</h2>
       <div style="display:flex;gap:8px;margin-bottom:12px;">
         <select id="stmt-cat-filter" class="api-key-input" style="width:200px;" onchange="filterStmtTable()">
@@ -532,19 +524,8 @@ canvas { max-height: 300px; }
   <div class="grid-4 mb-12" id="jobs-stat-cards"></div>
 
   <div class="card">
-    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
-      <h2 style="margin:0;">AI Assistant</h2>
-      <button class="btn btn-primary" onclick="aiFindJobs(false)" id="ai-find-btn">Find New Jobs</button>
-    </div>
-    <p style="color:var(--text-dim);font-size:13px;margin:10px 0;">Tap <strong>Find New Jobs</strong> and Claude searches Built In and startup boards for fresh postings that fit you (remote US, $80K+, no-degree-friendly), skipping anything already in your pipeline. Or paste a specific posting below to analyze and log it.</p>
-    <div id="ai-find-status" style="color:var(--accent2);font-size:13px;margin-bottom:8px;"></div>
-    <div id="ai-find-results" style="display:none;margin-bottom:14px;"></div>
-    <textarea id="ai-job-text" class="api-key-input" rows="5" style="width:100%;resize:vertical;" placeholder="...or paste a single posting's text here to analyze it"></textarea>
-    <div style="display:flex;gap:10px;align-items:center;margin-top:10px;">
-      <button class="btn btn-primary" onclick="aiAnalyzeJob()">Analyze Posting</button>
-      <span id="ai-job-status" style="color:var(--text-dim);font-size:13px;"></span>
-    </div>
-    <div id="ai-job-result" style="display:none;margin-top:14px;border:1px solid var(--border);border-radius:10px;padding:14px;background:var(--surface2);"></div>
+    <h2>Job Scout</h2>
+    <p style="color:var(--text-dim);font-size:13px;margin:6px 0 0;">Fresh leads are researched and added for you by Claude — new ones appear at the top of the Applications table tagged <strong style="color:var(--accent2);">Lead</strong>. Just ask Claude to "find me more jobs" anytime.</p>
   </div>
 
   <div class="card mt-20" id="jobs-followup-card">
@@ -604,18 +585,6 @@ canvas { max-height: 300px; }
     </div>
   </div>
 
-  <!-- Cover Letter Modal -->
-  <div id="letter-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:210;align-items:center;justify-content:center;overflow-y:auto;">
-    <div class="card" style="width:640px;max-width:94vw;margin:20px auto;">
-      <h2 id="letter-modal-title">Cover Letter</h2>
-      <p id="letter-modal-status" style="color:var(--text-dim);font-size:13px;margin:8px 0;"></p>
-      <textarea id="letter-text" class="api-key-input" rows="16" style="width:100%;resize:vertical;font-size:13px;line-height:1.5;"></textarea>
-      <div style="display:flex;gap:8px;margin-top:12px;">
-        <button class="btn btn-primary" onclick="copyLetter()">Copy to Clipboard</button>
-        <button class="btn" style="background:var(--surface2);" onclick="document.getElementById('letter-modal').style.display='none'">Close</button>
-      </div>
-    </div>
-  </div>
 </div>
 </main>
 
@@ -1002,7 +971,7 @@ function showPage(name) {
   localStorage.setItem('findash_page', name);
   window.scrollTo(0, 0);
   if (name === 'debts') renderDebts(); // refresh payment-based balances
-  if (name === 'jobs') { renderJobs(); renderFoundJobs(); maybeAutoFindJobs(); }
+  if (name === 'jobs') renderJobs();
 }
 
 // ===== DASHBOARD =====
@@ -2168,9 +2137,6 @@ function renderStatements() {
     }
   }
 
-  // Restore API key
-  const savedKey = lsGet('findash_claude_key');
-  if (savedKey) document.getElementById('claude-api-key').value = savedKey;
 }
 
 function sendStatementToDashboard() {
@@ -2263,74 +2229,6 @@ function filterStmtTable() {
   if (cat) filtered = filtered.filter(t => t.cat === cat);
   if (search) filtered = filtered.filter(t => t.desc.toLowerCase().includes(search));
   renderStmtTable(filtered);
-}
-
-// ===== CLAUDE API ANALYSIS =====
-async function runClaudeAnalysis() {
-  const key = document.getElementById('claude-api-key').value.trim();
-  if (!key) return alert('Please enter your Claude API key');
-  lsSet('findash_claude_key', key);
-
-  const resultDiv = document.getElementById('claude-result');
-  resultDiv.classList.remove('hidden');
-  resultDiv.textContent = 'Analyzing your spending patterns...';
-
-  // Build summary for Claude
-  const catTotals = {};
-  const expenses = stmtTransactions.filter(t => t.amount < 0);
-  expenses.forEach(t => { catTotals[t.cat] = (catTotals[t.cat] || 0) + Math.abs(t.amount); });
-  const totalIn = stmtTransactions.filter(t => t.amount > 0).reduce((a,t) => a + t.amount, 0);
-  const totalOut = expenses.reduce((a,t) => a + Math.abs(t.amount), 0);
-
-  const topExpenses = expenses.sort((a,b) => Math.abs(b.amount) - Math.abs(a.amount)).slice(0, 15);
-
-  const prompt = `You are a personal financial advisor. Analyze this bank statement data and provide actionable advice.
-
-INCOME: ${fmt(totalIn)}
-EXPENSES: ${fmt(totalOut)}
-NET: ${fmtSign(totalIn - totalOut)}
-
-SPENDING BY CATEGORY:
-${Object.entries(catTotals).sort((a,b) => b[1]-a[1]).map(([c,a]) => `- ${c}: ${fmt(a)}`).join('\n')}
-
-TOP INDIVIDUAL EXPENSES:
-${topExpenses.map(t => `- ${t.date} | ${t.desc} | ${fmt(Math.abs(t.amount))} (${t.cat})`).join('\n')}
-
-CONTEXT: The user's budget targets are: Restaurants $60/mo, Amazon $100/mo, Subscriptions $200/mo, Fast Food $50/mo, Gas $80/mo, Groceries $50/mo. They want to pay off $3,000 in credit card debt by May 2026 and are doing Uber Eats delivery as side income with a $50/day goal.
-
-Please provide:
-1. Key observations about spending patterns
-2. Top 3 areas to cut spending with specific suggestions
-3. Are they on track for the $3K credit payoff by May?
-4. Specific actionable tips for the next month`;
-
-  try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': key,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true'
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1500,
-        messages: [{ role: 'user', content: prompt }]
-      })
-    });
-
-    if (!response.ok) {
-      const err = await response.json();
-      resultDiv.textContent = 'API Error: ' + (err.error?.message || response.statusText);
-      return;
-    }
-
-    const data = await response.json();
-    resultDiv.textContent = data.content[0].text;
-  } catch (e) {
-    resultDiv.textContent = 'Error: ' + e.message;
-  }
 }
 
 // ===== UBER TRACKER =====
@@ -2686,8 +2584,7 @@ function renderJobsTable() {
       <td><select class="cat-select" onchange="setJobStatus(${j.id}, this.value)">${options(j)}</select>
           <span class="badge ${jobBadgeClass(j.status)}" style="margin-left:4px;">${j.status || '—'}</span></td>
       <td>${jobDays(j) ?? '—'}</td>
-      <td style="white-space:nowrap;"><button class="pay-btn" onclick="aiCoverLetter(${j.id})" title="Draft cover letter" style="padding:4px 8px;">&#9993;</button>
-          <button class="pay-btn" onclick="openJobModal(${j.id})" style="padding:4px 8px;">&#9998;</button>
+      <td style="white-space:nowrap;"><button class="pay-btn" onclick="openJobModal(${j.id})" style="padding:4px 8px;">&#9998;</button>
           <button class="pay-btn" onclick="deleteJob(${j.id})" style="padding:4px 8px;color:var(--red);">&#10005;</button></td>
     </tr>`).join('') || '<tr><td colspan="6" style="color:var(--text-dim);text-align:center;padding:20px;">No applications match.</td></tr>';
 }
@@ -2764,250 +2661,6 @@ document.getElementById('job-modal').addEventListener('click', function(e) {
   if (e.target === this) closeJobModal();
 });
 
-// ----- Job Hunt AI assistant -----
-let _aiParsedJob = null;
-
-async function aiAnalyzeJob() {
-  const text = document.getElementById('ai-job-text').value.trim();
-  if (!text) { alert('Paste a posting first.'); return; }
-  const st = document.getElementById('ai-job-status');
-  if (/^https?:\/\/\S+$/i.test(text)) {
-    st.textContent = '';
-    alert("That's just a link — I can't open URLs. Open the posting and paste its text (title, description, requirements) into the box.");
-    return;
-  }
-  st.textContent = 'Analyzing with Claude...';
-  document.getElementById('ai-job-result').style.display = 'none';
-  try {
-    const r = await fetch('/api/ai/job-parse', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text })
-    });
-    const data = await r.json();
-    if (!r.ok) throw new Error(data.error || 'Request failed');
-    _aiParsedJob = data.result;
-    renderAiJobResult(data.result);
-    st.textContent = '';
-  } catch (e) {
-    st.textContent = '';
-    alert('AI error: ' + e.message);
-  }
-}
-
-function renderAiJobResult(j) {
-  const fitBadge = { High: 'badge-green', Medium: 'badge-yellow', Low: 'badge-gray', Skip: 'badge-red' }[j.fit] || 'badge-gray';
-  const sal = (j.salaryMin || j.salaryMax)
-    ? `$${(j.salaryMin || 0).toLocaleString()} - $${(j.salaryMax || 0).toLocaleString()}` : 'no salary posted';
-  const div = document.getElementById('ai-job-result');
-  div.innerHTML = `
-    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
-      <div>
-        <div style="font-weight:700;font-size:15px;">${j.company || '?'} — ${j.position || '?'}</div>
-        <div style="font-size:12px;color:var(--text-dim);">${j.location || 'location unknown'} &middot; ${sal} &middot; ${j.source || 'Other'}</div>
-      </div>
-      <span class="badge ${fitBadge}" style="font-size:13px;">${j.fit} fit</span>
-    </div>
-    <p style="font-size:13px;margin:10px 0 4px;">${j.fitReasons || ''}</p>
-    ${j.gaps ? `<p style="font-size:12px;color:var(--yellow);margin-bottom:10px;">Gaps: ${j.gaps}</p>` : ''}
-    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:8px;">
-      <label style="font-size:13px;display:flex;align-items:center;gap:6px;">
-        <input type="checkbox" id="ai-applied-check" ${j.alreadyApplied ? 'checked' : ''}> I already applied
-      </label>
-      <button class="btn btn-primary" onclick="aiAddParsedJob()">Add to Pipeline</button>
-      <button class="btn" style="background:var(--surface2);" onclick="aiDraftFromParsed()">Draft Cover Letter</button>
-    </div>`;
-  div.style.display = 'block';
-}
-
-// ----- Daily automated job search (Claude web search) -----
-let _foundJobs = [];
-
-function saveFoundJobs() {
-  try { localStorage.setItem('findash_found_jobs', JSON.stringify(_foundJobs)); } catch (_) {}
-}
-function loadFoundJobs() {
-  try { _foundJobs = JSON.parse(localStorage.getItem('findash_found_jobs') || '[]') || []; } catch (_) { _foundJobs = []; }
-}
-
-async function aiFindJobs(isAuto) {
-  const btn = document.getElementById('ai-find-btn');
-  const status = document.getElementById('ai-find-status');
-  const results = document.getElementById('ai-find-results');
-  btn.disabled = true;
-  btn.textContent = 'Searching...';
-  status.textContent = isAuto ? 'Daily check: searching for new postings (up to ~90s)...' : 'Searching Built In and startup boards — this can take up to 90 seconds, hang tight...';
-  try {
-    const exclude = jobsData.map(j => ({ company: j.company, position: j.position }));
-    const r = await fetch('/api/ai/find-jobs', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ exclude })
-    });
-    const data = await r.json();
-    if (!r.ok) throw new Error(data.error || 'Search failed');
-    // Drop anything that snuck through matching an existing application
-    const seen = new Set(jobsData.map(j => (j.company + '|' + j.position).toLowerCase()));
-    _foundJobs = (data.jobs || []).filter(j => !seen.has((j.company + '|' + j.position).toLowerCase()));
-    localStorage.setItem('findash_last_jobcheck', new Date().toISOString().slice(0, 10));
-    saveFoundJobs();
-    renderFoundJobs();
-    status.textContent = _foundJobs.length
-      ? `Found ${_foundJobs.length} new posting${_foundJobs.length !== 1 ? 's' : ''} — ${new Date().toLocaleDateString()}`
-      : 'No new matches right now. Check back tomorrow.';
-  } catch (e) {
-    status.textContent = '';
-    const billing = /credit balance|too low|billing|quota|402|invalid x-api-key|authentication/i.test(e.message);
-    if (billing) {
-      const msg = 'AI is unavailable: the Anthropic API account is out of credits (or the key is invalid). Add credits at console.anthropic.com → Plans & Billing. This is separate from a Claude.ai subscription.';
-      status.textContent = msg;
-      if (!isAuto) alert(msg);
-    } else {
-      status.textContent = 'Search failed — ' + e.message + '. Try again in a moment.';
-      if (!isAuto) alert('Job search error: ' + e.message + '\n\nThis is usually a temporary hiccup — try again in a few seconds.');
-    }
-  } finally {
-    btn.disabled = false;
-    btn.textContent = 'Find New Jobs';
-  }
-}
-
-function renderFoundJobs() {
-  const div = document.getElementById('ai-find-results');
-  if (!_foundJobs.length) { div.style.display = 'none'; return; }
-  const fitBadge = { High: 'badge-green', Medium: 'badge-yellow', Low: 'badge-gray' };
-  div.innerHTML = _foundJobs.map((j, i) => {
-    const sal = (j.salaryMin || j.salaryMax) ? `$${(j.salaryMin || 0).toLocaleString()} - $${(j.salaryMax || 0).toLocaleString()}` : 'salary not posted';
-    return `<div style="border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:10px;background:var(--surface2);">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;">
-        <div>
-          <div style="font-weight:700;">${j.company} — ${j.position}</div>
-          <div style="font-size:12px;color:var(--text-dim);">${j.location || 'remote'} &middot; ${sal}</div>
-        </div>
-        <span class="badge ${fitBadge[j.fit] || 'badge-gray'}">${j.fit} fit</span>
-      </div>
-      <p style="font-size:12px;margin:8px 0;">${j.fitReasons || ''}${j.gaps ? ` <span style="color:var(--yellow);">Gaps: ${j.gaps}</span>` : ''}</p>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;">
-        ${j.url ? `<a href="${j.url}" target="_blank"><button class="pay-btn">Open Listing</button></a>` : ''}
-        <button class="pay-btn" onclick="addFoundJob(${i})">Add to Pipeline</button>
-        <button class="pay-btn" onclick="coverLetterForFound(${i})">Cover Letter</button>
-      </div>
-    </div>`;
-  }).join('');
-  div.style.display = 'block';
-}
-
-function foundToJob(j, applied) {
-  const today = new Date().toISOString().slice(0, 10);
-  return {
-    id: Date.now() + Math.floor(Math.random() * 1000),
-    company: j.company, position: j.position,
-    dateApplied: applied ? today : null,
-    status: applied ? 'Applied' : 'On Hold',
-    source: j.source || 'Other', priority: j.suggestedPriority || 'Medium',
-    salaryMin: j.salaryMin || null, salaryMax: j.salaryMax || null,
-    location: j.location || '', workType: /remote/i.test(j.location || '') ? 'Remote' : '',
-    url: j.url || null,
-    notes: `${j.fit} fit: ${j.fitReasons || ''}${j.gaps ? ' | Gaps: ' + j.gaps : ''}`,
-    lastUpdate: today
-  };
-}
-
-function addFoundJob(i) {
-  const j = _foundJobs[i];
-  if (!j) return;
-  jobsData.push(foundToJob(j, false));
-  saveJobsData();
-  _foundJobs.splice(i, 1);
-  saveFoundJobs();
-  renderFoundJobs();
-  renderJobs();
-  const st = document.getElementById('ai-find-status');
-  if (st) st.textContent = `Added ${j.company} to your pipeline. It's in the Applications table below.`;
-}
-
-function coverLetterForFound(i) {
-  const j = _foundJobs[i];
-  if (j) aiRequestLetter(j, '');
-}
-
-function maybeAutoFindJobs() {
-  const last = localStorage.getItem('findash_last_jobcheck');
-  const today = new Date().toISOString().slice(0, 10);
-  if (last !== today) aiFindJobs(true);
-}
-
-function aiAddParsedJob() {
-  const j = _aiParsedJob;
-  if (!j) return;
-  const applied = document.getElementById('ai-applied-check').checked;
-  const today = new Date().toISOString().slice(0, 10);
-  jobsData.push({
-    id: Date.now(),
-    company: j.company || 'Unknown',
-    position: j.position || '',
-    dateApplied: applied ? today : null,
-    status: applied ? 'Applied' : 'On Hold',
-    source: JOB_SOURCES.includes(j.source) ? j.source : 'Other',
-    priority: j.suggestedPriority || 'Medium',
-    salaryMin: j.salaryMin || null,
-    salaryMax: j.salaryMax || null,
-    location: j.location || '',
-    workType: j.workType || '',
-    url: j.url || null,
-    notes: `${j.fit} fit: ${j.fitReasons || ''}${j.gaps ? ' | Gaps: ' + j.gaps : ''}`,
-    lastUpdate: today
-  });
-  saveJobsData();
-  document.getElementById('ai-job-result').style.display = 'none';
-  document.getElementById('ai-job-text').value = '';
-  _aiParsedJob = null;
-  renderJobs();
-}
-
-async function aiRequestLetter(job, postingText) {
-  const modal = document.getElementById('letter-modal');
-  modal.style.display = 'flex';
-  document.getElementById('letter-modal-title').textContent = 'Cover Letter — ' + job.company;
-  document.getElementById('letter-modal-status').textContent = 'Drafting in your voice (no dashes, under 300 words)...';
-  document.getElementById('letter-text').value = '';
-  try {
-    const r = await fetch('/api/ai/cover-letter', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ job, postingText: postingText || undefined })
-    });
-    const data = await r.json();
-    if (!r.ok) throw new Error(data.error || 'Request failed');
-    document.getElementById('letter-text').value = data.letter;
-    document.getElementById('letter-modal-status').textContent = 'Review, tweak anything that does not sound like you, then copy.';
-  } catch (e) {
-    document.getElementById('letter-modal-status').textContent = 'Error: ' + e.message;
-  }
-}
-
-function aiCoverLetter(id) {
-  const j = jobsData.find(x => x.id === id);
-  if (!j) return;
-  // if the paste box still holds the posting, use it for a sharper letter
-  aiRequestLetter(j, document.getElementById('ai-job-text').value.trim());
-}
-
-function aiDraftFromParsed() {
-  if (!_aiParsedJob) return;
-  aiRequestLetter(_aiParsedJob, document.getElementById('ai-job-text').value.trim());
-}
-
-function copyLetter() {
-  const t = document.getElementById('letter-text');
-  t.select();
-  navigator.clipboard.writeText(t.value).then(
-    () => { document.getElementById('letter-modal-status').textContent = 'Copied to clipboard.'; },
-    () => { document.execCommand('copy'); document.getElementById('letter-modal-status').textContent = 'Copied.'; }
-  );
-}
-
-document.getElementById('letter-modal').addEventListener('click', function(e) {
-  if (e.target === this) this.style.display = 'none';
-});
-
 // ===== DRAG & DROP =====
 function setupDragDrop(zoneId, handler) {
   const zone = document.getElementById(zoneId);
@@ -3068,7 +2721,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('uber-date').value = '2026-03-24';
 
   // Restore the last-viewed page and any saved job-search results
-  loadFoundJobs();
   const savedPage = localStorage.getItem('findash_page');
   if (savedPage && savedPage !== 'dashboard' && document.getElementById('page-' + savedPage)) {
     showPage(savedPage);
