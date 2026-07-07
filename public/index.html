@@ -524,8 +524,12 @@ canvas { max-height: 300px; }
   <div class="grid-4 mb-12" id="jobs-stat-cards"></div>
 
   <div class="card">
-    <h2>Job Scout</h2>
-    <p style="color:var(--text-dim);font-size:13px;margin:6px 0 0;">Fresh leads are researched and added for you by Claude — new ones appear at the top of the Applications table tagged <strong style="color:var(--accent2);">Lead</strong>. Just ask Claude to "find me more jobs" anytime.</p>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">
+      <h2 style="margin:0;">Job Scout</h2>
+      <span id="jobs-scout-count" class="badge badge-yellow" style="font-size:12px;"></span>
+    </div>
+    <p style="color:var(--text-dim);font-size:13px;margin:6px 0 12px;">Leads Claude finds for you land here first. Review each one, then <strong style="color:var(--green);">Add to Applications</strong> to move it into your pipeline or <strong style="color:var(--red);">Dismiss</strong> it. Just ask Claude to "find me more jobs" anytime.</p>
+    <div id="jobs-scout-list"></div>
   </div>
 
   <div class="card mt-20" id="jobs-followup-card">
@@ -1485,7 +1489,9 @@ const DEBT_AUTO_RULES = [
   { test: /mohela|gov student/i, keywords: ['mohela', 'dept education', 'student ln'] },
   { test: /chase/i, keywords: ['chase credit'] },
   { test: /concora/i, keywords: ['concora'] },
-  { test: /merrick/i, keywords: ['merrick'] },
+  // Merrick Bank is paid by paper check each month, so the statement line reads
+  // "Check #NNN" with no payee — attribute those checks to Merrick.
+  { test: /merrick/i, keywords: ['merrick', 'check #'] },
   { test: /american express|amex/i, keywords: ['american express'] },
   // Property tax: match county payments and re-baseline as of Jun 30 so the
   // new $500/mo plan (starting Jul) draws the balance down automatically.
@@ -1497,7 +1503,7 @@ const DEFAULT_CC_DEBTS = [
   {name:'Chase Credit Card', balance:929, original:929, payment:63, rate:0, category:'credit_card', link:'https://secure08ea.chase.com/web/auth/dashboard', notes:'Est. from payments since Dec 2025 — edit balance to re-baseline', baseline:{date:'2025-12-25', balance:929}},
   {name:'Concora Credit', balance:0, original:0, payment:80, rate:0, category:'credit_card', link:'https://concoracredit.myfinanceservice.com/summary', notes:'Balance unknown — tracking payments; edit balance to start the estimate'},
   {name:'American Express', balance:0, original:0, payment:40, rate:0, category:'credit_card', link:'https://global.americanexpress.com/dashboard', notes:'Balance unknown — tracking payments; edit balance to start the estimate'},
-  {name:'Merrick Bank', balance:0, original:0, payment:54, rate:0, category:'credit_card', link:'https://logon.merrickbank.com/Account/Overview', notes:'Balance unknown — no payments seen in Chase statements'},
+  {name:'Merrick Bank', balance:0, original:0, payment:50, rate:0, category:'credit_card', link:'https://logon.merrickbank.com/Account/Overview', notes:'Paid by paper check (~$50/mo) — auto-tracked from statement checks; edit balance to start the estimate'},
 ];
 
 function ensureDebtAutoTracking() {
@@ -1528,18 +1534,24 @@ function ensureDebtAutoTracking() {
     if (_dataLoaded) lsSet('findash_cc_seeded', JSON.stringify(true));
   }
   for (const d of debtsData) {
+    const rule = DEBT_AUTO_RULES.find(r => r.test.test(d.name));
+    if (!rule) continue;
     if (!d.keywords) {
-      const rule = DEBT_AUTO_RULES.find(r => r.test.test(d.name));
-      if (rule) {
-        d.keywords = rule.keywords;
-        // Seed a baseline from the debt's current balance so matched payments
-        // reduce it (only when the rule opts in and none exists yet)
-        if (rule.baseline && !d.baseline && d.balance > 0) {
-          d.baseline = { date: rule.baseline.date, balance: d.balance };
-          if (!d.payment) d.payment = 500;
-        }
-        changed = true;
+      d.keywords = [...rule.keywords];
+      changed = true;
+    } else {
+      // Union in any new rule keywords (e.g. Merrick's 'check #') so debts
+      // seeded by an earlier version pick up matching rules on next load.
+      for (const k of rule.keywords) {
+        if (!d.keywords.includes(k)) { d.keywords.push(k); changed = true; }
       }
+    }
+    // Seed a baseline from the debt's current balance so matched payments
+    // reduce it (only when the rule opts in and none exists yet)
+    if (rule.baseline && !d.baseline && d.balance > 0) {
+      d.baseline = { date: rule.baseline.date, balance: d.balance };
+      if (!d.payment) d.payment = 500;
+      changed = true;
     }
   }
   if (changed && _dataLoaded) saveDebtsData();
@@ -2485,9 +2497,10 @@ function loadData() {
 }
 
 // ===== JOB HUNT =====
-const JOB_STATUSES = ['Applied','Phone Screen','Technical Interview','Onsite Interview','Final Round','Offer','Accepted','Rejected','Withdrawn','Ghosted','On Hold'];
+const JOB_STATUSES = ['Scouted','Applied','Phone Screen','Technical Interview','Onsite Interview','Final Round','Offer','Accepted','Rejected','Withdrawn','Ghosted','On Hold'];
 const JOB_SOURCES = ['LinkedIn','Indeed','Glassdoor','Company Website','Built In','Referral','Recruiter','AngelList/Wellfound','Handshake','ZipRecruiter','Monster','Dice','Other'];
 const JOB_INTERVIEW_STATUSES = ['Phone Screen','Technical Interview','Onsite Interview','Final Round','Offer','Accepted'];
+const jobIsScouted = j => j.status === 'Scouted';
 const jobIsActive = j => !['Rejected','Withdrawn','Ghosted','Accepted'].includes(j.status);
 let jobsData = [];
 let _editingJobId = null;
@@ -2507,14 +2520,18 @@ function jobBadgeClass(status) {
   if (JOB_INTERVIEW_STATUSES.includes(status)) return status === 'Offer' || status === 'Accepted' ? 'badge-green' : 'badge-yellow';
   if (status === 'Rejected') return 'badge-red';
   if (status === 'On Hold') return 'badge-yellow';
+  if (status === 'Scouted') return 'badge-gray';
   return 'badge-gray';
 }
 
 function renderJobs() {
-  const total = jobsData.length;
-  const active = jobsData.filter(jobIsActive);
-  const responded = jobsData.filter(j => j.status && j.status !== 'Applied' && j.status !== 'Ghosted');
-  const interviews = jobsData.filter(j => JOB_INTERVIEW_STATUSES.includes(j.status));
+  // Scouted leads are held in the Job Scout review bucket and are NOT counted
+  // as applications until the user promotes them.
+  const apps = jobsData.filter(j => !jobIsScouted(j));
+  const total = apps.length;
+  const active = apps.filter(jobIsActive);
+  const responded = apps.filter(j => j.status && j.status !== 'Applied' && j.status !== 'Ghosted');
+  const interviews = apps.filter(j => JOB_INTERVIEW_STATUSES.includes(j.status));
   const respRate = total ? Math.round(responded.length / total * 100) : 0;
   const weekAgo = Date.now() - 7 * 86400000;
   const thisWeek = jobsData.filter(j => j.dateApplied && new Date(j.dateApplied + 'T12:00:00') >= weekAgo).length;
@@ -2556,13 +2573,61 @@ function renderJobs() {
   if (sf.options.length <= 2) {
     JOB_STATUSES.forEach(s => { const o = document.createElement('option'); o.value = s; o.textContent = s; sf.appendChild(o); });
   }
+  renderJobScout();
   renderJobsTable();
+}
+
+function renderJobScout() {
+  const el = document.getElementById('jobs-scout-list');
+  if (!el) return;
+  const scouted = jobsData.filter(jobIsScouted)
+    .sort((a, b) => String(b.lastUpdate || '').localeCompare(String(a.lastUpdate || '')) || (b.id - a.id));
+  const cnt = document.getElementById('jobs-scout-count');
+  if (cnt) { cnt.textContent = scouted.length ? `${scouted.length} to review` : ''; cnt.style.display = scouted.length ? '' : 'none'; }
+  if (!scouted.length) {
+    el.innerHTML = '<p style="color:var(--text-dim);font-size:13px;">No new leads to review right now. Ask Claude to &ldquo;find me more jobs&rdquo; and they&rsquo;ll show up here first.</p>';
+    return;
+  }
+  const priBadge = p => p === 'High' ? 'badge-green' : p === 'Low' ? 'badge-gray' : 'badge-yellow';
+  el.innerHTML = scouted.map(j => {
+    const sal = (j.salaryMin || j.salaryMax) ? `${j.salaryMin ? fmt(j.salaryMin) : '?'}&ndash;${j.salaryMax ? fmt(j.salaryMax) : '?'}` : '';
+    const meta = [sal, j.location].filter(Boolean).join(' &middot; ');
+    return `<div class="bill-row" style="align-items:flex-start;">
+      <div class="bill-info" style="flex:1;min-width:0;"><div>
+        <div class="bill-name">${j.url ? `<a href="${j.url}" target="_blank" style="color:var(--accent2);">${j.company}</a>` : j.company} &mdash; ${j.position || ''} ${j.priority ? `<span class="badge ${priBadge(j.priority)}" style="margin-left:4px;">${j.priority}</span>` : ''}</div>
+        ${meta ? `<div style="font-size:12px;color:var(--text-dim);margin-top:2px;">${meta}</div>` : ''}
+        ${j.notes ? `<div style="font-size:12px;color:var(--text-dim);margin-top:4px;">${j.notes}</div>` : ''}
+      </div></div>
+      <div style="display:flex;gap:8px;align-items:center;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end;">
+        ${j.url ? `<a href="${j.url}" target="_blank"><button class="pay-btn">Listing</button></a>` : ''}
+        <button class="pay-btn" style="color:var(--green);" onclick="promoteScoutedJob(${j.id})">&#10003; Add to Applications</button>
+        <button class="pay-btn" style="color:var(--red);" onclick="dismissScoutedJob(${j.id})">&#10005; Dismiss</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function promoteScoutedJob(id) {
+  const j = jobsData.find(x => x.id === id);
+  if (!j) return;
+  j.status = 'On Hold';
+  j.lastUpdate = new Date().toISOString().slice(0, 10);
+  saveJobsData();
+  renderJobs();
+}
+
+function dismissScoutedJob(id) {
+  const j = jobsData.find(x => x.id === id);
+  if (!j || !confirm(`Dismiss lead "${j.company} — ${j.position || ''}"? This removes it from Job Scout.`)) return;
+  jobsData = jobsData.filter(x => x.id !== id);
+  saveJobsData();
+  renderJobs();
 }
 
 function renderJobsTable() {
   const statusFilter = document.getElementById('jobs-status-filter').value;
   const q = (document.getElementById('jobs-search').value || '').toLowerCase();
-  let rows = [...jobsData];
+  let rows = jobsData.filter(j => !jobIsScouted(j));
   if (statusFilter === '__active__') rows = rows.filter(jobIsActive);
   else if (statusFilter) rows = rows.filter(j => j.status === statusFilter);
   if (q) rows = rows.filter(j => (j.company + ' ' + (j.position || '')).toLowerCase().includes(q));
