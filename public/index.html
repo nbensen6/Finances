@@ -2855,8 +2855,15 @@ async function aiFindJobs(isAuto) {
       : 'No new matches right now. Check back tomorrow.';
   } catch (e) {
     status.textContent = '';
-    status.textContent = 'Search failed — ' + e.message + '. Try again in a moment.';
-    if (!isAuto) alert('Job search error: ' + e.message + '\n\nThis is usually a temporary hiccup — try again in a few seconds.');
+    const billing = /credit balance|too low|billing|quota|402|invalid x-api-key|authentication/i.test(e.message);
+    if (billing) {
+      const msg = 'AI is unavailable: the Anthropic API account is out of credits (or the key is invalid). Add credits at console.anthropic.com → Plans & Billing. This is separate from a Claude.ai subscription.';
+      status.textContent = msg;
+      if (!isAuto) alert(msg);
+    } else {
+      status.textContent = 'Search failed — ' + e.message + '. Try again in a moment.';
+      if (!isAuto) alert('Job search error: ' + e.message + '\n\nThis is usually a temporary hiccup — try again in a few seconds.');
+    }
   } finally {
     btn.disabled = false;
     btn.textContent = 'Find New Jobs';
