@@ -528,7 +528,7 @@ canvas { max-height: 300px; }
       <h2 style="margin:0;">Job Scout</h2>
       <span id="jobs-scout-count" class="badge badge-yellow" style="font-size:12px;"></span>
     </div>
-    <p style="color:var(--text-dim);font-size:13px;margin:6px 0 12px;">Leads Claude finds for you land here first. Review each one, then <strong style="color:var(--green);">Add to Applications</strong> to move it into your pipeline or <strong style="color:var(--red);">Dismiss</strong> it. Just ask Claude to "find me more jobs" anytime.</p>
+    <p style="color:var(--text-dim);font-size:13px;margin:6px 0 12px;">Leads Claude finds for you land here first. Review each one, then <strong style="color:#fff;">Add to Applications</strong> to move it into your pipeline or <strong style="color:#fff;">Dismiss</strong> it. Just ask Claude to "find me more jobs" anytime.</p>
     <div id="jobs-scout-list"></div>
   </div>
 
@@ -2600,8 +2600,8 @@ function renderJobScout() {
       </div></div>
       <div style="display:flex;gap:8px;align-items:center;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end;">
         ${j.url ? `<a href="${j.url}" target="_blank"><button class="pay-btn">Listing</button></a>` : ''}
-        <button class="pay-btn" style="color:var(--green);" onclick="promoteScoutedJob(${j.id})">&#10003; Add to Applications</button>
-        <button class="pay-btn" style="color:var(--red);" onclick="dismissScoutedJob(${j.id})">&#10005; Dismiss</button>
+        <button class="pay-btn" onclick="promoteScoutedJob(${j.id})">&#10003; Add to Applications</button>
+        <button class="pay-btn" onclick="dismissScoutedJob(${j.id})">&#10005; Dismiss</button>
       </div>
     </div>`;
   }).join('');
@@ -2650,7 +2650,7 @@ function renderJobsTable() {
           <span class="badge ${jobBadgeClass(j.status)}" style="margin-left:4px;">${j.status || '—'}</span></td>
       <td>${jobDays(j) ?? '—'}</td>
       <td style="white-space:nowrap;"><button class="pay-btn" onclick="openJobModal(${j.id})" style="padding:4px 8px;">&#9998;</button>
-          <button class="pay-btn" onclick="deleteJob(${j.id})" style="padding:4px 8px;color:var(--red);">&#10005;</button></td>
+          <button class="pay-btn" onclick="deleteJob(${j.id})" style="padding:4px 8px;">&#10005;</button></td>
     </tr>`).join('') || '<tr><td colspan="6" style="color:var(--text-dim);text-align:center;padding:20px;">No applications match.</td></tr>';
 }
 
