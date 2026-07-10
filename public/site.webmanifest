@@ -1,0 +1,15 @@
+{
+  "name": "FinDash — Financial Dashboard",
+  "short_name": "FinDash",
+  "description": "Nick's personal financial dashboard",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#14110c",
+  "theme_color": "#14110c",
+  "icons": [
+    { "src": "/favicon.svg", "type": "image/svg+xml", "sizes": "any" },
+    { "src": "/icon-192.png", "type": "image/png", "sizes": "192x192" },
+    { "src": "/icon-512.png", "type": "image/png", "sizes": "512x512" },
+    { "src": "/icon-512.png", "type": "image/png", "sizes": "512x512", "purpose": "maskable" }
+  ]
+}
