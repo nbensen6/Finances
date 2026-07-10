@@ -77,10 +77,24 @@ try {
       stmtUpsert.run('findash_yearly_data', JSON.stringify(yearly));
       if (Array.isArray(seed.bills)) stmtUpsert.run('findash_bills', JSON.stringify(seed.bills));
       if (Array.isArray(seed.subs)) stmtUpsert.run('findash_subs', JSON.stringify(seed.subs));
-      // Jobs are seeded write-once: the tracker is actively edited in-app,
-      // so later seed versions must never clobber it
-      if (Array.isArray(seed.jobs) && !stmtGet.get('findash_jobs')) {
-        stmtUpsert.run('findash_jobs', JSON.stringify(seed.jobs));
+      // Jobs: merge seed leads in by id. Never clobber the user's in-app edits
+      // — only ADD entries whose id isn't already present. This lets new scouted
+      // leads (and any history missed by the old write-once guard) land safely.
+      if (Array.isArray(seed.jobs) && seed.jobs.length) {
+        let jobs = [];
+        const jRow = stmtGet.get('findash_jobs');
+        if (jRow) {
+          try {
+            let v = JSON.parse(jRow.value);
+            if (typeof v === 'string') v = JSON.parse(v); // heal double-encoded values
+            if (Array.isArray(v)) jobs = v;
+          } catch (_) {}
+        }
+        const haveIds = new Set(jobs.map(j => String(j.id)));
+        const additions = seed.jobs.filter(j => !haveIds.has(String(j.id)));
+        if (additions.length) {
+          stmtUpsert.run('findash_jobs', JSON.stringify(jobs.concat(additions)));
+        }
       }
       stmtUpsert.run('findash_seed_version', JSON.stringify(seed.version));
       const summary = Object.entries(seed.years || {}).map(([y, m]) => `${y}: ${Object.keys(m).length} months`).join('; ');
