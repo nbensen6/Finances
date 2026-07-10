@@ -53,10 +53,18 @@ body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background
    backdrop-blurred (glassmorphism) so the car shows through softly without
    ever competing with the data. Uses a fixed-position layer (not
    background-attachment:fixed) to avoid the iOS Safari scaling bug. */
-body::before {          /* the photograph */
+body::before {          /* per-page Lexus photo (set via body[data-page]) */
   content: ""; position: fixed; inset: 0; z-index: -2;
-  background: url('/img/bg-coupe.jpg') center center / cover no-repeat;
+  background-color: var(--bg);
+  background-position: center; background-size: cover; background-repeat: no-repeat;
+  background-image: url('/img/pg-dashboard.jpg');   /* default before JS runs */
 }
+body[data-page="dashboard"]::before  { background-image: url('/img/pg-dashboard.jpg'); }
+body[data-page="bills"]::before      { background-image: url('/img/pg-bills.jpg'); }
+body[data-page="statements"]::before { background-image: url('/img/pg-statements.jpg'); }
+body[data-page="uber"]::before       { background-image: url('/img/pg-uber.jpg'); }
+body[data-page="debts"]::before      { background-image: url('/img/pg-debts.jpg'); }
+body[data-page="jobs"]::before       { background-image: url('/img/pg-jobs.jpg'); }
 body::after {           /* dark scrim for contrast + brand tint */
   content: ""; position: fixed; inset: 0; z-index: -1;
   background:
@@ -204,7 +212,7 @@ canvas { max-height: 300px; }
 .cat-select option { background: var(--surface); color: var(--text); }
 </style>
 </head>
-<body>
+<body data-page="dashboard">
 
 <nav>
   <div class="logo" style="display:flex;align-items:center;gap:9px;">
@@ -989,6 +997,7 @@ function showPage(name) {
   if (!page) return;
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   page.classList.add('active');
+  document.body.dataset.page = name; // swaps the per-page Lexus background
   // Highlight the matching nav button (works on click AND on programmatic
   // restore, where there is no click event)
   document.querySelectorAll('.nav-links button').forEach(b => b.classList.remove('active'));
