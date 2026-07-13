@@ -569,6 +569,17 @@ canvas { max-height: 300px; }
   </div>
 
   <div class="card mt-20">
+    <h2>Add from a Job Posting</h2>
+    <p style="color:var(--text-dim);font-size:13px;margin:6px 0 12px;">Copy a posting (title, company, location, salary, description) and paste it below. It auto-fills the application form for you to review before saving. Runs entirely in your browser &mdash; no AI, nothing leaves your device.</p>
+    <textarea id="job-paste" class="api-key-input" rows="5" style="resize:vertical;width:100%;" placeholder="Paste the full job posting here, then click Parse &amp; Review..."></textarea>
+    <div style="display:flex;gap:10px;margin-top:10px;align-items:center;flex-wrap:wrap;">
+      <button class="btn btn-primary" onclick="parseAndAddJob()">Parse &amp; Review</button>
+      <button class="btn" style="background:var(--surface2);" onclick="document.getElementById('job-paste').value='';document.getElementById('job-paste-msg').textContent='';">Clear</button>
+      <span id="job-paste-msg" style="font-size:12px;color:var(--text-dim);"></span>
+    </div>
+  </div>
+
+  <div class="card mt-20">
     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
       <h2 style="margin:0;">Applications</h2>
       <button class="btn btn-primary" onclick="openJobModal()">+ Add Application</button>
@@ -2750,7 +2761,7 @@ function setJobStatus(id, status) {
   renderJobs();
 }
 
-function openJobModal(id) {
+function openJobModal(id, prefill) {
   _editingJobId = id !== undefined ? id : null;
   const modal = document.getElementById('job-modal');
   modal.style.display = 'flex';
@@ -2770,6 +2781,17 @@ function openJobModal(id) {
   document.getElementById('job-location').value = j ? (j.location || '') : '';
   document.getElementById('job-url').value = j ? (j.url || '') : '';
   document.getElementById('job-notes').value = j ? (j.notes || '') : '';
+  if (!j && prefill) {
+    const set = (elId, val) => { if (val !== undefined && val !== null && val !== '') document.getElementById(elId).value = val; };
+    set('job-company', prefill.company);
+    set('job-position', prefill.position);
+    set('job-location', prefill.location);
+    set('job-salmin', prefill.salaryMin);
+    set('job-salmax', prefill.salaryMax);
+    set('job-url', prefill.url);
+    if (prefill.source && JOB_SOURCES.includes(prefill.source)) document.getElementById('job-source').value = prefill.source;
+    document.getElementById('job-company').focus();
+  }
 }
 
 function closeJobModal() { document.getElementById('job-modal').style.display = 'none'; }
@@ -2799,6 +2821,103 @@ function saveJobFromModal() {
   saveJobsData();
   closeJobModal();
   renderJobs();
+}
+
+// ===== PASTE-TO-PARSE (client-side, no AI) =====
+function jpClean(s) { return String(s).replace(/\s+/g, ' ').replace(/[|•·,\-\s]+$/, '').trim(); }
+
+// Grab every plausible salary figure ($ amounts, k-suffix aware) and take the
+// low/high of the cluster. Filters out non-salary dollar amounts by range.
+function jpSalary(raw) {
+  const re = /\$\s?([\d][\d,]*(?:\.\d+)?)\s?([kK])?\b/g;
+  let m, vals = [];
+  while ((m = re.exec(raw))) {
+    let n = parseFloat(m[1].replace(/,/g, ''));
+    if (m[2]) n *= 1000;                 // $85K -> 85000
+    if (n >= 15000 && n <= 800000) vals.push(Math.round(n));
+  }
+  if (!vals.length) return { min: null, max: null };
+  vals = [...new Set(vals)].sort((a, b) => a - b);
+  return { min: vals[0], max: vals.length > 1 ? vals[vals.length - 1] : null };
+}
+
+function jpCompany(lines, raw) {
+  // 1) "<Company> Logo" near the top (common ATS alt text)
+  for (const l of lines.slice(0, 6)) {
+    const m = l.match(/^(.{2,40}?)\s+Logo$/i);
+    if (m && !/^back to/i.test(m[1])) return jpClean(m[1]);
+  }
+  // 2) "About <Company>" (skip About the/you/us/our/this/role/team...)
+  const am = raw.match(/\bAbout\s+([A-Z][A-Za-z0-9&.'\-]+(?:\s+[A-Z][A-Za-z0-9&.'\-]+){0,3})/);
+  if (am && !/^(the|you|us|our|this|role|team|company|position|job|why|working)\b/i.test(am[1])) {
+    return jpClean(am[1].split(/\s+(?:is|provides|helps|was|has|makes|builds)\b/i)[0]);
+  }
+  // 3) "<Company> is a/the/building ..." near the top
+  for (const l of lines.slice(0, 12)) {
+    const m = l.match(/^([A-Z][A-Za-z0-9&.'\- ]{1,39}?)\s+is\s+(?:a|an|the|building|on a|proud|now|hiring)\b/);
+    if (m) return jpClean(m[1]);
+  }
+  return '';
+}
+
+function jpTitle(lines) {
+  const kw = /(manager|engineer|specialist|analyst|coordinator|developer|designer|director|\blead\b|associate|consultant|architect|administrator|representative|owner|scrum master|recruiter|strategist|scientist|controller|accountant|bookkeeper|technician|supervisor|officer|counsel|writer|producer|planner|success|solutions|operations|marketing)/i;
+  const noise = /^(back to jobs?|apply|share|save|about|why work|create a job alert|responsibilities|requirements|qualifications|benefits|location|remote|hybrid|full[- ]?time|part[- ]?time|posted|the role|overview|your role|what you)\b/i;
+  for (const l of lines.slice(0, 12)) {
+    if (noise.test(l) || /logo$/i.test(l)) continue;
+    const words = l.split(/\s+/);
+    if (words.length >= 1 && words.length <= 9 && l.length <= 70 && kw.test(l) && !/[.]\s/.test(l)) return jpClean(l);
+  }
+  return '';
+}
+
+function jpLocation(lines, raw) {
+  const wt = /\b(Remote|Hybrid|On-?site|In-?office)\b/i;
+  for (const l of lines.slice(0, 15)) {
+    if (wt.test(l) && l.length <= 48 && !/salary|about|apply|benefit|experience/i.test(l)) return jpClean(l.replace(/\s*[|•]\s*/g, ', '));
+  }
+  for (const l of lines.slice(0, 15)) {           // "City, ST" fallback
+    if (/^[A-Z][A-Za-z .'-]+,\s*[A-Z]{2}\b/.test(l) && l.length <= 40) return jpClean(l);
+  }
+  const m = raw.match(wt);
+  return m ? m[0].replace(/^./, c => c.toUpperCase()) : '';
+}
+
+function parseJobPosting(text) {
+  const raw = String(text).replace(/\r/g, '');
+  const lines = raw.split('\n').map(l => l.trim()).filter(Boolean);
+  const out = { company: '', position: '', location: '', salaryMin: null, salaryMax: null, url: null, source: 'Other' };
+  const um = raw.match(/https?:\/\/[^\s)>\]]+/i);
+  if (um) out.url = um[0].replace(/[.,;]+$/, '');
+  const hay = ((out.url || '') + ' ' + raw).toLowerCase();
+  const srcMap = [['linkedin', 'LinkedIn'], ['indeed', 'Indeed'], ['glassdoor', 'Glassdoor'], ['builtin', 'Built In'], ['ziprecruiter', 'ZipRecruiter'], ['wellfound', 'AngelList/Wellfound'], ['angel.co', 'AngelList/Wellfound'], ['monster', 'Monster'], ['dice.com', 'Dice'], ['greenhouse', 'Company Website'], ['lever.co', 'Company Website'], ['ashby', 'Company Website'], ['myworkday', 'Company Website'], ['handshake', 'Handshake']];
+  for (const [k, v] of srcMap) { if (hay.includes(k)) { out.source = v; break; } }
+  const sal = jpSalary(raw);
+  out.salaryMin = sal.min; out.salaryMax = sal.max;
+  out.company = jpCompany(lines, raw);
+  out.position = jpTitle(lines);
+  out.location = jpLocation(lines, raw);
+  // If the location line led with the company name (e.g. "Acme · Remote"), drop it
+  if (out.company && out.location.toLowerCase().startsWith(out.company.toLowerCase())) {
+    out.location = jpClean(out.location.slice(out.company.length).replace(/^[\s,·|\-]+/, ''));
+  }
+  return out;
+}
+
+function parseAndAddJob() {
+  const ta = document.getElementById('job-paste');
+  const msg = document.getElementById('job-paste-msg');
+  const text = (ta.value || '').trim();
+  if (!text) { msg.textContent = 'Paste a posting first.'; return; }
+  const p = parseJobPosting(text);
+  openJobModal(undefined, p);
+  const got = [];
+  if (p.company) got.push('company');
+  if (p.position) got.push('title');
+  if (p.location) got.push('location');
+  if (p.salaryMin || p.salaryMax) got.push('salary');
+  if (p.url) got.push('link');
+  msg.textContent = got.length ? ('Filled ' + got.join(', ') + '. Review, then Save.') : 'Couldn’t read much — fill in the fields and Save.';
 }
 
 function deleteJob(id) {
