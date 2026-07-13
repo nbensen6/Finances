@@ -91,6 +91,13 @@ main { max-width: 1280px; margin: 0 auto; padding: 24px; }
 .card h2 { font-size: 16px; color: var(--text-dim); font-weight: 600; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.5px; }
 .card h3 { font-size: 14px; color: var(--text-dim); margin-bottom: 12px; }
 
+/* COLLAPSIBLE CARDS */
+.card-toggle { cursor: pointer; user-select: none; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.card-toggle .chev { color: var(--text-dim); font-size: 13px; transition: transform 0.2s; flex-shrink: 0; }
+.card.collapsed .card-toggle .chev { transform: rotate(-90deg); }
+.card.collapsed .card-body { display: none; }
+.card.collapsed { padding-bottom: 24px; }
+
 /* GRID */
 .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
 .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
@@ -554,48 +561,66 @@ canvas { max-height: 300px; }
 
   <div class="grid-4 mb-12" id="jobs-stat-cards"></div>
 
-  <div class="card">
-    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">
-      <h2 style="margin:0;">Job Scout</h2>
-      <span id="jobs-scout-count" class="badge badge-yellow" style="font-size:12px;"></span>
+  <div class="card" id="jobs-scout-card">
+    <div class="card-toggle" onclick="toggleCard(this,'scout')">
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        <h2 style="margin:0;">Job Scout</h2>
+        <span id="jobs-scout-count" class="badge badge-yellow" style="font-size:12px;"></span>
+      </div>
+      <span class="chev">&#9662;</span>
     </div>
-    <p style="color:var(--text-dim);font-size:13px;margin:6px 0 12px;">Leads Claude finds for you land here first. Review each one, then <strong style="color:#fff;">Add to Applications</strong> to move it into your pipeline or <strong style="color:#fff;">Dismiss</strong> it. Just ask Claude to "find me more jobs" anytime.</p>
-    <div id="jobs-scout-list"></div>
+    <div class="card-body">
+      <p style="color:var(--text-dim);font-size:13px;margin:10px 0 12px;">Leads Claude finds for you land here first. Review each one, then <strong style="color:#fff;">Add to Applications</strong> to move it into your pipeline or <strong style="color:#fff;">Dismiss</strong> it. Just ask Claude to "find me more jobs" anytime.</p>
+      <div id="jobs-scout-list"></div>
+    </div>
   </div>
 
   <div class="card mt-20" id="jobs-followup-card">
-    <h2>Needs Attention</h2>
-    <div id="jobs-followup-list"></div>
+    <div class="card-toggle" onclick="toggleCard(this,'followup')">
+      <h2 style="margin:0;">Needs Attention</h2>
+      <span class="chev">&#9662;</span>
+    </div>
+    <div class="card-body" style="margin-top:12px;"><div id="jobs-followup-list"></div></div>
   </div>
 
-  <div class="card mt-20">
-    <h2>Add from a Job Posting</h2>
-    <p style="color:var(--text-dim);font-size:13px;margin:6px 0 12px;">Copy a posting (title, company, location, salary, description) and paste it below. It auto-fills the application form for you to review before saving. Runs entirely in your browser &mdash; no AI, nothing leaves your device.</p>
-    <textarea id="job-paste" class="api-key-input" rows="5" style="resize:vertical;width:100%;" placeholder="Paste the full job posting here, then click Parse &amp; Review..."></textarea>
-    <div style="display:flex;gap:10px;margin-top:10px;align-items:center;flex-wrap:wrap;">
-      <button class="btn btn-primary" onclick="parseAndAddJob()">Parse &amp; Review</button>
-      <button class="btn" style="background:var(--surface2);" onclick="document.getElementById('job-paste').value='';document.getElementById('job-paste-msg').textContent='';">Clear</button>
-      <span id="job-paste-msg" style="font-size:12px;color:var(--text-dim);"></span>
+  <div class="card mt-20" id="jobs-paste-card">
+    <div class="card-toggle" onclick="toggleCard(this,'paste')">
+      <h2 style="margin:0;">Add from a Job Posting</h2>
+      <span class="chev">&#9662;</span>
+    </div>
+    <div class="card-body">
+      <p style="color:var(--text-dim);font-size:13px;margin:10px 0 12px;">Copy a posting (title, company, location, salary, description) and paste it below. It auto-fills the application form for you to review before saving. Runs entirely in your browser &mdash; no AI, nothing leaves your device.</p>
+      <textarea id="job-paste" class="api-key-input" rows="5" style="resize:vertical;width:100%;" placeholder="Paste the full job posting here, then click Parse &amp; Review..."></textarea>
+      <div style="display:flex;gap:10px;margin-top:10px;align-items:center;flex-wrap:wrap;">
+        <button class="btn btn-primary" onclick="parseAndAddJob()">Parse &amp; Review</button>
+        <button class="btn" style="background:var(--surface2);" onclick="document.getElementById('job-paste').value='';document.getElementById('job-paste-msg').textContent='';">Clear</button>
+        <span id="job-paste-msg" style="font-size:12px;color:var(--text-dim);"></span>
+      </div>
     </div>
   </div>
 
-  <div class="card mt-20">
-    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+  <div class="card mt-20" id="jobs-apps-card">
+    <div class="card-toggle" onclick="toggleCard(this,'apps')">
       <h2 style="margin:0;">Applications</h2>
-      <button class="btn btn-primary" onclick="openJobModal()">+ Add Application</button>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button class="btn btn-primary" style="padding:6px 14px;" onclick="event.stopPropagation();openJobModal()">+ Add</button>
+        <span class="chev">&#9662;</span>
+      </div>
     </div>
-    <div style="display:flex;gap:8px;margin:12px 0;flex-wrap:wrap;">
-      <select id="jobs-status-filter" class="api-key-input" style="width:170px;" onchange="renderJobsTable()">
-        <option value="">All statuses</option>
-        <option value="__active__">Active only</option>
-      </select>
-      <input type="text" id="jobs-search" class="api-key-input" style="flex:1;min-width:150px;" placeholder="Search company or role..." oninput="renderJobsTable()">
-    </div>
-    <div style="max-height:520px;overflow-y:auto;overflow-x:auto;">
-      <table id="jobs-table">
-        <thead><tr><th>Applied</th><th>Company</th><th>Position</th><th>Status</th><th>Days</th><th></th></tr></thead>
-        <tbody></tbody>
-      </table>
+    <div class="card-body">
+      <div style="display:flex;gap:8px;margin:12px 0;flex-wrap:wrap;">
+        <select id="jobs-status-filter" class="api-key-input" style="width:170px;" onchange="renderJobsTable()">
+          <option value="">All statuses</option>
+          <option value="__active__">Active only</option>
+        </select>
+        <input type="text" id="jobs-search" class="api-key-input" style="flex:1;min-width:150px;" placeholder="Search company or role..." oninput="renderJobsTable()">
+      </div>
+      <div style="max-height:520px;overflow-y:auto;overflow-x:auto;">
+        <table id="jobs-table">
+          <thead><tr><th>Applied</th><th>Company</th><th>Position</th><th>Status</th><th>Days</th><th></th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
     </div>
   </div>
 
@@ -2673,6 +2698,7 @@ function renderJobs() {
   }
   renderJobScout();
   renderJobsTable();
+  applyCardStates();
 }
 
 function renderJobScout() {
@@ -2816,11 +2842,21 @@ function saveJobFromModal() {
     lastUpdate: new Date().toISOString().slice(0, 10)
   };
   const idx = jobsData.findIndex(x => x.id === entry.id);
+  const isNew = idx < 0;
   if (idx >= 0) jobsData[idx] = { ...jobsData[idx], ...entry };
   else jobsData.push(entry);
   saveJobsData();
   closeJobModal();
   renderJobs();
+  if (isNew) {
+    // Make sure the user actually sees the new row: expand the Applications
+    // card (in case it was collapsed) and scroll it into view.
+    expandCard('apps');
+    const paste = document.getElementById('job-paste'); if (paste) paste.value = '';
+    const msg = document.getElementById('job-paste-msg'); if (msg) msg.textContent = '';
+    const card = document.getElementById('jobs-apps-card');
+    if (card) card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
 }
 
 // ===== PASTE-TO-PARSE (client-side, no AI) =====
@@ -2920,6 +2956,28 @@ function parseAndAddJob() {
   msg.textContent = got.length ? ('Filled ' + got.join(', ') + '. Review, then Save.') : 'Couldn’t read much — fill in the fields and Save.';
 }
 
+// ===== COLLAPSIBLE CARDS (Job Hunt) =====
+function toggleCard(headerEl, key) {
+  const card = headerEl.closest('.card');
+  const collapsed = card.classList.toggle('collapsed');
+  try { localStorage.setItem('findash_card_' + key, collapsed ? '1' : '0'); } catch (_) {}
+}
+const JOB_CARD_KEYS = { scout: 'jobs-scout-card', followup: 'jobs-followup-card', paste: 'jobs-paste-card', apps: 'jobs-apps-card' };
+function applyCardStates() {
+  for (const [key, id] of Object.entries(JOB_CARD_KEYS)) {
+    const el = document.getElementById(id);
+    if (!el) continue;
+    let v = null;
+    try { v = localStorage.getItem('findash_card_' + key); } catch (_) {}
+    el.classList.toggle('collapsed', v === '1');
+  }
+}
+function expandCard(key) {
+  const el = document.getElementById(JOB_CARD_KEYS[key]);
+  if (el) el.classList.remove('collapsed');
+  try { localStorage.setItem('findash_card_' + key, '0'); } catch (_) {}
+}
+
 function deleteJob(id) {
   const j = jobsData.find(x => x.id === id);
   if (!j || !confirm(`Delete application to "${j.company}"?`)) return;
@@ -2928,9 +2986,18 @@ function deleteJob(id) {
   renderJobs();
 }
 
-document.getElementById('job-modal').addEventListener('click', function(e) {
-  if (e.target === this) closeJobModal();
-});
+// Close on a genuine backdrop click only. Track where the mousedown started so a
+// text-selection drag that happens to release on the backdrop does NOT close the
+// modal (which was wiping out in-progress edits).
+(function () {
+  const modal = document.getElementById('job-modal');
+  let downOnBackdrop = false;
+  modal.addEventListener('mousedown', e => { downOnBackdrop = (e.target === modal); });
+  modal.addEventListener('mouseup', e => {
+    if (downOnBackdrop && e.target === modal) closeJobModal();
+    downOnBackdrop = false;
+  });
+})();
 
 // ===== DRAG & DROP =====
 function setupDragDrop(zoneId, handler) {
